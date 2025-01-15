@@ -1,3 +1,6 @@
+*.a
+*.o
 .vscode
-./obj
-./webserv
+libft/obj
+obj
+webserv
