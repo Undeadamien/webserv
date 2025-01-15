@@ -7,8 +7,7 @@ SRCS_DIR = srcs/
 
 
 # Headers et includes
-HEADER = -I./includes \
-		-I./libft/includes
+HEADER = -I./includes
 
 # Options de compilation
 CPPFLAGS = -Wall -Wextra -Werror -std=c++98
