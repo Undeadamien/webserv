@@ -69,6 +69,10 @@ typedef std::pair<std::string, std::string> 		pairStr;
 typedef struct dirent fileInfo;
 typedef DIR	directory;
 
+void			printFormatError(void);
+void			printFormatError(std::string);
+void			printFileError(std::string file);
+
 template<typename T> std::ostream	&operator<<(std::ostream &o, std::vector<T> vect)
 {
 	for (size_t i = 0; i + 1 < vect.size(); i++)
