@@ -5,8 +5,6 @@ NAME = webserv
 OBJ_DIR = obj/
 SRCS_DIR = srcs/
 
-LIBFT_DIR = libft
-LIBFT = $(LIBFT_DIR)/libft.a
 
 # Headers et includes
 HEADER = -I./includes \
@@ -32,13 +30,9 @@ OBJS = $(addprefix ${OBJ_DIR}, $(SRCS:.cpp=.o))
 # Cibles
 all: $(NAME)
 
-$(LIBFT):
-	@$(MAKE) -C $(LIBFT_DIR)
-	@echo "\n"
-
 # Compilation du programme
-$(NAME): $(LIBFT) $(OBJS)
-	@$(CPP) $(CPPFLAGS) -o $(NAME) $(OBJS) $(LIBFT) $(HEADER)
+$(NAME): $(OBJS)
+	@$(CPP) $(CPPFLAGS) -o $(NAME) $(OBJS) $(HEADER)
 	@echo "\n┗▷${BOLD}$(GREEN)『./$(NAME) Successfully created [✅]$(RESET)"
 
 ${OBJ_DIR}%.o: ${SRCS_DIR}%.cpp
@@ -50,14 +44,12 @@ ${OBJ_DIR}%.o: ${SRCS_DIR}%.cpp
 
 # Nettoyage des fichiers objets
 clean:
-	@$(MAKE) clean -C $(LIBFT_DIR) > /dev/null 2>&1
 	@echo "$(BOLD) [ 🗑️ ] $(YELLOW)$(REVERSED)Cleaning up$(RESET)"
 	@$(RM) -r $(OBJ_DIR)
 	@echo "┗▷$(YELLOW)『$(ITALIC)./$(SRCS_DIR)'s$(RESET)$(YELLOW) object files cleaned』$(RESET)"
 
 # Nettoyage complet
 fclean: clean
-	@$(MAKE) fclean -C $(LIBFT_DIR) > /dev/null 2>&1
 	@$(RM) $(NAME)
 	@echo "┗▷$(YELLOW)『$(ITALIC)./$(NAME)'s$(RESET)$(YELLOW) cleaned』$(RESET)"
 
