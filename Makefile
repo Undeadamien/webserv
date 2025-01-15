@@ -1,12 +1,16 @@
 # Nom du programme
-NAME = convert
+NAME = webserv
 
 # Dossier de sortie pour les fichiers objets
 OBJ_DIR = obj/
 SRCS_DIR = srcs/
 
+LIBFT_DIR = libft
+LIBFT = $(LIBFT_DIR)/libft.a
+
 # Headers et includes
-HEADER = -I./includes
+HEADER = -I./includes \
+		-I./libft/includes
 
 # Options de compilation
 CPPFLAGS = -Wall -Wextra -Werror -std=c++98
@@ -16,10 +20,7 @@ CPP = c++
 RM = rm -rf
 
 # Rechercher tous les fichiers .cpp dans le répertoire courant
-SRCS = main.cpp \
-	ScalarConverter.cpp \
-	Converters.cpp \
-	Selecters.cpp
+SRCS = $(shell find $(SRCS_DIR) -type f -name "*.cpp" | sed "s|^$(SRCS_DIR)||")
 
 MAKEFLAGS += --no-print-directory
 TOTAL_FILES := $(words $(SRCS))
@@ -31,9 +32,13 @@ OBJS = $(addprefix ${OBJ_DIR}, $(SRCS:.cpp=.o))
 # Cibles
 all: $(NAME)
 
+$(LIBFT):
+	@$(MAKE) -C $(LIBFT_DIR)
+	@echo "\n"
+
 # Compilation du programme
-$(NAME): $(OBJS)
-	@$(CPP) $(CPPFLAGS) -o $(NAME) $(OBJS) $(HEADER)
+$(NAME): $(LIBFT) $(OBJS)
+	@$(CPP) $(CPPFLAGS) -o $(NAME) $(OBJS) $(LIBFT) $(HEADER)
 	@echo "\n┗▷${BOLD}$(GREEN)『./$(NAME) Successfully created [✅]$(RESET)"
 
 ${OBJ_DIR}%.o: ${SRCS_DIR}%.cpp
@@ -45,12 +50,14 @@ ${OBJ_DIR}%.o: ${SRCS_DIR}%.cpp
 
 # Nettoyage des fichiers objets
 clean:
+	@$(MAKE) clean -C $(LIBFT_DIR) > /dev/null 2>&1
 	@echo "$(BOLD) [ 🗑️ ] $(YELLOW)$(REVERSED)Cleaning up$(RESET)"
 	@$(RM) -r $(OBJ_DIR)
 	@echo "┗▷$(YELLOW)『$(ITALIC)./$(SRCS_DIR)'s$(RESET)$(YELLOW) object files cleaned』$(RESET)"
 
 # Nettoyage complet
 fclean: clean
+	@$(MAKE) fclean -C $(LIBFT_DIR) > /dev/null 2>&1
 	@$(RM) $(NAME)
 	@echo "┗▷$(YELLOW)『$(ITALIC)./$(NAME)'s$(RESET)$(YELLOW) cleaned』$(RESET)"
 
