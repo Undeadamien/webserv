@@ -1,18 +1,18 @@
+#include "usefull.hpp"
 #include <arpa/inet.h>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <netinet/in.h>
+#include <sstream>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <sstream>  // Ajouté pour utiliser std::stringstream
 
 #define PORT 1234
 #define BUFFER_SIZE 4096
 
-int server()
+int simple_server()
 {
-
     int fdSocket = socket(AF_INET, SOCK_STREAM, 0);
 
     sockaddr_in address;
@@ -20,14 +20,17 @@ int server()
     address.sin_port = htons(PORT);
     address.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    bind(fdSocket, (const sockaddr *)(&address), sizeof(address));
+    if (bind(fdSocket, (const sockaddr *)(&address), sizeof(address)) == -1)
+        return (EXIT_FAILURE);
 
     listen(fdSocket, 10);
 
     bool active = true;
     int connection;
+    int iteration = 0;
     while (active)
     {
+        std::cout << INVERSE << "Iteration number: " << iteration++ << RESET << std::endl;
         unsigned long resultLen = sizeof(sockaddr);
         std::cout << "Listening on Port: " << PORT << std::endl;
         connection = accept(fdSocket, (struct sockaddr *)(&address), (socklen_t *)&resultLen);
@@ -39,12 +42,11 @@ int server()
 
         std::string content = "<h1>Bonjour, je suis un serveur HTTP tout simple!</h1>";
 
-        // Utilisation de std::stringstream pour convertir content.length() en string
-        std::stringstream ss;
-        ss << content.length();
-        std::string contentLength = ss.str();
+        std::string contentLength = itos(content.length());
 
         std::string response = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + contentLength + "\n\n" + content;
+        std::cout << std::endl;
+
         send(connection, response.c_str(), response.size(), 0);
         close(connection);
     }
@@ -52,10 +54,4 @@ int server()
     close(fdSocket);
 
     return (EXIT_SUCCESS);
-}
-
-int main()
-{
-    server();
-    return 0;
 }
