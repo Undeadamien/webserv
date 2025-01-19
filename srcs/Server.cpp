@@ -1,37 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Socket.hpp                                         :+:      :+:    :+:   */
+/*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/19 23:47:55 by dtrala            #+#    #+#             */
-/*   Updated: 2025/01/19 23:48:42 by dtrala           ###   ########.fr       */
+/*   Created: 2025/01/19 23:44:30 by dtrala            #+#    #+#             */
+/*   Updated: 2025/01/19 23:47:57 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SOCKET_HPP
-#define SOCKET_HPP
+#include "Server.hpp"
 
-#include <netinet/in.h>
-class Socket
+Server::Server() {};
+Server::Server(const Server &other) { (void)other; };
+Server &Server::operator=(const Server &other)
 {
-public:
-    Socket();
-    Socket(const Socket &other);
-    Socket &operator=(const Socket &other);
-    virtual ~Socket();
-
-    void setFd(int value);
-    void setAddress(sockaddr_in address);
-
-    int getFd();
-    sockaddr_in getAddress();
-
-protected:
-private:
-    int _fd;
-    sockaddr_in _address;
+    if (this != &other)
+    {
+        (void)other; // need to be replaced
+    }
+    return (*this);
 };
-
-#endif
+Server::~Server() {};

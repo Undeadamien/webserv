@@ -1,37 +1,32 @@
 #ifndef BLOCKLOCATION_HPP
 #define BLOCKLOCATION_HPP
 
-#include <iostream>
-#include <vector>
-#include <map>
 #include <algorithm>
-# include <iomanip>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <vector>
 
-# include "ConfigParser.hpp"
+#include "ConfigParser.hpp"
 
 enum e_Methods
 {
-	GET,
-	POST,
-	DELETE,
-	PUT,
-	UNKNOWN
+    GET,
+    POST,
+    DELETE,
+    PUT,
+    UNKNOWN
 };
 
 enum e_boolMod
 {
-	FALSE,
-	TRUE
+    FALSE,
+    TRUE
 };
 
 class BlocLocation
 {
-	private:
-	
-
-
+private:
 }
-
-
 
 #endif
