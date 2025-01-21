@@ -17,6 +17,15 @@
 #define INVERSE "\033[7m"
 #define RESET "\033[0m"
 
+enum e_Methods
+{
+	GET,
+	POST,
+	DELETE,
+	PUT,
+	UNKNOWN
+};
+
 std::string itos(int value);
 
 #endif
