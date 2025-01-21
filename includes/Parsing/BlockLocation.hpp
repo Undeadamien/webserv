@@ -12,11 +12,11 @@
 
 enum e_boolMod
 {
-    FALSE,
+    FALSE = 0,
     TRUE
 };
 
-class BlocLocation
+class BlockLocation
 {
 	private:
 		std::string	_path;
@@ -38,6 +38,7 @@ class BlocLocation
 		// Methods
 		void incrementCounter(const std::string& key) { _counterView[key]++; }
 		void DoubleLineChecker();
+		void setDefaultMethods();
 		void setDefaultValues();
 		e_boolMod strToBool(std::string &str);
 
@@ -47,13 +48,13 @@ class BlocLocation
 		void addCgiExtension(std::vector<std::string>& token);
 
 	public:
-		BlocLocation(std::string filename);
-		BlocLocation(const BlocLocation &copy);
-		BlocLocation &operator=(const BlocLocation &copy);
-		~BlocLocation();
+		BlockLocation(std::string filename);
+		BlockLocation(const BlockLocation &copy);
+		BlockLocation &operator=(const BlockLocation &copy);
+		~BlockLocation();
 
 		//parser
-		BlocLocation getLocationConfig(std::ifstream &configFile, std::string &path);
+		BlockLocation getLocationConfig(std::ifstream &configFile, std::string &path);
 
 		// Getters
 		const std::string &getPath() const { return _path; }
@@ -67,6 +68,22 @@ class BlocLocation
 		std::string	getCgiPath(const std::string &path) const { return _cgiExtension.at(path); }
 		e_boolMod getAutoIndex() const { return _autoindex; }
 
+		//METHODS
+
+		//Checker
+		bool isCgi(const std::string &path) const;
+
+		//Display
+		void printLocation(void);
+		void printPair(const std::string& label, const std::string& value);
+		void printBool(const std::string& label, bool value, const std::string& trueStr, const std::string& falseStr);
+		void printVector(const std::string& label, const std::vector<std::string>& vec);
+		void printMap(const std::string& label, const std::map<std::string, std::string>& map);
+
+		//USEFULL
+		static e_Methods	convertstringtoLocMethod(const std::string &method);
+		void cleanPaths();
+		bool	isMethodAllowed(e_Methods method);
 
 };
 

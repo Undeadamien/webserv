@@ -1,0 +1,67 @@
+#ifndef LOG_HPP
+# define LOG_HPP
+
+#include "usefull.hpp"
+#include <map>
+
+// Default parameters
+#ifndef DF_LOG_ON
+# define DF_LOG_ON true
+#endif
+
+#ifndef DF_LOG_FILE_ON
+# define DF_LOG_FILE_ON false
+#endif
+
+#ifndef DF_DEBUG_MODE_ON
+# define DF_DEBUG_MODE_ON false
+#endif
+
+class Log
+{
+
+	public:
+		// Levels of log
+		enum LogStep
+		{
+			FATAL = 0,
+			ERROR,
+			WARNING,
+			INFO,
+			DEBUG,
+		};
+
+		static void log(LogStep level, const char *msg, ...);
+
+		//SETTERS
+		static void setLogState(bool state);
+		static void setLogFileState(bool state);
+		static void setLogDebugState(bool state);
+
+		/* GETTERS */
+		static bool getLogState(void);
+		static bool getLogFileState(void);
+		static bool getLogDebugState(void);
+		static std::string getLogFileName(void);
+		static std::string getLogStepStr(LogStep level);
+		static std::string getLogStepColor(LogStep level);
+
+	private:
+		static bool _logState;
+		static bool _logFileState;
+		static bool _logDebugState;
+		static std::string _logFileName;
+		static std::map<Log::LogStep, std::string> _LogStepStr;
+		static std::map<Log::LogStep, std::string> _LogStepColor;
+
+		/* UTILS */
+		static std::string _generateLogFileName(void);
+		static std::map<Log::LogStep, std::string> _generateLogStepStr(void);
+		static std::map<Log::LogStep, std::string> _generateLogStepColor(void);
+		static std::string _formater(Log::LogStep level, const char *msg, std::string time, bool colored = true);
+		static void _printLog(Log::LogStep level, const char *msg, std::string time);
+		static void _writeLogInFile(LogStep level, const char *msg, std::string time);
+
+};
+
+#endif
