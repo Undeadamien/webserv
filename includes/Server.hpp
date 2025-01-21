@@ -1,37 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Socket.hpp                                         :+:      :+:    :+:   */
+/*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/19 23:47:55 by dtrala            #+#    #+#             */
-/*   Updated: 2025/01/19 23:48:42 by dtrala           ###   ########.fr       */
+/*   Created: 2025/01/19 23:44:36 by dtrala            #+#    #+#             */
+/*   Updated: 2025/01/19 23:47:57 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SOCKET_HPP
-#define SOCKET_HPP
+#ifndef SERVER_HPP
+#define SERVER_HPP
 
-#include <netinet/in.h>
-class Socket
+class Server
 {
 public:
-    Socket();
-    Socket(const Socket &other);
-    Socket &operator=(const Socket &other);
-    virtual ~Socket();
-
-    void setFd(int value);
-    void setAddress(sockaddr_in address);
-
-    int getFd();
-    sockaddr_in getAddress();
+    Server();
+    Server(const Server &other);
+    Server &operator=(const Server &other);
+    virtual ~Server();
 
 protected:
 private:
-    int _fd;
-    sockaddr_in _address;
 };
 
 #endif

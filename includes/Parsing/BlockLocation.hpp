@@ -1,19 +1,19 @@
 #ifndef BLOCKLOCATION_HPP
 #define BLOCKLOCATION_HPP
 
-#include <iostream>
-#include <vector>
-#include <map>
 #include <algorithm>
-# include <iomanip>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <vector>
 
 # include "ConfigParser.hpp"
 # include "usefull.hpp"
 
 enum e_boolMod
 {
-	FALSE,
-	TRUE
+    FALSE,
+    TRUE
 };
 
 class BlocLocation
