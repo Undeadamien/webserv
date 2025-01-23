@@ -17,7 +17,6 @@ std::map<Log::LogStep, std::string> Log::_LogStepColor = Log::_selecLogStepColor
 
 #return : std::string
 */
-
 std::string Log::_generateLogFileName(void)
 {
 	auto t = std::time(nullptr);
