@@ -25,3 +25,15 @@ std::string Log::_generateLogFileName(void)
 	oss << "webserv_" << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S") << ".log";
 	return oss.str();
 }
+
+std::map<Logger::LogLevel, std::string> Logger::_generateLogLevelStr(void)
+{
+	std::map<Logger::LogLevel, std::string> logLevelStr;
+
+	logLevelStr[Logger::FATAL] = "FATAL";
+	logLevelStr[Logger::ERROR] = "ERROR";
+	logLevelStr[Logger::INFO] = "INFO";
+	logLevelStr[Logger::DEBUG] = "DEBUG";
+
+	return (logLevelStr);
+}
