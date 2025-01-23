@@ -56,8 +56,8 @@ class Log
 
 		/* UTILS */
 		static std::string _generateLogFileName(void);
-		static std::map<Log::LogStep, std::string> _generateLogStepStr(void);
-		static std::map<Log::LogStep, std::string> _generateLogStepColor(void);
+		static std::map<Log::LogStep, std::string> _selectLogStepStr(void);
+		static std::map<Log::LogStep, std::string> _selectLogStepColor(void);
 		static std::string _formater(Log::LogStep level, const char *msg, std::string time, bool colored = true);
 		static void _printLog(Log::LogStep level, const char *msg, std::string time);
 		static void _writeLogInFile(LogStep level, const char *msg, std::string time);
