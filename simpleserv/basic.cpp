@@ -2,6 +2,8 @@
 #include <arpa/inet.h>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
+#include <fstream>
 #include <iostream>
 #include <netinet/in.h>
 #include <strings.h>
@@ -17,6 +19,19 @@
 #undef BUFFER_SIZE
 #define BUFFER_SIZE 8192
 #endif
+
+std::string get_file_content(std::string path)
+{
+    (void)path;
+    std::ifstream inFile(path.c_str());
+    if (!inFile)
+        throw std::exception();
+    std::string content;
+    std::string line;
+    while (std::getline(inFile, line))
+        content += line;
+    return (content);
+};
 
 int simple_server()
 {
@@ -65,8 +80,18 @@ int simple_server()
                   << UNDERLINE << "Request" << RESET << "\n"
                   << buffer << std::endl;
 
-        std::string content = "<h1>Bonjour, je suis un serveur HTTP tout simple!</h1>";
-        std::string contentLength = itos(content.length());
+        std::string content;
+        std::string contentLength;
+        try
+        {
+            content = get_file_content("web/index.html");
+            contentLength = itos(content.length());
+        }
+        catch (std::exception &e)
+        {
+            std::cerr << "Error: file content loading\n";
+            exit(1);
+        }
 
         std::string response = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + contentLength;
         response += "\n\n"; // the content of the response must be separated by two new-line
