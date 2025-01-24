@@ -6,6 +6,10 @@
 #include <map>
 #include <stdarg.h>
 #include <ctime>
+#include <fstream>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <vector>
 
 // Default parameters
 #ifndef DF_LOG_ON
@@ -60,9 +64,9 @@ class Log
 		static std::string _fileNameGenerator(void);
 		static std::map<Log::LogStep, std::string> _selectLogStepStr(void);
 		static std::map<Log::LogStep, std::string> _selectLogStepColor(void);
-		static std::string _logFormater(Log::LogStep level, const std::string msg, std::string time, bool color_on);
-		static void _printLog(Log::LogStep level, const char *msg, std::string time);
-		static void _writeLogInFile(LogStep level, const char *msg, std::string time);
+		static std::string _logFormater(Log::LogStep level, const std::string msg, std::string time, bool color_on = true);
+		static void _printMsgFormater(Log::LogStep level, const std::string msg, std::string time);
+		static void _InLogFile(LogStep level, const char *msg, std::string time);
 
 };
 
