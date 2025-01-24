@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:47:55 by dtrala            #+#    #+#             */
-/*   Updated: 2025/01/19 23:48:42 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/01/24 11:43:41 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ public:
     Socket();
     Socket(const Socket &other);
     Socket &operator=(const Socket &other);
-    virtual ~Socket();
+    ~Socket();
 
     void setFd(int value);
     void setAddress(sockaddr_in address);
