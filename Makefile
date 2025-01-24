@@ -7,7 +7,10 @@ SRCS_DIR = srcs/
 
 
 # Headers et includes
-HEADER = -I./includes
+HEADER = -I./includes/ \
+		-I/includes/Logger/ \
+		-I/includes/Usefull/ \
+		-I./includes/Parsing/
 
 # Options de compilation
 CPPFLAGS = -Wall -Wextra -Werror -std=c++98

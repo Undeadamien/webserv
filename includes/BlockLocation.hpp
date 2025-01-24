@@ -3,9 +3,11 @@
 
 #include <algorithm>
 #include <iomanip>
-#include <iostream>
 #include <map>
 #include <vector>
+#include <cstring>
+#include <iostream>
+#include <unistd.h>
 
 # include "ConfigParser.hpp"
 # include "usefull.hpp"

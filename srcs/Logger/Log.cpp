@@ -97,7 +97,7 @@ void Log::log(Log::LogStep level, const char *msg, ...)
     va_start(args, msg);
 
     // Format the message
-    int size = vsnprintf(buffer.data(), buffer.size(), msg, args);
+    unsigned long size = vsnprintf(buffer.data(), buffer.size(), msg, args);
     va_end(args);
 
     // Check for formatting errors
@@ -114,7 +114,7 @@ void Log::log(Log::LogStep level, const char *msg, ...)
     }
 
     // Get the current time and format it
-    std::time_t currentTime = std::time(nullptr);
+    std::time_t currentTime = std::time(0);
     char timeBuffer[80];
     std::strftime(timeBuffer, sizeof(timeBuffer), "%Y-%m-%d %H:%M:%S", std::localtime(&currentTime));
 
