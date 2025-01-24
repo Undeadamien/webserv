@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:49:03 by dtrala            #+#    #+#             */
-/*   Updated: 2025/01/24 14:33:03 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/01/24 15:24:34 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,11 +37,11 @@ public:
     void setProtocol(std::string protocol);
     void setHeaders(std::map<std::string, std::string> headers);
 
-    std::string getContent() const;
-    e_Methods getMethod() const;
-    std::string getTarget() const;
-    std::string getProtocol() const;
-    std::map<std::string, std::string> getHeaders() const;
+    const std::string &getContent() const;
+    const e_Methods &getMethod() const;
+    const std::string &getTarget() const;
+    const std::string &getProtocol() const;
+    const std::map<std::string, std::string> &getHeaders() const;
 
 protected:
 private:

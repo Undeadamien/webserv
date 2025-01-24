@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:48:41 by dtrala            #+#    #+#             */
-/*   Updated: 2025/01/24 14:55:40 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/01/24 15:25:08 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,10 @@ Request::Request(std::string content) : _content(content),
                                         _protocol(parseProtocol(content)),
                                         _headers(parseHeaders(content)) {};
 Request::Request(const Request &other) : _content(other._content),
-                                         _method(parseMethod(other._content)),
-                                         _target(parseTarget(other._content)),
-                                         _protocol(parseProtocol(other._content)),
-                                         _headers(parseHeaders(other._content)) {};
+                                         _method(other._method),
+                                         _target(other._target),
+                                         _protocol(other._protocol),
+                                         _headers(other._headers) {};
 Request &Request::operator=(const Request &other)
 {
     if (this == &other)
@@ -89,6 +89,7 @@ std::string Request::parseProtocol(std::string content)
     // throw an error if not HTTPS 1.1 ?
     return (line.substr(start));
 };
+// need to be reworked to work with body
 mapHeaders Request::parseHeaders(std::string content)
 {
     mapHeaders headers;
@@ -99,7 +100,7 @@ mapHeaders Request::parseHeaders(std::string content)
     {
         line = trim(line, " ");
         if ((sep = line.find(":")) == std::string::npos)
-            continue; // need to be improved, by trimming whitespaces
+            continue;
         std::string key = trim(line.substr(0, sep), " ");
         std::string value = trim(line.substr(sep + 2), " ");
         headers.insert(std::pair<std::string, std::string>(key, value));
@@ -116,11 +117,11 @@ void Request::setTarget(std::string target) { this->_target = target; };
 void Request::setProtocol(std::string protocol) { this->_protocol = protocol; };
 void Request::setHeaders(mapHeaders headers) { this->_headers = headers; };
 
-std::string Request::getContent() const { return (this->_content); };
-e_Methods Request::getMethod() const { return (this->_method); };
-std::string Request::getTarget() const { return (this->_target); };
-std::string Request::getProtocol() const { return (this->_protocol); };
-mapHeaders Request::getHeaders() const { return (this->_headers); };
+const std::string &Request::getContent() const { return (this->_content); };
+const e_Methods &Request::getMethod() const { return (this->_method); };
+const std::string &Request::getTarget() const { return (this->_target); };
+const std::string &Request::getProtocol() const { return (this->_protocol); };
+const mapHeaders &Request::getHeaders() const { return (this->_headers); };
 
 // might be useless
 std::ostream &operator<<(std::ostream &os, const Request &request)
