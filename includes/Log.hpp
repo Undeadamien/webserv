@@ -12,8 +12,8 @@
 #include <vector>
 
 // Default parameters
-#ifndef DF_LOG_ON
-# define DF_LOG_ON true
+/*#ifndef DF_LOG_ON
+# define DF_LOG_ON false
 #endif
 
 #ifndef DF_LOG_FILE_ON
@@ -22,7 +22,7 @@
 
 #ifndef DF_DEBUG_MODE_ON
 # define DF_DEBUG_MODE_ON false
-#endif
+#endif*/
 
 class Log
 {

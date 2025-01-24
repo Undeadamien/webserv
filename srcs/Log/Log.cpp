@@ -1,9 +1,9 @@
 #include "Log.hpp"
 #include "usefull.hpp"
 
-bool Log::_logState = DF_LOG_ON;
-bool Log::_logFileState = DF_LOG_FILE_ON;
-bool Log::_logDebugState = DF_DEBUG_MODE_ON;
+bool Log::_logState = false;
+bool Log::_logFileState = false;
+bool Log::_logDebugState = false;
 
 std::string Log::_logFileName = Log::_fileNameGenerator();
 
@@ -126,8 +126,8 @@ void Log::log(Log::LogStep level, const char *msg, ...)
         Log::_InLogFile(level, buffer.data(), timeBuffer);
 
     // Throw a fatal exception if the log level is FATAL
-    if (level == Log::FATAL)
-        throw std::runtime_error(buffer.data());
+/*    if (level == Log::FATAL)
+        throw std::runtime_error(buffer.data());*/
 }
 
 /* _____ ______ _______ _______ ______ _____   _____
