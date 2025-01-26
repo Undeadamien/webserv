@@ -40,7 +40,7 @@ BlockLocation &BlockLocation::operator=(const BlockLocation &copy)
 	return (*this);
 }
 
-void BlockLocation::addAllowedMethods(std::vector<std::string> &tokens)
+void BlockLocation::addValidMethod(std::vector<std::string> &tokens)
 {
 	e_Methods met;
 

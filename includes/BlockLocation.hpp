@@ -40,12 +40,11 @@ class BlockLocation
 		// Methods
 		void incrementCounter(const std::string& key) { _counterView[key]++; }
 		void DoubleLineChecker();
-		void setDefaultMethods();
 		void setDefaultValues();
 		e_boolMod strToBool(std::string &str);
 
 		// Adders
-		void addAllowedMethods(std::vector<std::string> &tokens);
+		void addValidMethod(std::vector<std::string> &tokens);
 		void addIndexes(std::vector<std::string>& token);
 		void addCgiExtension(std::vector<std::string>& token);
 
