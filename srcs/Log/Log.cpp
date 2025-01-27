@@ -1,7 +1,7 @@
 #include "Log.hpp"
 #include "usefull.hpp"
 
-bool Log::_logState = false;
+bool Log::_logState = true;
 bool Log::_logFileState = false;
 bool Log::_logDebugState = false;
 
