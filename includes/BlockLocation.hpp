@@ -72,7 +72,7 @@ class BlockLocation
 		//METHODS
 
 		//Checker
-		bool isCgi(const std::string &path) const;
+		bool CheckerCgi(const std::string &path) const;
 
 		//Display
 		void printLocation(void);

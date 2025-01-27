@@ -31,10 +31,10 @@ class Log
 		// Levels of log
 		enum LogStep
 		{
-			FATAL = 0,
-			ERROR,
+			DEBUG = 0,
 			INFO,
-			DEBUG,
+			ERROR,
+			FATAL,
 		};
 
 		static void log(LogStep level, const char *msg, ...);

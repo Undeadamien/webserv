@@ -19,14 +19,14 @@ class ConfParser {
 
 		void checkDoubleServerName();
 		bool BlockServerBegin(std::vector<std::string> tokens);
-		void assignConfigs();
+		void ServersListens();
 
 		static	std::vector<std::string>	supportedMethods;
 		static	bool						CheckerMethod(std::string method);
 		static	std::vector<std::string>	supportedHttpVersions;
 		static	bool						CheckerHttpVersion(std::string version);
 
-		void printfServers();
+		void printServers();
 
 	private:
 		std::string _filename;

@@ -47,20 +47,24 @@ void BlockLocation::addValidMethod(std::vector<std::string> &tokens)
 	incrementCounter("allowedMethods");
 	for (size_t i = 1; i < tokens.size(); i++){
 		std::string token = tokens[i];
-/*		if (ConfigParser::isMethodSupported(token) == false)
-			Logger::log(Logger::FATAL, "Invalid method: \"%s\" in file: %s:%d", token.c_str(), _filename.c_str(), ConfigParser::countLineFile);*/
-		if (token == "GET")
-			met = GET;
+		if (ConfParser::CheckerMethod(token) == false) {
+			{
+				Log::log(Log::FATAL, "Invalid method: \"%s\" in file: %s:%d", token.c_str(), _filename.c_str(), Conf Parser::countLineFile);
+				exit(FATAL);
+			}
 		else if (token == "POST")
 			met = POST;
 		else if (token == "DELETE")
 			met = DELETE;
-		else if (token == "PUT")
-			met = PUT;
-/*		else
-			Logger::log(Logger::FATAL, "Invalid method: \"%s\" in file: %s:%d", token.c_str(), _filename.c_str(), ConfigParser::countLineFile);
+		else
+			met = GET;
 		if (std::find(_allowedMethods.begin(), _allowedMethods.end(), met) != _allowedMethods.end())
-			Logger::log(Logger::FATAL, "Duplicate method: \"%s\" in file: %s:%d", token.c_str(), _filename.c_str(), ConfigParser::countLineFile);*/
+		{
+			Log::log(Log::FATAL, "Duplicate method: \"%s\" in file: %s:%d", token.c_str(), _filename.c_str(), ConfParser::countLineFile);
+			exit(FATAL);
+		}
 		_allowedMethods.push_back(met);
 	}
 }
+
+

@@ -57,5 +57,23 @@ bool ConfParser::CheckerMethod(std::string method)
 	return (std::find(ConfParser::supportedHttpVersions.begin(), ConfParser::supportedHttpVersions.end(), method) != ConfParser::supportedHttpVersions.end());
 }
 
+//void ConfParser::printServers(void){
+//	for (size_t i = 0; i < _servers.size(); i++)
+//	{
+//		std::cout << "============ SERVER " << i + 1 << " ===========\n"
+//				  << std::endl;
+//		_servers[i].printServer();
+//		std::cout << std::endl;
+//	}
+//}
 
+void ConfParser::checkDoubleServerName()
+{
+
+}
+
+bool ConfParser::BlockServerBegin(std::vector<std::string> tokens){
+	return ((tokens.size() == 2 && tokens[0] == "server" && tokens[1] == "{"))
+				|| (tokens.size() == 1 && tokens[0] == "server{");
+}
 
