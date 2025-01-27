@@ -9,7 +9,8 @@
 #include <iostream>
 #include <unistd.h>
 
-# include "ConfigParser.hpp"
+# include "ConfParser.hpp"
+# include "Log.hpp"
 # include "usefull.hpp"
 
 enum e_boolMod

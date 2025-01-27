@@ -10,6 +10,9 @@
 
 class ConfParser {
 	public:
+
+		static int countLineFile;
+
 		ConfParser(void);
 		~ConfParser(void);
 

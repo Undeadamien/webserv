@@ -50,8 +50,8 @@ void BlockLocation::addValidMethod(std::vector<std::string> &tokens)
 		std::string token = tokens[i];
 		if (ConfParser::CheckerMethod(token) == false)
 		{
-			Log::log(Log::FATAL, "Invalid method: \"%s\" in file: %s:%d", token.c_str(), _filename.c_str(), Conf Parser::countLineFile);
-			exit(FATAL);
+			Log::log(Log::FATAL, "Invalid method: \"%s\" in file: %s:%d", token.c_str(), _filename.c_str(), ConfParser::countLineFile);
+			exit(Log::FATAL);
 		}
 		else if (token == "POST")
 			met = POST;
@@ -62,8 +62,24 @@ void BlockLocation::addValidMethod(std::vector<std::string> &tokens)
 		if (std::find(_allowedMethods.begin(), _allowedMethods.end(), met) != _allowedMethods.end())
 		{
 			Log::log(Log::FATAL, "Duplicate method: \"%s\" in file: %s:%d", token.c_str(), _filename.c_str(), ConfParser::countLineFile);
-			exit(FATAL);
+			exit(Log::FATAL);
 		}
 		_allowedMethods.push_back(met);
 	}
 }
+
+void BlockLocation::addIndexes(std::vector<std::string> &token)
+{
+	incrementCounter("indexes");
+	for (size_t i = 1; i < token.size(); i++)
+	{
+		if (token[i][0] != '/')
+		{
+			Log::log(Log::FATAL, "Invalid index: \"%s\" in file: %s:%d", token[i].c_str(), _filename.c_str(), ConfParser::countLineFile);
+			exit(Log::FATAL);
+		}
+		_indexes.push_back(token[i]);
+	}
+}
+
+

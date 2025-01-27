@@ -52,7 +52,7 @@ std::vector<std::string> ConfParser::_getSupportedHttpVersions(void)
 	return (versions);
 }
 
-bool ConfParser::CheckerMethod(std::string method)
+bool ConfParser::CheckerHttpVersion(std::string method)
 {
 	return (std::find(ConfParser::supportedHttpVersions.begin(), ConfParser::supportedHttpVersions.end(), method) != ConfParser::supportedHttpVersions.end());
 }
