@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:48:41 by dtrala            #+#    #+#             */
-/*   Updated: 2025/01/24 15:25:08 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/01/27 12:50:18 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,36 +15,37 @@
 #include "usefull.hpp"
 #include <cstddef>
 #include <exception>
+#include <iostream>
 #include <sstream>
 #include <string>
 
 typedef std::map<std::string, std::string> mapHeaders;
 
-Request::Request(std::string content) : _content(content),
-                                        _method(parseMethod(content)),
-                                        _target(parseTarget(content)),
-                                        _protocol(parseProtocol(content)),
-                                        _headers(parseHeaders(content)) {};
-Request::Request(const Request &other) : _content(other._content),
-                                         _method(other._method),
+Request::Request(const std::string &content) : _method(parseMethod(content)),
+                                               _target(parseTarget(content)),
+                                               _protocol(parseProtocol(content)),
+                                               _headers(parseHeaders(content)),
+                                               _body(parseBody(content)) {};
+Request::Request(const Request &other) : _method(other._method),
                                          _target(other._target),
                                          _protocol(other._protocol),
-                                         _headers(other._headers) {};
+                                         _headers(other._headers),
+                                         _body(parseBody(other._body)) {};
 Request &Request::operator=(const Request &other)
 {
     if (this == &other)
     {
-        this->_content = other._content;
         this->_method = other._method;
         this->_target = other._target;
         this->_protocol = other._protocol;
         this->_headers = other._headers;
+        this->_body = other._body;
     }
     return (*this);
 };
 Request::~Request() {};
 
-e_Methods Request::parseMethod(std::string content)
+e_Methods Request::parseMethod(const std::string &content)
 {
     std::istringstream str_stream(content);
     std::string line;
@@ -63,7 +64,7 @@ e_Methods Request::parseMethod(std::string content)
         return (DELETE);
     return (UNKNOWN); // I should throw an error
 };
-std::string Request::parseTarget(std::string content)
+std::string Request::parseTarget(const std::string &content)
 {
     std::istringstream str_stream(content);
     std::string line;
@@ -76,7 +77,7 @@ std::string Request::parseTarget(std::string content)
         throw std::exception();
     return (line.substr(start, end - start + 1));
 };
-std::string Request::parseProtocol(std::string content)
+std::string Request::parseProtocol(const std::string &content)
 {
     std::istringstream str_stream(content);
     std::string line;
@@ -90,38 +91,66 @@ std::string Request::parseProtocol(std::string content)
     return (line.substr(start));
 };
 // need to be reworked to work with body
-mapHeaders Request::parseHeaders(std::string content)
+mapHeaders Request::parseHeaders(const std::string &content)
 {
     mapHeaders headers;
     std::istringstream str_stream(content.c_str());
     std::string line;
     size_t sep;
-    while (std::getline(str_stream, line))
+    std::getline(str_stream, line); // skip the startline
+    while (std::getline(str_stream, line) && !line.empty())
     {
         line = trim(line, " ");
         if ((sep = line.find(":")) == std::string::npos)
-            continue;
+            throw std::exception(); // invalid line in header field
         std::string key = trim(line.substr(0, sep), " ");
         std::string value = trim(line.substr(sep + 2), " ");
         headers.insert(std::pair<std::string, std::string>(key, value));
     }
     return (headers);
 };
+std::string Request::parseBody(const std::string &content)
+{
+    std::istringstream str_stream(content.c_str());
+    std::string line;
+    size_t empty_line = content.find("\n\n");
+    if (empty_line == std::string::npos)
+        return ("");
+    return (content.substr(empty_line + 2));
+};
 
 // [] overload to wrap and control the access of the headers
-// << overload to cout the object ?
 
-void Request::setContent(std::string content) { this->_content = content; };
 void Request::setMethod(e_Methods method) { this->_method = method; };
 void Request::setTarget(std::string target) { this->_target = target; };
 void Request::setProtocol(std::string protocol) { this->_protocol = protocol; };
 void Request::setHeaders(mapHeaders headers) { this->_headers = headers; };
+void Request::setBody(std::string body) { this->_body = body; };
 
-const std::string &Request::getContent() const { return (this->_content); };
 const e_Methods &Request::getMethod() const { return (this->_method); };
 const std::string &Request::getTarget() const { return (this->_target); };
 const std::string &Request::getProtocol() const { return (this->_protocol); };
 const mapHeaders &Request::getHeaders() const { return (this->_headers); };
+const std::string &Request::getBody() const { return (this->_body); };
+
+std::string Request::toString() const
+{
+    std::string str;
+    std::string method;
+    if (this->getMethod() == GET)
+        method = "GET";
+    else if (this->getMethod() == PUT)
+        method = "PUT";
+    else if (this->getMethod() == POST)
+        method = "POST";
+    str = str + method + " " + this->getTarget() + " " + this->getProtocol() + "\n";
+    mapHeaders headers = this->getHeaders();
+    for (mapHeaders::iterator it = headers.begin(); it != headers.end(); it++)
+        str = str + it->first + ": " + it->second + "\n";
+    str += "\n";
+    str = str + this->getBody();
+    return (str);
+};
 
 // might be useless
 std::ostream &operator<<(std::ostream &os, const Request &request)
@@ -136,5 +165,8 @@ std::ostream &operator<<(std::ostream &os, const Request &request)
     os << GREEN << BOLD << "Headers:" << RESET << "\n";
     for (mapHeaders::iterator it = headers.begin(); it != headers.end(); it++)
         os << it->first << ": " << it->second << std::endl;
+    os << GREEN << BOLD << "Body:" << RESET << "\n"
+       << request.getBody();
+
     return (os);
 };
