@@ -13,7 +13,6 @@ void test_request_class()
         "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36\n"
         "sec-ch-ua: \"Google Chrome\";v=\"131\", \"Chromium\";v=\"131\", \"Not_A Brand\";v=\"24\"\n"
         "DNT: 1\n"
-        "test: test\n"
         "sec-ch-ua-mobile: ?0\n"
         "Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8\n"
         "Sec-Fetch-Site: same-origin\n"

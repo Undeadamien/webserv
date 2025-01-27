@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:48:41 by dtrala            #+#    #+#             */
-/*   Updated: 2025/01/27 12:50:18 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/01/27 15:10:20 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ Request::Request(const Request &other) : _method(other._method),
                                          _target(other._target),
                                          _protocol(other._protocol),
                                          _headers(other._headers),
-                                         _body(parseBody(other._body)) {};
+                                         _body(other._body) {};
 Request &Request::operator=(const Request &other)
 {
     if (this == &other)
@@ -62,7 +62,7 @@ e_Methods Request::parseMethod(const std::string &content)
         return (POST);
     if (method == "DELETE")
         return (DELETE);
-    return (UNKNOWN); // I should throw an error
+    return (UNKNOWN); // throw an error ?
 };
 std::string Request::parseTarget(const std::string &content)
 {
@@ -90,7 +90,6 @@ std::string Request::parseProtocol(const std::string &content)
     // throw an error if not HTTPS 1.1 ?
     return (line.substr(start));
 };
-// need to be reworked to work with body
 mapHeaders Request::parseHeaders(const std::string &content)
 {
     mapHeaders headers;
