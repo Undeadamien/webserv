@@ -1,6 +1,6 @@
 {
-  BasedOnStyle: LLVM,
-  UseTab: Never,
+  BasedOnStyle: Google,
+  UseTab: Always,
   IndentWidth: 4,
   TabWidth: 4,
   BreakBeforeBraces: Allman,

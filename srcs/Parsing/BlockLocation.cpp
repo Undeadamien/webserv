@@ -45,13 +45,14 @@ void BlockLocation::addValidMethod(std::vector<std::string> &tokens)
 	e_Methods met;
 
 	incrementCounter("allowedMethods");
-	for (size_t i = 1; i < tokens.size(); i++){
+	for (size_t i = 1; i < tokens.size(); i++)
+	{
 		std::string token = tokens[i];
-		if (ConfParser::CheckerMethod(token) == false) {
-			{
-				Log::log(Log::FATAL, "Invalid method: \"%s\" in file: %s:%d", token.c_str(), _filename.c_str(), Conf Parser::countLineFile);
-				exit(FATAL);
-			}
+		if (ConfParser::CheckerMethod(token) == false)
+		{
+			Log::log(Log::FATAL, "Invalid method: \"%s\" in file: %s:%d", token.c_str(), _filename.c_str(), Conf Parser::countLineFile);
+			exit(FATAL);
+		}
 		else if (token == "POST")
 			met = POST;
 		else if (token == "DELETE")
@@ -66,5 +67,3 @@ void BlockLocation::addValidMethod(std::vector<std::string> &tokens)
 		_allowedMethods.push_back(met);
 	}
 }
-
-

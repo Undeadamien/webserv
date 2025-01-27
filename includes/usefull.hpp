@@ -1,10 +1,11 @@
 #ifndef USEFULL_HPP
 #define USEFULL_HPP
 
+#include <unistd.h>
+
+#include <algorithm>
 #include <cstring>
 #include <iostream>
-#include <unistd.h>
-#include <algorithm>
 #include <sstream>
 
 #define PORT 1234
@@ -20,5 +21,6 @@ enum e_Methods
 };
 
 std::string itos(int value);
+bool check_options(int argc, char **argv);
 
 #endif
