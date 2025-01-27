@@ -33,13 +33,13 @@ class BlockLocation
 		std::string _uploadPath;
 
 		// divers
-		std::map<std::string, int> _counterView;
+		std::map<std::string, int> _counterBase;
 		std::string _filename;
 
 		bool isValidLocation(std::vector<std::string>& tokens, std::string& key);
 
 		// Methods
-		void incrementCounter(const std::string& key) { _counterView[key]++; }
+		void incrementCounter(const std::string& key) { _counterBase[key]++; }
 		void DoubleLineChecker();
 		void setDefaultValues();
 		e_boolMod strToBool(std::string &str);
