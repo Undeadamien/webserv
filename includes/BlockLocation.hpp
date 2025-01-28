@@ -36,7 +36,7 @@ class BlockLocation
 		std::map<std::string, int> _counterBase;
 		std::string _filename;
 
-		bool isValidLocation(std::vector<std::string>& tokens, std::string& key);
+		bool ValidLocationChecker(std::vector<std::string>& tokens, std::string& key);
 
 		// Methods
 		void incrementCounter(const std::string& key) { _counterBase[key]++; }
@@ -58,6 +58,7 @@ class BlockLocation
 		//parser
 		BlockLocation getLocationConfig(std::ifstream &configFile, std::string &path);
 
+
 		// Getters
 		const std::string &getPath() const { return _path; }
 		const std::string &getRoot() const { return _root; }
@@ -69,6 +70,15 @@ class BlockLocation
 		const std::vector<e_Methods> &getAllowedMethods() const { return _allowedMethods; }
 		std::string	getCgiPath(const std::string &path) const { return _cgiExtension.at(path); }
 		e_boolMod getAutoIndex() const { return _autoindex; }
+
+
+		// Setters
+		void setPath(const std::string &path) { _path = path; }
+		void setUploadPath(const std::string &uploadPath) { _uploadPath = uploadPath; _counterBase["upload_path"]++;}
+		void setRoot(const std::string &root) { _root = root;  _counterBase["root"]++;}
+		void setRewrite(std::vector<std::string>& tokens);
+		void setAlias(const std::string &alias) { _alias = alias;  _counterBase["alias"]++;}
+		void setAutoIndex(e_boolMod autoindex) { _autoindex = autoindex;  _counterBase["autoindex"]++;}
 
 		//METHODS
 

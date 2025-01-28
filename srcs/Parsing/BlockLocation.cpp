@@ -159,3 +159,69 @@ void BlockLocation::DoubleLineChecker()
 		Log::log(Log::FATAL, "Alias and Root can't be set in same location bloc %s", _path.c_str());
 }
 
+bool BlockLocation::ValidLocationChecker(std::vector<std::string> &tokens, std::string &key)
+{
+	if (tokens.size() < 2)
+		return false;
+	if (key == "root" && tokens.size() == 2)
+		setRoot(tokens[1]);
+	else if (key == "autoindex")
+		setAutoIndex(strToBool(tokens[1]));
+	else if (key == "return" && tokens.size() == 3)
+		setRewrite(tokens);
+	else if (key == "alias" && tokens.size() == 2)
+		setAlias(tokens[1]);
+	else if (key == "allow_methods")
+		addValidMethod(tokens);
+	else if (key == "index")
+		addIndexes(tokens);
+	else if (key == "cgi_extension" && tokens.size() == 3)
+		addCgiExtension(tokens);
+	else if (key == "upload_path" && tokens.size() == 2)
+		setUploadPath(tokens[1]);
+	else
+		return false;
+	return true;
+}
+
+/*_____  _    _ ____  _      _____ _____
+ |  __ \| |  | |  _ \| |    |_   _/ ____|
+ | |__) | |  | | |_) | |      | || |
+ |  ___/| |  | |  _ <| |      | || |
+ | |    | |__| | |_) | |____ _| || |____
+ |_|     \____/|____/|______|_____\_____|
+
+                                          */
+
+BlockLocation BlockLocation::getLocationConfig(std::ifstream &configFile, std::string &path)
+{
+	std::string line;
+	std::vector<std::string> tokens;
+	std::string key;
+	bool isCloseLocation = false;
+
+	setPath(path);
+	while (std::getline(configFile, line))
+	{
+		ConfParser::countLineFile++;
+		line = trimLine(line);
+		if (line.empty() || line[0] == '#')
+			continue;
+		tokens = split(line, ' ');
+		key = tokens[0];
+		if (key[0] == '}' && key.size() == 1 && tokens.size() == 1)
+		{
+			isCloseLocation = true;
+			break;
+		}
+		if (ValidLocationChecker(tokens, key))
+			continue;
+		else
+			Log::log(Log::FATAL, "Invalid line: \"%s\" in file: %s:%d", line.c_str(), _filename.c_str(), ConfParser::countLineFile);
+	}
+	if (!isCloseLocation && !EmptyFileChecker())
+		Log::log(Log::FATAL, "Missing } in file: %s:%d", _filename.c_str(), ConfParser::countLineFile);
+	DoubleLineChecker();
+	setDefaultValues();
+	return (*this);
+}
