@@ -2,6 +2,7 @@
 #define USEFULL_HPP
 
 #include <unistd.h>
+#include <vector>
 
 #include <algorithm>
 #include <cstring>
@@ -21,8 +22,12 @@ enum e_Methods
 };
 
 std::string itos(int value);
+std::string ltrim(std::string str, std::string set);
+std::string rtrim(std::string str, std::string set);
+std::string trim(std::string str, std::string set);
 bool EmptyFileChecker();
-std::string trimLine(const std::string &str);
 std::vector<std::string> split(const std::string &str, char delimiter);
+
+
 
 #endif

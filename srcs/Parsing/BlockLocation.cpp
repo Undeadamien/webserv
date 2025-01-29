@@ -137,18 +137,6 @@ void BlockLocation::setDefaultValues()
 
 void BlockLocation::DoubleLineChecker()
 {
-	for (auto &it : _counterBase)
-	{
-		if (it.second > 1)
-		{
-			Log::log(Log::FATAL, "Duplicate key: \"%s\" in file: %s:%d", it.first.c_str(), _filename.c_str(), ConfParser::countLineFile);
-			exit(Log::FATAL);
-		}
-	}
-}
-
-void BlockLocation::DoubleLineChecker()
-{
 	std::map<std::string, int>::iterator it;
 
 	for (it = _counterBase.begin(); it != _counterBase.end(); ++it)
@@ -193,6 +181,14 @@ bool BlockLocation::ValidLocationChecker(std::vector<std::string> &tokens, std::
 
                                           */
 
+void BlockLocation::setRewrite(std::vector<std::string>& tokens)
+{
+	int code = std::atoi(tokens[1].c_str());
+	if (code < 300 || code > 399)
+		Log::log(Log::FATAL, "Invalid return code: \"%s\" in file: %s:%d", tokens[1].c_str(), _filename.c_str(), ConfParser::countLineFile);
+	_rewrite = std::make_pair(code, tokens[2]);
+}
+
 BlockLocation BlockLocation::getLocationConfig(std::ifstream &configFile, std::string &path)
 {
 	std::string line;
@@ -204,7 +200,7 @@ BlockLocation BlockLocation::getLocationConfig(std::ifstream &configFile, std::s
 	while (std::getline(configFile, line))
 	{
 		ConfParser::countLineFile++;
-		line = trimLine(line);
+		line = trim(line, " \t");
 		if (line.empty() || line[0] == '#')
 			continue;
 		tokens = split(line, ' ');
