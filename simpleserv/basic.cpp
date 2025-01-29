@@ -4,16 +4,28 @@
 #include <cstring>
 #include <iostream>
 #include <netinet/in.h>
-#include <sstream>
+#include <strings.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
+#ifdef PORT
+#undef PORT
 #define PORT 1234
-#define BUFFER_SIZE 4096
+#endif
+
+#ifdef BUFFER_SIZE
+#undef BUFFER_SIZE
+#define BUFFER_SIZE 8192
+#endif
 
 int simple_server()
 {
-    int fdSocket = socket(AF_INET, SOCK_STREAM, 0);
+    int fdSocket;
+    if ((fdSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    {
+        std::cerr << "Error: socket() function\n";
+        return (EXIT_FAILURE);
+    }
 
     sockaddr_in address;
     address.sin_family = AF_INET;
@@ -21,31 +33,47 @@ int simple_server()
     address.sin_addr.s_addr = htonl(INADDR_ANY);
 
     if (bind(fdSocket, (const sockaddr *)(&address), sizeof(address)) == -1)
+    {
+        std::cerr << "Error: bind() function\n";
         return (EXIT_FAILURE);
+    }
 
-    listen(fdSocket, 10);
+    if (listen(fdSocket, 10) == -1)
+    {
+        std::cerr << "Error: listen() function\n";
+        return (EXIT_FAILURE);
+    }
 
-    bool active = true;
     int connection;
     int iteration = 0;
-    while (active)
+    char buffer[BUFFER_SIZE];
+    while (true)
     {
-        std::cout << INVERSE << "Iteration number: " << iteration++ << RESET << std::endl;
         unsigned long resultLen = sizeof(sockaddr);
-        std::cout << "Listening on Port: " << PORT << std::endl;
-        connection = accept(fdSocket, (struct sockaddr *)(&address), (socklen_t *)&resultLen);
+        std::cout << INVERSE << "Iteration number: " << iteration++ << RESET << std::endl;
+        std::cout << "Listening on Port: " << PORT
+                  << std::endl;
+        if ((connection = accept(fdSocket, (struct sockaddr *)(&address), (socklen_t *)&resultLen)) == -1)
+        {
+            std::cerr << "Error: accept() function\n";
+            return (EXIT_FAILURE);
+        }
 
-        char buffer[BUFFER_SIZE];
-        ssize_t bytesRead = read(connection, buffer, BUFFER_SIZE);
-        std::cout << "Le message fait: " << bytesRead << " characteres" << std::endl;
-        std::cout << buffer << std::endl;
+        bzero(buffer, sizeof(buffer)); // clear the buffer between each request
+        read(connection, buffer, BUFFER_SIZE);
+        std::cout << "\n"
+                  << UNDERLINE << "Request" << RESET << "\n"
+                  << buffer << std::endl;
 
         std::string content = "<h1>Bonjour, je suis un serveur HTTP tout simple!</h1>";
-
         std::string contentLength = itos(content.length());
 
-        std::string response = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + contentLength + "\n\n" + content;
-        std::cout << std::endl;
+        std::string response = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " + contentLength;
+        response += "\n\n"; // the content of the response must be separated by two new-line
+        response += content;
+        std::cout << UNDERLINE << "Response" << RESET << "\n"
+                  << response << "\n"
+                  << std::endl;
 
         send(connection, response.c_str(), response.size(), 0);
         close(connection);

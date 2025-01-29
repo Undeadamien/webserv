@@ -14,11 +14,11 @@
 
 enum e_Methods
 {
-	GET,
-	POST,
-	DELETE,
-	PUT,
-	UNKNOWN
+    GET,
+    POST,
+    DELETE,
+    PUT,
+    UNKNOWN
 };
 
 std::string itos(int value);
