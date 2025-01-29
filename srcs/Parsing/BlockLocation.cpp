@@ -38,8 +38,7 @@ BlockLocation &BlockLocation::operator=(const BlockLocation &copy)
  | |   | |  | |\ V / (_| | ||  __/
  |_|   |_|  |_| \_/ \__,_|\__\___|
 
-                                   */
-
+								   */
 
 void BlockLocation::addValidMethod(std::vector<std::string> &tokens)
 {
@@ -179,9 +178,9 @@ bool BlockLocation::ValidLocationChecker(std::vector<std::string> &tokens, std::
  | |    | |__| | |_) | |____ _| || |____
  |_|     \____/|____/|______|_____\_____|
 
-                                          */
+										  */
 
-void BlockLocation::setRewrite(std::vector<std::string>& tokens)
+void BlockLocation::setRewrite(std::vector<std::string> &tokens)
 {
 	int code = std::atoi(tokens[1].c_str());
 	if (code < 300 || code > 399)
@@ -220,4 +219,86 @@ BlockLocation BlockLocation::getLocationConfig(std::ifstream &configFile, std::s
 	DoubleLineChecker();
 	setDefaultValues();
 	return (*this);
+}
+
+/*_____      _       _
+ |  __ \    (_)     | |
+ | |__) | __ _ _ __ | |_ ___ _ __ ___
+ |  ___/ '__| | '_ \| __/ _ \ '__/ __|
+ | |   | |  | | | | | ||  __/ |  \__ \
+ |_|   |_|  |_|_| |_|\__\___|_|  |___/
+									   */
+
+void BlockLocation::printPair(const std::string &title, const std::string &value)
+{
+	std::cout << std::setw(15) << std::left << title << ": " << (value.empty() ? "none" : value) << std::endl;
+}
+
+void BlockLocation::printBool(const std::string &title, bool value, const std::string &trueStr, const std::string &falseStr)
+{
+	std::cout << std::setw(15) << std::left << title << ": " << (value ? trueStr : falseStr) << std::endl;
+}
+
+void BlockLocation::printVector(const std::string &title, const std::vector<std::string> &vec)
+{
+	std::cout << std::setw(15) << std::left << title << ": " << (vec.empty() ? "none" : "") << std::endl;
+	for (std::vector<std::string>::const_iterator it = vec.begin(); it != vec.end(); ++it)
+		std::cout << "\t- " << *it << std::endl;
+}
+
+void BlockLocation::printMap(const std::string &title, const std::map<std::string, std::string> &map)
+{
+	std::cout << std::setw(15) << std::left << title << ": " << (map.empty() ? "none" : "") << std::endl;
+	for (std::map<std::string, std::string>::const_iterator it = map.begin(); it != map.end(); ++it)
+		std::cout << "\t- " << it->first << ": " << it->second << std::endl;
+}
+
+void BlockLocation::printLocation(void)
+{
+	printPair("Path", _path);
+	printPair("Root", _root);
+	printPair("Alias", _alias);
+	printMap("CGI extension", _cgiExtension);
+	printPair("Upload path", _uploadPath);
+	printBool("Autoindex", _autoindex == TRUE, "on", "off");
+
+	std::cout << std::setw(15) << std::left << "Rewrite" << ": "
+			  << (_rewrite.first != 0 ? intToString(_rewrite.first) + " " + _rewrite.second : "none") << std::endl;
+
+	printVector("Indexes", _indexes);
+
+	std::cout << std::setw(15) << std::left << "Allowed methods" << ": " << std::endl;
+	for (std::vector<e_Methods>::const_iterator it = _allowedMethods.begin(); it != _allowedMethods.end(); ++it)
+	{
+		std::cout << "\t- ";
+		if (*it == GET)
+			std::cout << "GET";
+		else if (*it == POST)
+			std::cout << "POST";
+		else if (*it == DELETE)
+			std::cout << "DELETE";
+		else
+			std::cout << "UNKNOWN";
+		std::cout << std::endl;
+	}
+}
+
+// ------------------------------- IS --------------------------------
+
+bool BlockLocation::isMethodAllowed(e_Methods method)
+{
+	return (std::find(_allowedMethods.begin(), _allowedMethods.end(), method) != _allowedMethods.end());
+}
+
+// ------------------------------- UTILS --------------------------------
+e_Methods BlockLocation::ConvertStrtoMethod(const std::string &method)
+{
+	if (method == "GET")
+		return (GET);
+	if (method == "POST")
+		return (POST);
+	if (method == "DELETE")
+		return (DELETE);
+	else
+		return (UNKNOWN);
 }

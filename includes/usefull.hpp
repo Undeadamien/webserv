@@ -27,7 +27,7 @@ std::string rtrim(std::string str, std::string set);
 std::string trim(std::string str, std::string set);
 bool EmptyFileChecker();
 std::vector<std::string> split(const std::string &str, char delimiter);
-
+std::string intToString(int value);
 
 
 #endif

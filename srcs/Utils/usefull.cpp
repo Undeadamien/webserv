@@ -55,3 +55,10 @@ std::vector<std::string> split(const std::string &str, char delimiter)
 	}
 	return tokens;
 }
+
+std::string intToString(int value)
+{
+	std::ostringstream oss;
+	oss << value;
+	return oss.str();
+}

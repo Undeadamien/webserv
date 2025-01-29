@@ -83,7 +83,7 @@ class BlockLocation
 		//METHODS
 
 		//Checker
-		bool CheckerCgi(const std::string &path) const;
+		bool isEnableCgi(const std::string &path) const { return _cgiExtension.find(path) != _cgiExtension.end(); }
 
 		//Display
 		void printLocation(void);
@@ -93,7 +93,7 @@ class BlockLocation
 		void printMap(const std::string& label, const std::map<std::string, std::string>& map);
 
 		//USEFULL
-		static e_Methods	convertstringtoLocMethod(const std::string &method);
+		static e_Methods	ConvertStrtoMethod(const std::string &method);
 		void cleanPaths();
 		bool	isMethodAllowed(e_Methods method);
 
