@@ -227,6 +227,18 @@ bool BlockLocation::isMethodAllowed(e_Methods method)
 	return (std::find(_allowedMethods.begin(), _allowedMethods.end(), method) != _allowedMethods.end());
 }
 
+void BlockLocation::cleanPaths()
+{
+	if (!_root.empty() && _root != "/" && _root[_root.size() - 1] == '/')
+		_root.erase(_root.size() - 1);
+
+	if (!_alias.empty() && _alias != "/" && _alias[_alias.size() - 1] == '/')
+		_alias.erase(_alias.size() - 1);
+
+	if (!_uploadPath.empty() && _uploadPath != "/" && _uploadPath[_uploadPath.size() - 1] == '/')
+		_uploadPath.erase(_uploadPath.size() - 1);
+}
+
 // ------------------------------- UTILS --------------------------------
 e_Methods BlockLocation::ConvertStrtoMethod(const std::string &method)
 {

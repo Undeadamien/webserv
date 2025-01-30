@@ -12,13 +12,12 @@ BlockServer::BlockServer(std::string filename) : _clientMaxBodySize(DF_CLIENT_MA
 	_counterBase["clientMaxBodySize"] = 0;
 }
 
-
 BlockServer::BlockServer(const BlockServer &other)
 {
 	*this = other;
 }
 
-BlockServer::~BlockServer(void){}
+BlockServer::~BlockServer(void) {}
 
 BlockServer &BlockServer::operator=(const BlockServer &other)
 {
@@ -44,9 +43,10 @@ BlockServer &BlockServer::operator=(const BlockServer &other)
  | |   | |  | |\ V / (_| | ||  __/
  |_|   |_|  |_| \_/ \__,_|\__\___|
 
-                                   */
+								   */
 
-void BlockServer::DoubleLineChecker() {
+void BlockServer::DoubleLineChecker()
+{
 	std::map<std::string, int>::iterator it;
 
 	for (it = _counterBase.begin(); it != _counterBase.end(); ++it)
@@ -54,7 +54,7 @@ void BlockServer::DoubleLineChecker() {
 			Log::log(Log::FATAL, "Duplicate line in server context: %s", it->first.c_str());
 }
 
-bool BlockServer::isStartBlocLocation(std::vector<std::string>& tokens)
+bool BlockServer::isStartBlockLocation(std::vector<std::string> &tokens)
 {
 	return (tokens.size() == 3 && tokens[0] == "location" && tokens[2] == "{");
 }
@@ -79,13 +79,15 @@ void BlockServer::cleanPaths()
 	if (!_root.empty() && _root != "/" && _root[_root.size() - 1] == '/')
 		_root.erase(_root.size() - 1);
 
-	for (std::map<int, std::string>::iterator it = _errorPages.begin(); it != _errorPages.end(); ++it){
+	for (std::map<int, std::string>::iterator it = _errorPages.begin(); it != _errorPages.end(); ++it)
+	{
 		if (it->second != "/" && it->second[it->second.size() - 1] == '/')
 			it->second.erase(it->second.size() - 1);
 	}
 
 	std::vector<BlockLocation>::iterator it;
-	for (it = _locations.begin(); it != _locations.end(); ++it){
+	for (it = _locations.begin(); it != _locations.end(); ++it)
+	{
 		it->cleanPaths();
 	}
 }
@@ -97,25 +99,35 @@ void BlockServer::cleanPaths()
   ____) | |____   | |     | |  | |____| | \ \ ____) |
  |_____/|______|  |_|     |_|  |______|_|  \_\_____/
 
-                                                      */
+													  */
 
 void BlockServer::setClientMaxBodySize(std::string clientMaxBodySize)
 {
 	if (clientMaxBodySize == "none")
 		_clientMaxBodySize = 0;
 	else
-		_clientMaxBodySize = std::stoull(clientMaxBodySize);
+	{
+		char *end;
+		unsigned long long value = std::strtoull(clientMaxBodySize.c_str(), &end, 10);
+
+		if (*end != '\0')
+			throw std::invalid_argument("Invalid number format: " + clientMaxBodySize);
+
+		_clientMaxBodySize = value;
+	}
 	_counterBase["clientMaxBodySize"]++;
 }
 
-void BlockServer::setRoot(const std::string &root) : _root(root)
+void BlockServer::setRoot(const std::string &root)
 {
+	_root = root;
 	_counterBase["root"]++;
 }
 
 void BlockServer::setDefaultValue()
 {
-	if (_listens.empty()){
+	if (_listens.empty())
+	{
 		ListenIpConf listen("0.0.0.0:1234");
 		_listens["0.0.0.0:1234"] = listen;
 	}
@@ -124,5 +136,3 @@ void BlockServer::setDefaultValue()
 	if (_indexes.empty())
 		_indexes.push_back("index.html");
 }
-
-

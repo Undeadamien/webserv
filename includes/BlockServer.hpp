@@ -6,6 +6,7 @@
 # include "ConfParser.hpp"
 # include "BlockLocation.hpp"
 # include "ListenIpConf.hpp"
+#include <iostream>
 
 class Log;
 class ConfParser;
