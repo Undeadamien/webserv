@@ -17,17 +17,17 @@
 Socket::Socket() {};
 Socket::Socket(const Socket &other)
 {
-    this->_fd = other._fd;
-    this->_address = other._address;
+	this->_fd = other._fd;
+	this->_address = other._address;
 };
 Socket &Socket::operator=(const Socket &other)
 {
-    if (this != &other)
-    {
-        this->_fd = other._fd;
-        this->_address = other._address;
-    }
-    return (*this);
+	if (this != &other)
+	{
+		this->_fd = other._fd;
+		this->_address = other._address;
+	}
+	return (*this);
 };
 Socket::~Socket() {};
 
