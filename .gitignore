@@ -4,3 +4,4 @@ obj
 webserv
 srcs/main.cpp
 logs
+Session.vim
