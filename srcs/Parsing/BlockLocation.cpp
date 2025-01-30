@@ -134,7 +134,7 @@ void BlockLocation::setDefaultValues()
 	_counterBase["upload_path"] = 0;
 }
 
-void BlockLocation::DoubleLineChecker()
+void BlockLocation::DuplicateLineChecker()
 {
 	std::map<std::string, int>::iterator it;
 
@@ -216,9 +216,28 @@ BlockLocation BlockLocation::getLocationConfig(std::ifstream &configFile, std::s
 	}
 	if (!isCloseLocation && !EmptyFileChecker())
 		Log::log(Log::FATAL, "Missing } in file: %s:%d", _filename.c_str(), ConfParser::countLineFile);
-	DoubleLineChecker();
+	DuplicateLineChecker();
 	setDefaultValues();
 	return (*this);
+}
+
+
+bool BlockLocation::isMethodAllowed(e_Methods method)
+{
+	return (std::find(_allowedMethods.begin(), _allowedMethods.end(), method) != _allowedMethods.end());
+}
+
+// ------------------------------- UTILS --------------------------------
+e_Methods BlockLocation::ConvertStrtoMethod(const std::string &method)
+{
+	if (method == "GET")
+		return (GET);
+	if (method == "POST")
+		return (POST);
+	if (method == "DELETE")
+		return (DELETE);
+	else
+		return (UNKNOWN);
 }
 
 /*_____      _       _
@@ -281,24 +300,4 @@ void BlockLocation::printLocation(void)
 			std::cout << "UNKNOWN";
 		std::cout << std::endl;
 	}
-}
-
-// ------------------------------- IS --------------------------------
-
-bool BlockLocation::isMethodAllowed(e_Methods method)
-{
-	return (std::find(_allowedMethods.begin(), _allowedMethods.end(), method) != _allowedMethods.end());
-}
-
-// ------------------------------- UTILS --------------------------------
-e_Methods BlockLocation::ConvertStrtoMethod(const std::string &method)
-{
-	if (method == "GET")
-		return (GET);
-	if (method == "POST")
-		return (POST);
-	if (method == "DELETE")
-		return (DELETE);
-	else
-		return (UNKNOWN);
 }
