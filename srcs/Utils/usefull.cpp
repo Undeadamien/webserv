@@ -62,3 +62,10 @@ std::string intToString(int value)
 	oss << value;
 	return oss.str();
 }
+
+std::string UIntToString(unsigned int value)
+{
+	std::ostringstream oss;
+	oss << value;
+	return oss.str();
+}

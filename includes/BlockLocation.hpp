@@ -40,7 +40,7 @@ class BlockLocation
 
 		// Methods
 		void incrementCounter(const std::string& key) { _counterBase[key]++; }
-		void DuplicateLineChecker();
+		bool DuplicateLineChecker();
 		void setDefaultValues();
 		e_boolMod strToBool(std::string &str);
 

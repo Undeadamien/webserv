@@ -45,13 +45,16 @@ BlockServer &BlockServer::operator=(const BlockServer &other)
 
 								   */
 
-void BlockServer::DoubleLineChecker()
+bool BlockServer::DoubleLineChecker()
 {
 	std::map<std::string, int>::iterator it;
 
 	for (it = _counterBase.begin(); it != _counterBase.end(); ++it)
-		if (it->second > 1)
+		if (it->second > 1) {
 			Log::log(Log::FATAL, "Duplicate line in server context: %s", it->first.c_str());
+			return false;
+		}
+	return true;
 }
 
 bool BlockServer::isStartBlockLocation(std::vector<std::string> &tokens)
@@ -59,7 +62,7 @@ bool BlockServer::isStartBlockLocation(std::vector<std::string> &tokens)
 	return (tokens.size() == 3 && tokens[0] == "location" && tokens[2] == "{");
 }
 
-void BlockServer::DoubleLocationChecker()
+bool BlockServer::DoubleLocationChecker()
 {
 	std::vector<BlockLocation>::iterator it;
 	std::vector<BlockLocation>::iterator it2;
@@ -68,10 +71,13 @@ void BlockServer::DoubleLocationChecker()
 	{
 		for (it2 = it + 1; it2 != _locations.end(); ++it2)
 		{
-			if (it->getPath() == it2->getPath())
+			if (it->getPath() == it2->getPath()) {
 				Log::log(Log::FATAL, "Duplicate location: %s", it->getPath().c_str());
+				return false;
+			} 
 		}
 	}
+	return true;
 }
 
 void BlockServer::cleanPaths()
@@ -136,3 +142,5 @@ void BlockServer::setDefaultValue()
 	if (_indexes.empty())
 		_indexes.push_back("index.html");
 }
+
+

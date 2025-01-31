@@ -29,11 +29,11 @@ class BlockServer {
 		std::map<std::string, int> _counterBase;
 
 			// Methods
-		void DoubleLineChecker();
+		bool DoubleLineChecker();
 		void incrementCounter(const std::string &key) { _counterBase[key]++; }
 		//bool ValidServerChecker(std::vector<std::string>& tokens, std::string& key, std::ifstream &configFile);
 		bool isStartBlockLocation(std::vector<std::string>& tokens);
-		void DoubleLocationChecker();
+		bool DoubleLocationChecker();
 		void cleanPaths();
 
 	public:

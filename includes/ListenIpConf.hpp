@@ -9,11 +9,11 @@ class ListenIpConf
 	private:
 		std::string _ip;
 		unsigned int _port;
-		std::string _ipPortJoin;
+		std::string _ipAndPort;
 
 		// Checker
 		bool checkIpPort();
-		bool isNotInRangeIp(std::string str, int j, int i);
+		bool isValidIp(const std::string& ipStr);
 
 	public:
 		ListenIpConf();
@@ -23,7 +23,7 @@ class ListenIpConf
 		// Getters
 		const std::string &getIp() const { return _ip; }
 		unsigned int getPort() const { return _port; }
-		const std::string getIpPortJoin() const { return _ipPortJoin; }
+		const std::string getIpPortJoin() const { return _ipAndPort; }
 };
 
 #endif

@@ -134,16 +134,20 @@ void BlockLocation::setDefaultValues()
 	_counterBase["upload_path"] = 0;
 }
 
-void BlockLocation::DuplicateLineChecker()
+bool BlockLocation::DuplicateLineChecker()
 {
 	std::map<std::string, int>::iterator it;
 
 	for (it = _counterBase.begin(); it != _counterBase.end(); ++it)
-		if (it->second > 1)
+		if (it->second > 1) {
 			Log::log(Log::FATAL, "Duplicate line in location context: %s", it->first.c_str());
-
-	if (_counterBase["root"] > 0 && _counterBase["alias"] > 0)
+			return false;
+		}
+	if (_counterBase["root"] > 0 && _counterBase["alias"] > 0) {
 		Log::log(Log::FATAL, "Alias and Root can't be set in same location bloc %s", _path.c_str());
+		return false;
+	}
+	return true;
 }
 
 bool BlockLocation::ValidLocationChecker(std::vector<std::string> &tokens, std::string &key)
@@ -183,8 +187,10 @@ bool BlockLocation::ValidLocationChecker(std::vector<std::string> &tokens, std::
 void BlockLocation::setRewrite(std::vector<std::string> &tokens)
 {
 	int code = std::atoi(tokens[1].c_str());
-	if (code < 300 || code > 399)
+	if (code < 300 || code > 399) {
 		Log::log(Log::FATAL, "Invalid return code: \"%s\" in file: %s:%d", tokens[1].c_str(), _filename.c_str(), ConfParser::countLineFile);
+		exit(Log::FATAL);
+	}
 	_rewrite = std::make_pair(code, tokens[2]);
 }
 
@@ -211,12 +217,20 @@ BlockLocation BlockLocation::getLocationConfig(std::ifstream &configFile, std::s
 		}
 		if (ValidLocationChecker(tokens, key))
 			continue;
-		else
+		else {
 			Log::log(Log::FATAL, "Invalid line: \"%s\" in file: %s:%d", line.c_str(), _filename.c_str(), ConfParser::countLineFile);
+			exit(Log::FATAL);
+		}
 	}
-	if (!isCloseLocation && !EmptyFileChecker())
+	if (!isCloseLocation && !EmptyFileChecker()) {
 		Log::log(Log::FATAL, "Missing } in file: %s:%d", _filename.c_str(), ConfParser::countLineFile);
-	DuplicateLineChecker();
+		exit(Log::FATAL);
+	}
+	if (!DuplicateLineChecker())
+	{
+		Log::log(Log::FATAL, "Duplicate line in location context: %s", _path.c_str());
+		exit(Log::FATAL);
+	}
 	setDefaultValues();
 	return (*this);
 }
