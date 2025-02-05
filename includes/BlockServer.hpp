@@ -64,12 +64,12 @@ class BlockServer {
 		void setClientMaxBodySize(std::string clientMaxBodySize);
 		void setRoot(const std::string &root);
 		void setDefaultValue();
-		//void setLocations(const std::vector<BlockLocation> &locations) { _locations = locations; }
-		//void setErrorPages(const std::map<int, std::string> &errorPage) { _errorPages = errorPage; }
+		void setLocations(const std::vector<BlockLocation> &locations) { _locations = locations; }
+		void setErrorPages(const std::map<int, std::string> &errorPage) { _errorPages = errorPage; }
 
 		//// Adders
 		//void addErrorPages(int errorCode, std::string file);
-		//void addLocation(const BlockLocation &locations) { _locations.push_back(locations); }
+		void addLocation(const BlockLocation &locations) { _locations.push_back(locations); }
 		//void addListen(std::string &token);
 		//void addServerName(std::vector<std::string>& token);
 		//void addIndexes(std::vector<std::string>& token);
