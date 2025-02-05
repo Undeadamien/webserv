@@ -1,10 +1,10 @@
-#ifndef LISTENIPCONF_HPP
-#define LISTENIPCONF_HPP
+#ifndef LISTENIPCONFPARSE_HPP
+#define LISTENIPCONFPARSE_HPP
 
 #include "Log.hpp"
 #include "usefull.hpp"
 
-class ListenIpConf
+class ListenIpConfParse
 {
 	private:
 		std::string _ip;
@@ -16,9 +16,9 @@ class ListenIpConf
 		bool isValidIp(const std::string& ipStr);
 
 	public:
-		ListenIpConf();
-		ListenIpConf(std::string token);
-		~ListenIpConf();
+		ListenIpConfParse();
+		ListenIpConfParse(std::string token);
+		~ListenIpConfParse();
 
 		// Getters
 		const std::string &getIp() const { return _ip; }

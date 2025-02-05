@@ -74,7 +74,7 @@ bool BlockServer::DoubleLocationChecker()
 			if (it->getPath() == it2->getPath()) {
 				Log::log(Log::FATAL, "Duplicate location: %s", it->getPath().c_str());
 				return false;
-			} 
+			}
 		}
 	}
 	return true;
@@ -134,7 +134,7 @@ void BlockServer::setDefaultValue()
 {
 	if (_listens.empty())
 	{
-		ListenIpConf listen("0.0.0.0:1234");
+		ListenIpConfParse listen("0.0.0.0:1234");
 		_listens["0.0.0.0:1234"] = listen;
 	}
 	if (_root.empty())

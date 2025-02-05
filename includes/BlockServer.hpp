@@ -5,18 +5,18 @@
 # include "Log.hpp"
 # include "ConfParser.hpp"
 # include "BlockLocation.hpp"
-# include "ListenIpConf.hpp"
+# include "ListenIpConfParse.hpp"
 #include <iostream>
 
 class Log;
 class ConfParser;
 class BlockLocation;
-class ListenIpConf;
+class ListenIpConfParse;
 
 # define DF_CLIENT_MAX_BODY 1048576 // 1MB
 class BlockServer {
 	private:
-		std::map<std::string, ListenIpConf> _listens;
+		std::map<std::string, ListenIpConfParse> _listens;
 		std::vector<std::string> _serverNames;
 		std::vector<std::string> _indexes;
 		std::string _root;
@@ -53,7 +53,7 @@ class BlockServer {
 		std::vector<BlockLocation>* getLocations() { return &_locations; }
 		const std::string &getRoot() const { return _root; }
 		unsigned long long getClientMaxBodySize() const { return _clientMaxBodySize; }
-		const std::map<std::string, ListenIpConf> &getListens() const { return _listens; }
+		const std::map<std::string, ListenIpConfParse> &getListens() const { return _listens; }
 		const std::vector<std::string> &getIndexes() const { return _indexes; }
 
 		//	// Util

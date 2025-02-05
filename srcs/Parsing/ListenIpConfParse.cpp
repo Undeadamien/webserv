@@ -1,8 +1,10 @@
-#include "ListenIpConf.hpp"
+#include "ListenIpConfParse.hpp"
+#include <cstdlib> // Pour std::atoi
+#include <cctype>  // Pour std::isdigit
 
-ListenIpConf::ListenIpConf() {}
+ListenIpConfParse::ListenIpConfParse() {}
 
-ListenIpConf::ListenIpConf(std::string token)
+ListenIpConfParse::ListenIpConfParse(std::string token)
 {
 	std::vector<std::string> ip = split(token, ':');
 
@@ -42,9 +44,9 @@ ListenIpConf::ListenIpConf(std::string token)
 	}
 }
 
-ListenIpConf::~ListenIpConf() {}
+ListenIpConfParse::~ListenIpConfParse() {}
 
-bool isValidIp(const std::string& ipStr)
+bool ListenIpConfParse::isValidIp(const std::string& ipStr)
 {
 	std::vector<std::string> ip = split(ipStr, '.');
 
@@ -55,11 +57,18 @@ bool isValidIp(const std::string& ipStr)
 	for (size_t i = 0; i < ip.size(); i++)
 	{
 		// Vérification que chaque segment est un nombre et non vide
-		if (ip[i].empty() || ip[i].size() > 3 || !std::all_of(ip[i].begin(), ip[i].end(), ::isdigit))
+		if (ip[i].empty() || ip[i].size() > 3)
 			return false;
 
+		// Remplacement de std::all_of par une boucle classique
+		for (size_t j = 0; j < ip[i].size(); j++)
+		{
+			if (!std::isdigit(ip[i][j]))
+				return false;
+		}
+
 		// Vérification de la plage 0-255
-		int segment = std::stoi(ip[i]);
+		int segment = std::atoi(ip[i].c_str());
 		if (segment < 0 || segment > 255)
 			return false;
 	}
@@ -67,7 +76,7 @@ bool isValidIp(const std::string& ipStr)
 	return true;
 }
 
-bool ListenIpConf::checkIpPort()
+bool ListenIpConfParse::checkIpPort()
 {
 	std::vector<std::string> ip_port = split(_ipAndPort, ':');
 
@@ -82,14 +91,20 @@ bool ListenIpConf::checkIpPort()
 	// Si un port est fourni, le vérifier
 	if (ip_port.size() == 2)
 	{
-		if (ip_port[1].empty() || !std::all_of(ip_port[1].begin(), ip_port[1].end(), ::isdigit))
+		if (ip_port[1].empty())
 			return false;
 
-		int port = std::stoi(ip_port[1]);
+		// Remplacement de std::all_of par une boucle classique
+		for (size_t j = 0; j < ip_port[1].size(); j++)
+		{
+			if (!std::isdigit(ip_port[1][j]))
+				return false;
+		}
+
+		int port = std::atoi(ip_port[1].c_str());
 		if (port < 0 || port > 65535)
 			return false;
 	}
 
 	return true;
 }
-
