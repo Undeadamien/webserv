@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:51:05 by dtrala            #+#    #+#             */
-/*   Updated: 2025/01/29 12:48:57 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/02/06 01:42:48 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,10 +18,13 @@
 
 #include "usefull.hpp"
 
+typedef std::map<std::string, std::string> mapHeaders;
+
 class Response
 {
 public:
 	Response();
+	Response(std::string &protocol, int status_code, std::string &status_text, mapHeaders headers, std::string &body);
 	Response(const Response &other);
 	Response &operator=(const Response &other);
 	~Response();

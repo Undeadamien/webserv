@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:48:41 by dtrala            #+#    #+#             */
-/*   Updated: 2025/01/29 12:34:10 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/02/06 01:56:13 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,21 +21,21 @@
 #include "colors.hpp"
 #include "usefull.hpp"
 
-typedef std::map<std::string, std::string> mapHeaders;
-
-Request::Request(const std::string &content) : _method(parseMethod(content)),
-											   _target(parseTarget(content)),
-											   _protocol(parseProtocol(content)),
-											   _headers(parseHeaders(content)),
-											   _body(parseBody(content)) {};
-Request::Request(const Request &other) : _method(other._method),
-										 _target(other._target),
-										 _protocol(other._protocol),
-										 _headers(other._headers),
-										 _body(other._body) {};
+Request::Request(const std::string &content)
+	: _method(parseMethod(content)),
+	  _target(parseTarget(content)),
+	  _protocol(parseProtocol(content)),
+	  _headers(parseHeaders(content)),
+	  _body(parseBody(content)) {};
+Request::Request(const Request &other)
+	: _method(other._method),
+	  _target(other._target),
+	  _protocol(other._protocol),
+	  _headers(other._headers),
+	  _body(other._body) {};
 Request &Request::operator=(const Request &other)
 {
-	if (this == &other)
+	if (this != &other)
 	{
 		this->_method = other._method;
 		this->_target = other._target;
@@ -53,6 +53,8 @@ e_Methods Request::parseMethod(const std::string &content)
 	std::string line;
 	if (!std::getline(str_stream, line))
 		throw std::exception();
+	if (line[line.length() - 1] == '\r')
+		line = line.substr(0, line.length() - 1);
 	line = trim(line, " ");
 	size_t end = line.find_first_of(" ");
 	if (end == std::string::npos)
@@ -72,6 +74,8 @@ std::string Request::parseTarget(const std::string &content)
 	std::string line;
 	if (!std::getline(str_stream, line))
 		throw std::exception();
+	if (line[line.length() - 1] == '\r')
+		line = line.substr(0, line.length() - 1);
 	line = trim(line, " ");
 	size_t start = line.find_first_of(" ") + 1;
 	size_t end = line.find_last_of(" ") - 1;
@@ -85,6 +89,8 @@ std::string Request::parseProtocol(const std::string &content)
 	std::string line;
 	if (!std::getline(str_stream, line))
 		throw std::exception();
+	if (line[line.length() - 1] == '\r')
+		line = line.substr(0, line.length() - 1);
 	line = trim(line, " ");
 	size_t start = line.find_last_of(" ") + 1;
 	if (start == std::string::npos)
@@ -95,18 +101,21 @@ std::string Request::parseProtocol(const std::string &content)
 mapHeaders Request::parseHeaders(const std::string &content)
 {
 	mapHeaders headers;
-	std::istringstream str_stream(content.c_str());
-	std::string line;
 	size_t sep;
+	std::istringstream str_stream(content);
+	std::string key, value, line;
+
 	std::getline(str_stream, line);	 // skip the startline
 	while (std::getline(str_stream, line) && !line.empty())
 	{
+		if (line[line.length() - 1] == '\r')
+			line = line.substr(0, line.length() - 1);
 		line = trim(line, " ");
 		if ((sep = line.find(":")) == std::string::npos)
 			throw std::exception();	 // invalid line in header field
-		std::string key = trim(line.substr(0, sep), " ");
-		std::string value = trim(line.substr(sep + 2), " ");
-		headers.insert(std::pair<std::string, std::string>(key, value));
+		key = trim(line.substr(0, sep), " ");
+		value = trim(line.substr(sep + 2), " ");
+		headers[key] = value;
 	}
 	return (headers);
 };
@@ -114,14 +123,13 @@ std::string Request::parseBody(const std::string &content)
 {
 	std::istringstream str_stream(content.c_str());
 	std::string line;
-	size_t empty_line = content.find("\n\n");
-	if (empty_line == std::string::npos)
-		return ("");
-	return (content.substr(empty_line + 2));
+	size_t delimiter = content.find("\r\n\r\n");
+	if (delimiter == std::string::npos)
+		throw std::exception();
+	return (content.substr(delimiter + 4));
 };
 
-// [] overload to wrap and control the access of the headers
-
+// I should add some checks
 void Request::setMethod(e_Methods method) { this->_method = method; };
 void Request::setTarget(std::string target) { this->_target = target; };
 void Request::setProtocol(std::string protocol) { this->_protocol = protocol; };
@@ -144,11 +152,12 @@ std::string Request::toString() const
 		method = "PUT";
 	else if (this->getMethod() == POST)
 		method = "POST";
-	str += method + " " + this->getTarget() + " " + this->getProtocol() + "\n";
+	str += method + " " + this->getTarget() + " " + this->getProtocol();
+	str += "\r\n";
 	mapHeaders headers = this->getHeaders();
 	for (mapHeaders::iterator it = headers.begin(); it != headers.end(); it++)
-		str = str + it->first + ": " + it->second + "\n";
-	str += "\n";
+		str = str + it->first + ": " + it->second + "\r\n";
+	str += "\r\n";
 	str = str + this->getBody();
 	return (str);
 };
@@ -166,8 +175,6 @@ std::ostream &operator<<(std::ostream &os, const Request &request)
 	os << GREEN << BOLD << "Headers:" << RESET << "\n";
 	for (mapHeaders::iterator it = headers.begin(); it != headers.end(); it++)
 		os << it->first << ": " << it->second << std::endl;
-	os << GREEN << BOLD << "Body:" << RESET << "\n"
-	   << request.getBody();
-
+	os << GREEN << BOLD << "Body:" << RESET << "\n" << request.getBody();
 	return (os);
 };
