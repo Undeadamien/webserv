@@ -230,7 +230,7 @@ void BlockServer::addListen(std::string &token)
 		throw std::runtime_error("Duplicate listen: " + token);
 	}
 
-	_listens.emplace(ipPort, std::move(listen));
+	_listens[ipPort] = listen;
 }
 
 void BlockServer::addIndexes(std::vector<std::string> &token)
@@ -245,3 +245,15 @@ void BlockServer::addIndexes(std::vector<std::string> &token)
 		}
 	}
 }
+
+void BlockServer::addServerName(std::vector<std::string> &token)
+{
+	std::set<std::string> existingNames(_serverNames.begin(), _serverNames.end());
+
+	for (size_t i = 1; i < token.size(); i++)
+	{
+		if (existingNames.insert(token[i]).second)  // Insère seulement si l'élément n'existe pas encore
+			_serverNames.push_back(token[i]);
+	}
+}
+
