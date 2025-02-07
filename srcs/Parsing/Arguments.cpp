@@ -1,6 +1,6 @@
 #include "usefull.hpp"
 # include "Arguments.hpp"
-#include "Log.hpp"
+# include "Log.hpp"
 
 bool check_arguments(int argc, char **argv)
 {
