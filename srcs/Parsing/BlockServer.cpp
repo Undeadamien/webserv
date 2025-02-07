@@ -1,5 +1,7 @@
 #include "BlockServer.hpp"
 
+#include <set>
+
 BlockServer::BlockServer(void) : _clientMaxBodySize(DF_CLIENT_MAX_BODY), _filename("")
 {
 	_counterBase["root"] = 0;
@@ -50,7 +52,8 @@ bool BlockServer::DoubleLineChecker()
 	std::map<std::string, int>::iterator it;
 
 	for (it = _counterBase.begin(); it != _counterBase.end(); ++it)
-		if (it->second > 1) {
+		if (it->second > 1)
+		{
 			Log::log(Log::FATAL, "Duplicate line in server context: %s", it->first.c_str());
 			return false;
 		}
@@ -71,7 +74,8 @@ bool BlockServer::DoubleLocationChecker()
 	{
 		for (it2 = it + 1; it2 != _locations.end(); ++it2)
 		{
-			if (it->getPath() == it2->getPath()) {
+			if (it->getPath() == it2->getPath())
+			{
 				Log::log(Log::FATAL, "Duplicate location: %s", it->getPath().c_str());
 				return false;
 			}
@@ -98,6 +102,33 @@ void BlockServer::cleanPaths()
 	}
 }
 
+bool BlockServer::ValidServerChecker(std::vector<std::string> &tokens, std::string &key, std::ifstream &configFile)
+{
+	if (tokens.size() < 2)
+		return false;
+	if (isStartBlockLocation(tokens))
+	{
+		BlockLocation location(_filename);
+		addLocation(location.getLocationConfig(configFile, tokens[1]));
+	}
+	else if (key == "listen" && tokens.size() == 2)
+		addListen(tokens[1]);
+	else if (key == "server_name")
+		addServerName(tokens);
+	else if (key == "index")
+		addIndexes(tokens);
+	else if (key == "root" && tokens.size() == 2)
+		setRoot(tokens[1]);
+	else if (key == "client_max_body_size" && tokens.size() == 2)
+		setClientMaxBodySize(tokens[1]);
+	else if (key == "error_page" && tokens.size() == 3)
+	{
+		addErrorPages(std::atoi(tokens[1].c_str()), tokens[2]);
+	}
+	else
+		return (false);
+	return (true);
+}
 /* _____ ______ _______ _______ ______ _____   _____
   / ____|  ____|__   __|__   __|  ____|  __ \ / ____|
  | (___ | |__     | |     | |  | |__  | |__) | (___
@@ -143,4 +174,74 @@ void BlockServer::setDefaultValue()
 		_indexes.push_back("index.html");
 }
 
+bool BlockServer::isServerNamePresent(std::vector<std::string> &otherNames)
+{
+	std::set<std::string> existingNames(_serverNames.begin(), _serverNames.end());
 
+	for (std::vector<std::string>::const_iterator it = otherNames.begin(); it != otherNames.end(); ++it)
+	{
+		if (existingNames.find(*it) != existingNames.end())
+		{
+			Log::log(Log::FATAL, "Duplicate server name: %s", it->c_str());
+			return false;
+		}
+		_serverNames.push_back(*it);
+	}
+	return true;
+}
+
+/*         _____  _____  ______ _____   _____
+	 /\   |  __ \|  __ \|  ____|  __ \ / ____|
+	/  \  | |  | | |  | | |__  | |__) | (___
+   / /\ \ | |  | | |  | |  __| |  _  / \___ \
+  / ____ \| |__| | |__| | |____| | \ \ ____) |
+ /_/    \_\_____/|_____/|______|_|  \_\_____/
+
+											   */
+
+void BlockServer::addErrorPages(int errorCode, std::string file)
+{
+	// Vérifie que le code d'erreur est valide (400-599)
+	if (errorCode < 400 || errorCode > 599)
+	{
+		Log::log(Log::FATAL, "Invalid error code: %d in file %s:%d", errorCode, _filename.c_str(), ConfParser::countLineFile);
+		exit(Log::FATAL);
+	}
+
+	// Vérifie qu'on n'ajoute pas un code d'erreur en double
+	if (_errorPages.find(errorCode) != _errorPages.end())
+	{
+		Log::log(Log::FATAL, "Duplicate error code: %d", errorCode);
+		exit(Log::FATAL);
+	}
+
+	// Ajoute le fichier d'erreur
+	_errorPages[errorCode] = file;
+}
+
+void BlockServer::addListen(std::string &token)
+{
+	ListenIpConfParse listen(token);
+	const std::string &ipPort = listen.getIpPortJoin();
+
+	if (_listens.find(ipPort) != _listens.end())
+	{
+		Log::log(Log::FATAL, "Duplicate listen in server context: %s", token.c_str());
+		throw std::runtime_error("Duplicate listen: " + token);
+	}
+
+	_listens.emplace(ipPort, std::move(listen));
+}
+
+void BlockServer::addIndexes(std::vector<std::string> &token)
+{
+	std::set<std::string> existingIndexes(_indexes.begin(), _indexes.end());
+
+	for (size_t i = 1; i < token.size(); i++)
+	{
+		{
+			_indexes.push_back(token[i]);
+			existingIndexes.insert(token[i]);
+		}
+	}
+}

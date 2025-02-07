@@ -31,7 +31,7 @@ class BlockServer {
 			// Methods
 		bool DoubleLineChecker();
 		void incrementCounter(const std::string &key) { _counterBase[key]++; }
-		//bool ValidServerChecker(std::vector<std::string>& tokens, std::string& key, std::ifstream &configFile);
+		bool ValidServerChecker(std::vector<std::string>& tokens, std::string& key, std::ifstream &configFile);
 		bool isStartBlockLocation(std::vector<std::string>& tokens);
 		bool DoubleLocationChecker();
 		void cleanPaths();
@@ -57,7 +57,7 @@ class BlockServer {
 		const std::vector<std::string> &getIndexes() const { return _indexes; }
 
 		//	// Util
-		//bool isServerNamePresent(std::vector<std::string>& otherNames);
+		bool isServerNamePresent(std::vector<std::string>& otherNames);
 
 
 		//// Setters
@@ -68,11 +68,11 @@ class BlockServer {
 		void setErrorPages(const std::map<int, std::string> &errorPage) { _errorPages = errorPage; }
 
 		//// Adders
-		//void addErrorPages(int errorCode, std::string file);
+		void addErrorPages(int errorCode, std::string file);
 		void addLocation(const BlockLocation &locations) { _locations.push_back(locations); }
-		//void addListen(std::string &token);
-		//void addServerName(std::vector<std::string>& token);
-		//void addIndexes(std::vector<std::string>& token);
+		void addListen(std::string &token);
+		void addServerName(std::vector<std::string>& token);
+		void addIndexes(std::vector<std::string>& token);
 
 
 		//// Finders
