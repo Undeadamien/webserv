@@ -45,8 +45,8 @@ class BlockServer {
 
 		BlockServer &operator=(const BlockServer &other);
 
-		//// parsing
-		//BlockServer getServerConfig(std::ifstream &file_config);
+		// parsing
+		BlockServer getServerConfig(std::ifstream &file_config);
 
 		// Getters
 		const std::map<int, std::string> &getErrorPages() const { return _errorPages; }
@@ -76,8 +76,8 @@ class BlockServer {
 		void addIndexes(std::vector<std::string>& token);
 
 
-		//// Finders
-		//BlockLocation*	findLocation(const std::string &uri);
+		// Finders
+		BlockLocation*	LocationPositionChecker(const std::string &part);
 
 		// Printers
 		void printServer(void);

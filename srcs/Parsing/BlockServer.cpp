@@ -335,3 +335,34 @@ void BlockServer::printServer(void)
 		}
 	}
 }
+
+/*______ _____ _   _ _____  ______ _____
+ |  ____|_   _| \ | |  __ \|  ____|  __ \
+ | |__    | | |  \| | |  | | |__  | |__) |
+ |  __|   | | | . ` | |  | |  __| |  _  /
+ | |     _| |_| |\  | |__| | |____| | \ \
+ |_|    |_____|_| \_|_____/|______|_|  \_\
+
+                                           */
+
+BlockLocation *BlockServer::LocationPositionChecker(const std::string &part)
+{
+	std::vector<BlockLocation>::iterator it;
+
+	for (it = _locations.begin(); it != _locations.end(); ++it)
+	{
+		if (part.find(it->getPath()) == 0)
+			return &(*it);
+	}
+	return NULL;
+}
+
+/*_____        _____   _____ _____ _   _  _____
+ |  __ \ /\   |  __ \ / ____|_   _| \ | |/ ____|
+ | |__) /  \  | |__) | (___   | | |  \| | |  __
+ |  ___/ /\ \ |  _  / \___ \  | | | . ` | | |_ |
+ | |  / ____ \| | \ \ ____) |_| |_| |\  | |__| |
+ |_| /_/    \_\_|  \_\_____/|_____|_| \_|\_____|
+
+                                                 */
+
