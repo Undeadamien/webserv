@@ -85,7 +85,7 @@ void ConfParser::ServersListens()
  | |    | | \ \ _| |_| |\  |  | |  | |____| | \ \ ____) |
  |_|    |_|  \_\_____|_| \_|  |_|  |______|_|  \_\_____/
 
-                                                          */
+														  */
 
 void ConfParser::printServers(void)
 {
@@ -99,7 +99,6 @@ void ConfParser::printServers(void)
 }
 
 /* CHECKERS Servers */
-
 
 void ConfParser::checkDoubleServerName()
 {
@@ -122,4 +121,61 @@ bool ConfParser::BlockServerBegin(std::vector<std::string> tokens)
 	return ((tokens.size() == 2 && tokens[0] == "server" &&
 			 tokens[1] == "{")) ||
 		   (tokens.size() == 1 && tokens[0] == "server{");
+}
+
+/*_____        _____   _____ _____ _   _  _____
+ |  __ \ /\   |  __ \ / ____|_   _| \ | |/ ____|
+ | |__) /  \  | |__) | (___   | | |  \| | |  __
+ |  ___/ /\ \ |  _  / \___ \  | | | . ` | | |_ |
+ | |  / ____ \| | \ \ ____) |_| |_| |\  | |__| |
+ |_| /_/    \_\_|  \_\_____/|_____|_| \_|\_____|
+
+												 */
+
+void ConfParser::parsing(const std::string &filename)
+{
+	_filename = filename;
+	Log::log(Log::DEBUG, "Parsing config file: %s", _filename.c_str());
+
+	std::ifstream configFile(_filename.c_str());
+	if (!configFile.is_open())
+	{
+		Log::log(Log::FATAL, "File %s can't be opened or doesn't exist",
+				 _filename.c_str());
+		return;
+	}
+
+	std::string line;
+	while (std::getline(configFile, line))
+	{
+		++countLineFile;
+		line = trim(line, " \t\n\r\f\v");
+
+		if (line.empty() || line[0] == '#')
+		{
+			continue;
+		}
+
+		std::vector<std::string> tokens = split(line, ' ');
+		if (BlockServerBegin(tokens))
+		{
+			BlockServer server(_filename);
+			_servers.push_back(server.getServerConfig(configFile));
+		}
+		else
+		{
+			Log::log(Log::FATAL, "Invalid line: \"%s\" in file: %s:%d",
+					 line.c_str(), _filename.c_str(), countLineFile);
+		}
+	}
+
+	if (_servers.empty())
+	{
+		BlockServer server(_filename);
+		_servers.push_back(server.getServerConfig(configFile));
+	}
+
+	checkDoubleServerName();
+	ServersListens();
+	configFile.close();
 }

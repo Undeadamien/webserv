@@ -366,3 +366,34 @@ BlockLocation *BlockServer::LocationPositionChecker(const std::string &part)
 
                                                  */
 
+BlockServer BlockServer::getServerConfig(std::ifstream &configFile)
+{
+	std::string line;
+	std::vector<std::string> tokens;
+	std::string key;
+	bool isCloseServer = false;
+
+	while (std::getline(configFile, line)){
+		ConfParser::countLineFile++;
+		line = trim(line, " \t\n\r\f\v");
+		if (line.empty() || line[0] == '#')
+			continue;
+		tokens = split(line, ' ');
+		key = tokens[0];
+		if (key[0] == '}' && key.size() == 1 && tokens.size() == 1){
+			isCloseServer = true;
+			break;
+		}
+		else if (ValidServerChecker(tokens, key, configFile))
+			continue ;
+		else
+			Log::log(Log::FATAL, "Invalid line: \"%s\" in file: %s:%d", line.c_str(), _filename.c_str(), ConfParser::countLineFile);
+	}
+	if (isCloseServer == false && !EmptyFileChecker())
+		Log::log(Log::FATAL, "Missing } in file %s:%d", _filename.c_str(), ConfParser::countLineFile);
+	DoubleLineChecker();
+	setDefaultValue();
+	DoubleLocationChecker();
+	cleanPaths();
+	return (*this);
+}

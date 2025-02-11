@@ -18,18 +18,22 @@ class ConfParser {
 		ConfParser(void);
 		~ConfParser(void);
 
-		//std::map<std::string, std::vector<BlocServer> > getConfigs( void ) const { return _configs; }
-		//std::map<std::string, std::vector<BlocServer> > &getServers( void ) { return _configs; }
 		void parsing(const std::string &filename);
 
+		/* METHODS */
 		void checkDoubleServerName();
 		bool BlockServerBegin(std::vector<std::string> tokens);
 		void ServersListens();
 
+		/* CHERCKERS */
 		static	std::vector<std::string>	supportedMethods;
 		static	bool						CheckerMethod(std::string method);
 		static	std::vector<std::string>	supportedHttpVersions;
 		static	bool						CheckerHttpVersion(std::string version);
+
+		/* GETTERS */
+		std::map<std::string, std::vector<BlockServer> > getConfigs( void ) const { return _configs; }
+		std::map<std::string, std::vector<BlockServer> > &getServers( void ) { return _configs; }
 
 		void printServers();
 
