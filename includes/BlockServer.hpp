@@ -12,6 +12,7 @@ class Log;
 class ConfParser;
 class BlockLocation;
 class ListenIpConfParse;
+class Usefull;
 
 # define DF_CLIENT_MAX_BODY 1048576 // 1MB
 class BlockServer {
@@ -78,7 +79,7 @@ class BlockServer {
 		//// Finders
 		//BlockLocation*	findLocation(const std::string &uri);
 
-		// Print
+		// Printers
 		void printServer(void);
 		void printListens();
 		void printPair(const std::string& label, const std::string& value);
