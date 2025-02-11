@@ -6,16 +6,16 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:48:41 by dtrala            #+#    #+#             */
-/*   Updated: 2025/02/06 01:56:13 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/02/11 11:37:43 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 
 #include <cstddef>
-#include <exception>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 #include "colors.hpp"
@@ -52,13 +52,13 @@ e_Methods Request::parseMethod(const std::string &content)
 	std::istringstream str_stream(content);
 	std::string line;
 	if (!std::getline(str_stream, line))
-		throw std::exception();
+		throw std::runtime_error("Error: parsing method of request");
 	if (line[line.length() - 1] == '\r')
 		line = line.substr(0, line.length() - 1);
 	line = trim(line, " ");
 	size_t end = line.find_first_of(" ");
 	if (end == std::string::npos)
-		throw std::exception();
+		throw std::runtime_error("Error: parsing method of request");
 	std::string method = line.substr(0, end);
 	if (method == "GET")
 		return (GET);
@@ -73,14 +73,14 @@ std::string Request::parseTarget(const std::string &content)
 	std::istringstream str_stream(content);
 	std::string line;
 	if (!std::getline(str_stream, line))
-		throw std::exception();
+		throw std::runtime_error("Error: parsing target or request");
 	if (line[line.length() - 1] == '\r')
 		line = line.substr(0, line.length() - 1);
 	line = trim(line, " ");
 	size_t start = line.find_first_of(" ") + 1;
 	size_t end = line.find_last_of(" ") - 1;
 	if (start == std::string::npos || end == std::string::npos)
-		throw std::exception();
+		throw std::runtime_error("Error: parsing target or request");
 	return (line.substr(start, end - start + 1));
 };
 std::string Request::parseProtocol(const std::string &content)
@@ -88,14 +88,13 @@ std::string Request::parseProtocol(const std::string &content)
 	std::istringstream str_stream(content);
 	std::string line;
 	if (!std::getline(str_stream, line))
-		throw std::exception();
+		throw std::runtime_error("Error: parsing protocol or request");
 	if (line[line.length() - 1] == '\r')
 		line = line.substr(0, line.length() - 1);
 	line = trim(line, " ");
 	size_t start = line.find_last_of(" ") + 1;
 	if (start == std::string::npos)
-		throw std::exception();
-	// throw an error if not HTTPS 1.1 ?
+		throw std::runtime_error("Error: parsing protocol or request");
 	return (line.substr(start));
 };
 mapHeaders Request::parseHeaders(const std::string &content)
@@ -106,15 +105,17 @@ mapHeaders Request::parseHeaders(const std::string &content)
 	std::string key, value, line;
 
 	std::getline(str_stream, line);	 // skip the startline
-	while (std::getline(str_stream, line) && !line.empty())
+	while (std::getline(str_stream, line))
 	{
 		if (line[line.length() - 1] == '\r')
 			line = line.substr(0, line.length() - 1);
+		if (line.empty())
+			break;
 		line = trim(line, " ");
 		if ((sep = line.find(":")) == std::string::npos)
-			throw std::exception();	 // invalid line in header field
+			throw std::runtime_error("Error: parsing missing ':' in headers");
 		key = trim(line.substr(0, sep), " ");
-		value = trim(line.substr(sep + 2), " ");
+		value = trim(line.substr(sep + 1), " ");
 		headers[key] = value;
 	}
 	return (headers);
@@ -125,7 +126,7 @@ std::string Request::parseBody(const std::string &content)
 	std::string line;
 	size_t delimiter = content.find("\r\n\r\n");
 	if (delimiter == std::string::npos)
-		throw std::exception();
+		throw std::runtime_error("Error: parsing body of request");
 	return (content.substr(delimiter + 4));
 };
 
