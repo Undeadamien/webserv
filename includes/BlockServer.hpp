@@ -78,13 +78,13 @@ class BlockServer {
 		//// Finders
 		//BlockLocation*	findLocation(const std::string &uri);
 
-		//// Print
-		//void printServer(void);
-		//void printListens();
-		//void printPair(const std::string& label, const std::string& value);
-		//void printInt(const std::string& label, int value);
-		//void printVector(const std::string& label, const std::vector<std::string>& vec);
-		//void printMap(const std::string& label, const std::map<int, std::string>& map);
+		// Print
+		void printServer(void);
+		void printListens();
+		void printPair(const std::string& label, const std::string& value);
+		void printInt(const std::string& label, int value);
+		void printVector(const std::string& label, const std::vector<std::string>& vec);
+		void printMap(const std::string& label, const std::map<int, std::string>& map);
 };
 
 #endif

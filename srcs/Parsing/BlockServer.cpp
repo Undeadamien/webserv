@@ -252,8 +252,86 @@ void BlockServer::addServerName(std::vector<std::string> &token)
 
 	for (size_t i = 1; i < token.size(); i++)
 	{
-		if (existingNames.insert(token[i]).second)  // Insère seulement si l'élément n'existe pas encore
+		if (existingNames.insert(token[i]).second)
 			_serverNames.push_back(token[i]);
 	}
 }
 
+/*_____  _____  _____ _   _ _______ ______ _____   _____
+ |  __ \|  __ \|_   _| \ | |__   __|  ____|  __ \ / ____|
+ | |__) | |__) | | | |  \| |  | |  | |__  | |__) | (___
+ |  ___/|  _  /  | | | . ` |  | |  |  __| |  _  / \___ \
+ | |    | | \ \ _| |_| |\  |  | |  | |____| | \ \ ____) |
+ |_|    |_|  \_\_____|_| \_|  |_|  |______|_|  \_\_____/
+
+														  */
+
+void BlockServer::printVector(const std::string &label, const std::vector<std::string> &vec)
+{
+	std::cout << std::setw(25) << std::left << label << ": ";
+	if (vec.empty())
+		std::cout << "none" << std::endl;
+	else
+	{
+		for (std::vector<std::string>::const_iterator it = vec.begin(); it != vec.end(); ++it)
+			std::cout << *it << " ";
+		std::cout << std::endl;
+	}
+}
+
+void BlockServer::printListens()
+{
+	std::cout << std::setw(25) << std::left << "Listens" << ": ";
+	if (_listens.empty())
+		std::cout << "none" << std::endl;
+	else
+	{
+		for (std::map<std::string, ListenIpConfParse>::const_iterator it = _listens.begin(); it != _listens.end(); ++it)
+			std::cout << it->first << " ";
+		std::cout << std::endl;
+	}
+}
+
+void BlockServer::printPair(const std::string &label, const std::string &value)
+{
+	std::cout << std::setw(25) << std::left << label << ": " << value << std::endl;
+}
+
+void BlockServer::printInt(const std::string &label, int value)
+{
+	std::cout << std::setw(25) << std::left << label << ": " << value << std::endl;
+}
+
+void BlockServer::printMap(const std::string &label, const std::map<int, std::string> &map)
+{
+	std::cout << std::setw(25) << std::left << label << ":" << std::endl;
+	if (map.empty())
+		std::cout << "  none" << std::endl;
+	else
+	{
+		for (std::map<int, std::string>::const_iterator it = map.begin(); it != map.end(); ++it)
+			std::cout << "  " << it->first << ": " << it->second << std::endl;
+	}
+}
+
+void BlockServer::printServer(void)
+{
+	printVector("Server names", _serverNames);
+	printListens();
+	printVector("Indexes", _indexes);
+	printPair("Root", _root);
+	std::cout << "Client max body size: " << Utils::ullToStr(_clientMaxBodySize) << std::endl;
+	printMap("Error pages", _errorPages);
+
+	if (_locations.empty())
+		std::cout << std::setw(25) << std::left << "Locations" << ": none" << std::endl;
+	else
+	{
+		int i = 0;
+		for (std::vector<BlockLocation>::iterator it = _locations.begin(); it != _locations.end(); ++it)
+		{
+			std::cout << "\n-- LOCATION " << ++i << " --" << std::endl;
+			it->printLocation();
+		}
+	}
+}
