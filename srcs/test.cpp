@@ -72,7 +72,7 @@ int simple_server()
 		}
 		catch (std::exception &e)
 		{
-			std::cerr << "Error: file content loading\n";
+			std::cerr << "Error: file content loading" << std::endl;
 			exit(1);
 		}
 		std::string response;
@@ -114,11 +114,11 @@ void testResponse()
 void testRequest()
 {
 	std::string str =
-		"POST /help.txt HTTP/1.1\n"
-		"Host: www.example.re\n"
-		"Content-Type: text/plain\n"
-		"Content-Length: 51\n"
-		"\n"
+		"POST /help.txt HTTP/1.1\r\n"
+		"Host: www.example.re\r\n"
+		"Content-Type: text/plain\r\n"
+		"Content-Length: 51\r\n"
+		"\r\n"
 		"Please visit www.example.re for the latest updates!";
 	Request request(str);
 
