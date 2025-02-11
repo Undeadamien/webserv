@@ -22,47 +22,33 @@ int simple_server()
 {
 	int fdSocket;
 	if ((fdSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-	{
-		std::cerr << "Error: socket() function\n";
 		return (EXIT_FAILURE);
-	}
-
 	sockaddr_in address;
 	address.sin_family = AF_INET;
 	address.sin_port = htons(PORT);
 	address.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (bind(fdSocket, (const sockaddr *)(&address), sizeof(address)) == -1)
-	{
-		std::cerr << "Error: bind() function\n";
 		return (EXIT_FAILURE);
-	}
-
 	if (listen(fdSocket, 10) == -1)
-	{
-		std::cerr << "Error: listen() function\n";
 		return (EXIT_FAILURE);
-	}
 
 	int connection;
-	int iteration = 0;
+	int it = 0;
 	char buffer[BUFFER_SIZE];
 	while (true)
 	{
 		unsigned long resultLen = sizeof(sockaddr);
-		std::cout << INVERSE << "Iteration number: " << iteration++ << RESET
+		std::cout << INVERSE << "Iteration number: " << it++ << RESET
 				  << std::endl;
 		std::cout << "Listening on Port: " << PORT << std::endl;
-		if ((connection = accept(fdSocket, (struct sockaddr *)(&address),
-								 (socklen_t *)&resultLen)) == -1)
-		{
-			std::cerr << "Error: accept() function\n";
+		connection = accept(fdSocket, (struct sockaddr *)(&address),
+							(socklen_t *)&resultLen);
+		if ((connection) == -1)
 			return (EXIT_FAILURE);
-		}
 
 		bzero(buffer, sizeof(buffer));	// clear the buffer between each request
 		read(connection, buffer, BUFFER_SIZE);
-
 		std::cout << "\n"
 				  << UNDERLINE << "Request" << RESET << "\n"
 				  << "\"" << buffer << "\"" << std::endl;
@@ -89,17 +75,15 @@ int simple_server()
 			std::cerr << "Error: file content loading\n";
 			exit(1);
 		}
-
-		std::string response =
-			"HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: " +
-			contentLength;
-		response += "\n\n";	 // the content of the response must be separated by
-							 // two new-line
+		std::string response;
+		response += "HTTP/1.1 200 OK\r\n";
+		response += "Content-Type: text/html\r\n";
+		response += "Content-Length: " + contentLength + "\r\n";
+		response += "\r\n";
 		response += content;
 		std::cout << UNDERLINE << "Response" << RESET << "\n"
 				  << response << "\n"
 				  << std::endl;
-
 		send(connection, response.c_str(), response.size(), 0);
 		close(connection);
 	}
