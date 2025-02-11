@@ -320,7 +320,7 @@ void BlockServer::printServer(void)
 	printListens();
 	printVector("Indexes", _indexes);
 	printPair("Root", _root);
-	std::cout << "Client max body size: " << Utils::ullToStr(_clientMaxBodySize) << std::endl;
+	std::cout << "Client max body size: " << ullToStr(_clientMaxBodySize) << std::endl;
 	printMap("Error pages", _errorPages);
 
 	if (_locations.empty())
