@@ -28,6 +28,6 @@ std::string trim(std::string str, std::string set);
 bool EmptyFileChecker();
 std::vector<std::string> split(const std::string &str, char delimiter);
 std::string intToString(int value);
-
+std::string UIntToString(unsigned int value);
 
 #endif
