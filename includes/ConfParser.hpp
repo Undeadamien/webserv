@@ -2,11 +2,13 @@
 #define CONFPARSER_HPP
 
 #include "usefull.hpp"
+#include "BlockServer.hpp"
 # include <iostream>
 # include <fstream>
 # include <vector>
 # include <map>
 
+class BlockServer;
 
 class ConfParser {
 	public:
@@ -34,8 +36,8 @@ class ConfParser {
 	private:
 		std::string _filename;
 
-		//std::vector<BlocServer> _servers;
-		//std::map<std::string, std::vector<BlocServer> > _configs;
+		std::vector<BlockServer> _servers;
+		std::map<std::string, std::vector<BlockServer> > _configs;
 
 		/* GETTERS */
 		static std::vector<std::string>	_getSupportedMethods(void);

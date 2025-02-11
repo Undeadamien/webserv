@@ -29,7 +29,7 @@ class BlockServer {
 		std::string _filename;
 		std::map<std::string, int> _counterBase;
 
-			// Methods
+		// Methods
 		bool DoubleLineChecker();
 		void incrementCounter(const std::string &key) { _counterBase[key]++; }
 		bool ValidServerChecker(std::vector<std::string>& tokens, std::string& key, std::ifstream &configFile);
