@@ -3,7 +3,8 @@
 #include "ConfParser.hpp"
 #include "Log.hpp"
 
-std::string ullToStr(unsigned long long ull){
+std::string ullToStr(unsigned long long ull)
+{
 	std::ostringstream oss;
 	oss << ull;
 	return (oss.str());

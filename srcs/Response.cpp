@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:50:42 by dtrala            #+#    #+#             */
-/*   Updated: 2025/02/06 01:49:14 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/02/11 11:50:10 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <string>
 
 #include "colors.hpp"
+#include "usefull.hpp"
 
 Response::Response() {};
 Response::Response(std::string &protocol, int status_code,
@@ -91,6 +92,7 @@ std::ostream &operator<<(std::ostream &os, const Response &response)
 	os << GREEN << BOLD << "Headers:" << RESET << "\n";
 	for (mapHeaders::iterator it = headers.begin(); it != headers.end(); it++)
 		os << it->first << ": " << it->second << std::endl;
-	os << GREEN << BOLD << "Body:" << RESET << "\n" << response.getBody();
+	os << GREEN << BOLD << "Body:" << RESET << "\n"
+	   << response.getBody();
 	return (os);
 };
