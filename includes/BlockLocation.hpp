@@ -8,6 +8,7 @@
 #include <cstring>
 #include <iostream>
 #include <unistd.h>
+#include <set>
 
 # include "ConfParser.hpp"
 # include "Log.hpp"
@@ -31,6 +32,7 @@ class BlockLocation
 		e_boolMod _autoindex;
 		std::map<std::string, std::string> _cgiExtension;
 		std::string _uploadPath;
+		 std::set<std::string> _indexSet;
 
 		// divers
 		std::map<std::string, int> _counterBase;

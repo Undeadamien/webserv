@@ -2,22 +2,21 @@
 
 #include <set>
 
-BlockServer::BlockServer(void) : _clientMaxBodySize(DF_CLIENT_MAX_BODY), _filename("")
+BlockServer::BlockServer(void)
+	: _clientMaxBodySize(DF_CLIENT_MAX_BODY), _filename("")
 {
 	_counterBase["root"] = 0;
 	_counterBase["clientMaxBodySize"] = 0;
 }
 
-BlockServer::BlockServer(std::string filename) : _clientMaxBodySize(DF_CLIENT_MAX_BODY), _filename(filename)
+BlockServer::BlockServer(std::string filename)
+	: _clientMaxBodySize(DF_CLIENT_MAX_BODY), _filename(filename)
 {
 	_counterBase["root"] = 0;
 	_counterBase["clientMaxBodySize"] = 0;
 }
 
-BlockServer::BlockServer(const BlockServer &other)
-{
-	*this = other;
-}
+BlockServer::BlockServer(const BlockServer &other) { *this = other; }
 
 BlockServer::~BlockServer(void) {}
 
@@ -54,7 +53,8 @@ bool BlockServer::DoubleLineChecker()
 	for (it = _counterBase.begin(); it != _counterBase.end(); ++it)
 		if (it->second > 1)
 		{
-			Log::log(Log::FATAL, "Duplicate line in server context: %s", it->first.c_str());
+			Log::log(Log::FATAL, "Duplicate line in server context: %s",
+					 it->first.c_str());
 			return false;
 		}
 	return true;
@@ -76,7 +76,8 @@ bool BlockServer::DoubleLocationChecker()
 		{
 			if (it->getPath() == it2->getPath())
 			{
-				Log::log(Log::FATAL, "Duplicate location: %s", it->getPath().c_str());
+				Log::log(Log::FATAL, "Duplicate location: %s",
+						 it->getPath().c_str());
 				return false;
 			}
 		}
@@ -89,7 +90,8 @@ void BlockServer::cleanPaths()
 	if (!_root.empty() && _root != "/" && _root[_root.size() - 1] == '/')
 		_root.erase(_root.size() - 1);
 
-	for (std::map<int, std::string>::iterator it = _errorPages.begin(); it != _errorPages.end(); ++it)
+	for (std::map<int, std::string>::iterator it = _errorPages.begin();
+		 it != _errorPages.end(); ++it)
 	{
 		if (it->second != "/" && it->second[it->second.size() - 1] == '/')
 			it->second.erase(it->second.size() - 1);
@@ -102,7 +104,9 @@ void BlockServer::cleanPaths()
 	}
 }
 
-bool BlockServer::ValidServerChecker(std::vector<std::string> &tokens, std::string &key, std::ifstream &configFile)
+bool BlockServer::ValidServerChecker(std::vector<std::string> &tokens,
+									 std::string &key,
+									 std::ifstream &configFile)
 {
 	if (tokens.size() < 2)
 		return false;
@@ -145,10 +149,12 @@ void BlockServer::setClientMaxBodySize(std::string clientMaxBodySize)
 	else
 	{
 		char *end;
-		unsigned long long value = std::strtoull(clientMaxBodySize.c_str(), &end, 10);
+		unsigned long long value =
+			std::strtoull(clientMaxBodySize.c_str(), &end, 10);
 
 		if (*end != '\0')
-			throw std::invalid_argument("Invalid number format: " + clientMaxBodySize);
+			throw std::invalid_argument("Invalid number format: " +
+										clientMaxBodySize);
 
 		_clientMaxBodySize = value;
 	}
@@ -176,18 +182,23 @@ void BlockServer::setDefaultValue()
 
 bool BlockServer::isServerNamePresent(std::vector<std::string> &otherNames)
 {
-	std::set<std::string> existingNames(_serverNames.begin(), _serverNames.end());
+	// Utiliser un set pour une recherche rapide
+	std::set<std::string> existingNames(_serverNames.begin(),
+										_serverNames.end());
 
-	for (std::vector<std::string>::const_iterator it = otherNames.begin(); it != otherNames.end(); ++it)
+	for (std::vector<std::string>::const_iterator it = otherNames.begin();
+		 it != otherNames.end(); ++it)
 	{
 		if (existingNames.find(*it) != existingNames.end())
 		{
-			Log::log(Log::FATAL, "Duplicate server name: %s", it->c_str());
-			return false;
+			// Si un doublon est trouvé, modifier otherNames comme spécifié
+			otherNames.clear();
+			otherNames.push_back(*it);
+			otherNames.push_back(_listens.begin()->first);
+			return true;
 		}
-		_serverNames.push_back(*it);
 	}
-	return true;
+	return false;
 }
 
 /*         _____  _____  ______ _____   _____
@@ -204,7 +215,8 @@ void BlockServer::addErrorPages(int errorCode, std::string file)
 	// Vérifie que le code d'erreur est valide (400-599)
 	if (errorCode < 400 || errorCode > 599)
 	{
-		Log::log(Log::FATAL, "Invalid error code: %d in file %s:%d", errorCode, _filename.c_str(), ConfParser::countLineFile);
+		Log::log(Log::FATAL, "Invalid error code: %d in file %s:%d", errorCode,
+				 _filename.c_str(), ConfParser::countLineFile);
 		exit(Log::FATAL);
 	}
 
@@ -226,7 +238,8 @@ void BlockServer::addListen(std::string &token)
 
 	if (_listens.find(ipPort) != _listens.end())
 	{
-		Log::log(Log::FATAL, "Duplicate listen in server context: %s", token.c_str());
+		Log::log(Log::FATAL, "Duplicate listen in server context: %s",
+				 token.c_str());
 		throw std::runtime_error("Duplicate listen: " + token);
 	}
 
@@ -248,7 +261,8 @@ void BlockServer::addIndexes(std::vector<std::string> &token)
 
 void BlockServer::addServerName(std::vector<std::string> &token)
 {
-	std::set<std::string> existingNames(_serverNames.begin(), _serverNames.end());
+	std::set<std::string> existingNames(_serverNames.begin(),
+										_serverNames.end());
 
 	for (size_t i = 1; i < token.size(); i++)
 	{
@@ -266,14 +280,16 @@ void BlockServer::addServerName(std::vector<std::string> &token)
 
 														  */
 
-void BlockServer::printVector(const std::string &label, const std::vector<std::string> &vec)
+void BlockServer::printVector(const std::string &label,
+							  const std::vector<std::string> &vec)
 {
 	std::cout << std::setw(25) << std::left << label << ": ";
 	if (vec.empty())
 		std::cout << "none" << std::endl;
 	else
 	{
-		for (std::vector<std::string>::const_iterator it = vec.begin(); it != vec.end(); ++it)
+		for (std::vector<std::string>::const_iterator it = vec.begin();
+			 it != vec.end(); ++it)
 			std::cout << *it << " ";
 		std::cout << std::endl;
 	}
@@ -286,7 +302,9 @@ void BlockServer::printListens()
 		std::cout << "none" << std::endl;
 	else
 	{
-		for (std::map<std::string, ListenIpConfParse>::const_iterator it = _listens.begin(); it != _listens.end(); ++it)
+		for (std::map<std::string, ListenIpConfParse>::const_iterator it =
+				 _listens.begin();
+			 it != _listens.end(); ++it)
 			std::cout << it->first << " ";
 		std::cout << std::endl;
 	}
@@ -294,22 +312,26 @@ void BlockServer::printListens()
 
 void BlockServer::printPair(const std::string &label, const std::string &value)
 {
-	std::cout << std::setw(25) << std::left << label << ": " << value << std::endl;
+	std::cout << std::setw(25) << std::left << label << ": " << value
+			  << std::endl;
 }
 
 void BlockServer::printInt(const std::string &label, int value)
 {
-	std::cout << std::setw(25) << std::left << label << ": " << value << std::endl;
+	std::cout << std::setw(25) << std::left << label << ": " << value
+			  << std::endl;
 }
 
-void BlockServer::printMap(const std::string &label, const std::map<int, std::string> &map)
+void BlockServer::printMap(const std::string &label,
+						   const std::map<int, std::string> &map)
 {
 	std::cout << std::setw(25) << std::left << label << ":" << std::endl;
 	if (map.empty())
 		std::cout << "  none" << std::endl;
 	else
 	{
-		for (std::map<int, std::string>::const_iterator it = map.begin(); it != map.end(); ++it)
+		for (std::map<int, std::string>::const_iterator it = map.begin();
+			 it != map.end(); ++it)
 			std::cout << "  " << it->first << ": " << it->second << std::endl;
 	}
 }
@@ -320,15 +342,18 @@ void BlockServer::printServer(void)
 	printListens();
 	printVector("Indexes", _indexes);
 	printPair("Root", _root);
-	std::cout << "Client max body size: " << ullToStr(_clientMaxBodySize) << std::endl;
+	std::cout << "Client max body size: " << ullToStr(_clientMaxBodySize)
+			  << std::endl;
 	printMap("Error pages", _errorPages);
 
 	if (_locations.empty())
-		std::cout << std::setw(25) << std::left << "Locations" << ": none" << std::endl;
+		std::cout << std::setw(25) << std::left << "Locations" << ": none"
+				  << std::endl;
 	else
 	{
 		int i = 0;
-		for (std::vector<BlockLocation>::iterator it = _locations.begin(); it != _locations.end(); ++it)
+		for (std::vector<BlockLocation>::iterator it = _locations.begin();
+			 it != _locations.end(); ++it)
 		{
 			std::cout << "\n-- LOCATION " << ++i << " --" << std::endl;
 			it->printLocation();
@@ -343,7 +368,7 @@ void BlockServer::printServer(void)
  | |     _| |_| |\  | |__| | |____| | \ \
  |_|    |_____|_| \_|_____/|______|_|  \_\
 
-                                           */
+										   */
 
 BlockLocation *BlockServer::LocationPositionChecker(const std::string &part)
 {
@@ -364,7 +389,7 @@ BlockLocation *BlockServer::LocationPositionChecker(const std::string &part)
  | |  / ____ \| | \ \ ____) |_| |_| |\  | |__| |
  |_| /_/    \_\_|  \_\_____/|_____|_| \_|\_____|
 
-                                                 */
+												 */
 
 BlockServer BlockServer::getServerConfig(std::ifstream &configFile)
 {
@@ -373,27 +398,32 @@ BlockServer BlockServer::getServerConfig(std::ifstream &configFile)
 	std::string key;
 	bool isCloseServer = false;
 
-	while (std::getline(configFile, line)){
+	while (std::getline(configFile, line))
+	{
 		ConfParser::countLineFile++;
 		line = trim(line, " \t\n\r\f\v");
 		if (line.empty() || line[0] == '#')
 			continue;
 		tokens = split(line, ' ');
 		key = tokens[0];
-		if (key[0] == '}' && key.size() == 1 && tokens.size() == 1){
+		if (key[0] == '}' && key.size() == 1 && tokens.size() == 1)
+		{
 			isCloseServer = true;
 			break;
 		}
 		else if (ValidServerChecker(tokens, key, configFile))
-			continue ;
+			continue;
 		else
-			Log::log(Log::FATAL, "Invalid line: \"%s\" in file: %s:%d", line.c_str(), _filename.c_str(), ConfParser::countLineFile);
+			Log::log(Log::FATAL, "Invalid line: \"%s\" in file: %s:%d",
+					 line.c_str(), _filename.c_str(),
+					 ConfParser::countLineFile);
 	}
 	if (isCloseServer == false && !EmptyFileChecker())
-		Log::log(Log::FATAL, "Missing } in file %s:%d", _filename.c_str(), ConfParser::countLineFile);
-	DoubleLineChecker();
+		Log::log(Log::FATAL, "Missing } in file %s:%d", _filename.c_str(),
+				 ConfParser::countLineFile);
+	if ((!DoubleLocationChecker()) || (!DoubleLineChecker()))
+		exit(Log::FATAL);
 	setDefaultValue();
-	DoubleLocationChecker();
 	cleanPaths();
 	return (*this);
 }

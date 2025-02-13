@@ -1,14 +1,12 @@
 #include "BlockLocation.hpp"
 
-BlockLocation::BlockLocation(std::string filename) : _autoindex(FALSE), _filename(filename)
+BlockLocation::BlockLocation(std::string filename)
+	: _autoindex(FALSE), _filename(filename)
 {
 	setDefaultValues();
 }
 
-BlockLocation::BlockLocation(const BlockLocation &copy)
-{
-	*this = copy;
-}
+BlockLocation::BlockLocation(const BlockLocation &copy) { *this = copy; }
 
 BlockLocation::~BlockLocation() {}
 
@@ -50,7 +48,9 @@ void BlockLocation::addValidMethod(std::vector<std::string> &tokens)
 		std::string token = tokens[i];
 		if (ConfParser::CheckerMethod(token) == false)
 		{
-			Log::log(Log::FATAL, "Invalid method: \"%s\" in file: %s:%d", token.c_str(), _filename.c_str(), ConfParser::countLineFile);
+			Log::log(Log::FATAL, "Invalid method: \"%s\" in file: %s:%d",
+					 token.c_str(), _filename.c_str(),
+					 ConfParser::countLineFile);
 			exit(Log::FATAL);
 		}
 		else if (token == "POST")
@@ -59,26 +59,26 @@ void BlockLocation::addValidMethod(std::vector<std::string> &tokens)
 			met = DELETE;
 		else
 			met = GET;
-		if (std::find(_allowedMethods.begin(), _allowedMethods.end(), met) != _allowedMethods.end())
+		if (std::find(_allowedMethods.begin(), _allowedMethods.end(), met) !=
+			_allowedMethods.end())
 		{
-			Log::log(Log::FATAL, "Duplicate method: \"%s\" in file: %s:%d", token.c_str(), _filename.c_str(), ConfParser::countLineFile);
+			Log::log(Log::FATAL, "Duplicate method: \"%s\" in file: %s:%d",
+					 token.c_str(), _filename.c_str(),
+					 ConfParser::countLineFile);
 			exit(Log::FATAL);
 		}
 		_allowedMethods.push_back(met);
 	}
 }
-
 void BlockLocation::addIndexes(std::vector<std::string> &token)
 {
-	incrementCounter("indexes");
-	for (size_t i = 1; i < token.size(); i++)
+	for (size_t i = 1; i < token.size(); ++i)
 	{
-		if (token[i][0] != '/')
+		if (_indexSet.find(token[i]) == _indexSet.end())
 		{
-			Log::log(Log::FATAL, "Invalid index: \"%s\" in file: %s:%d", token[i].c_str(), _filename.c_str(), ConfParser::countLineFile);
-			exit(Log::FATAL);
+			_indexes.push_back(token[i]);
+			_indexSet.insert(token[i]);
 		}
-		_indexes.push_back(token[i]);
 	}
 }
 
@@ -86,28 +86,32 @@ void BlockLocation::addCgiExtension(std::vector<std::string> &token)
 {
 	if (token.size() != 3)
 	{
-		Log::log(Log::FATAL, "Invalid cgi extension in file: %s:%d. Expected 3 elements, got %zu",
+		Log::log(Log::FATAL,
+				 "Invalid cgi extension in file: %s:%d. Expected 3 elements, "
+				 "got %zu",
 				 _filename.c_str(), ConfParser::countLineFile, token.size());
 		exit(Log::FATAL);
 	}
 
 	if (token[1][0] != '.')
 	{
-		Log::log(Log::FATAL, "Invalid cgi extension: \"%s\" in file: %s:%d. Must start with '.'",
-				 token[1].c_str(), _filename.c_str(), ConfParser::countLineFile);
+		Log::log(
+			Log::FATAL,
+			"Invalid cgi extension: \"%s\" in file: %s:%d. Must start with '.'",
+			token[1].c_str(), _filename.c_str(), ConfParser::countLineFile);
 		exit(Log::FATAL);
 	}
 
 	if (_cgiExtension.find(token[1]) != _cgiExtension.end())
 	{
 		Log::log(Log::FATAL, "Duplicate cgi extension: \"%s\" in file: %s:%d",
-				 token[1].c_str(), _filename.c_str(), ConfParser::countLineFile);
+				 token[1].c_str(), _filename.c_str(),
+				 ConfParser::countLineFile);
 		exit(Log::FATAL);
 	}
 
 	_cgiExtension[token[1]] = token[2];
 
-	incrementCounter("cgiExtension");
 }
 
 /* Methods */
@@ -120,7 +124,8 @@ e_boolMod BlockLocation::strToBool(std::string &str)
 		return (FALSE);
 	else
 	{
-		Log::log(Log::FATAL, "Invalid autoindex value: \"%s\" in file: %s:%d", str.c_str(), _filename.c_str(), ConfParser::countLineFile);
+		Log::log(Log::FATAL, "Invalid autoindex value: \"%s\" in file: %s:%d",
+				 str.c_str(), _filename.c_str(), ConfParser::countLineFile);
 		exit(Log::FATAL);
 	}
 }
@@ -134,23 +139,51 @@ void BlockLocation::setDefaultValues()
 	_counterBase["upload_path"] = 0;
 }
 
+// bool BlockLocation::DuplicateLineChecker()
+//{
+//	std::map<std::string, int>::iterator it;
+
+//	for (it = _counterBase.begin(); it != _counterBase.end(); ++it)
+//		if (it->second > 1)
+//		{
+//			Log::log(Log::FATAL, "Duplicate line in location context: %s",
+//					 it->first.c_str());
+//			return false;
+//		}
+//	if (_counterBase["root"] > 0 && _counterBase["alias"] > 0)
+//	{
+//		Log::log(Log::FATAL,"Alias and Root can't be set in same location bloc
+//%s", _path.c_str()); 		return false;
+//	}
+//	return true;
+//}
+
 bool BlockLocation::DuplicateLineChecker()
 {
 	std::map<std::string, int>::iterator it;
 
 	for (it = _counterBase.begin(); it != _counterBase.end(); ++it)
-		if (it->second > 1) {
-			Log::log(Log::FATAL, "Duplicate line in location context: %s", it->first.c_str());
+	{
+		if (it->second > 1)
+		{
+			Log::log(Log::FATAL, "Duplicate line in location context: %s",
+					 it->first.c_str());
 			return false;
 		}
-	if (_counterBase["root"] > 0 && _counterBase["alias"] > 0) {
-		Log::log(Log::FATAL, "Alias and Root can't be set in same location bloc %s", _path.c_str());
+	}
+	// checker si root est present, alias ne doit pas l'etre et inversement
+	if (_counterBase["root"] > 0 && _counterBase["alias"] > 0)
+	{
+		Log::log(Log::FATAL,
+				 "Alias and Root can't be set in same location bloc %s",
+				 _path.c_str());
 		return false;
 	}
 	return true;
 }
 
-bool BlockLocation::ValidLocationChecker(std::vector<std::string> &tokens, std::string &key)
+bool BlockLocation::ValidLocationChecker(std::vector<std::string> &tokens,
+										 std::string &key)
 {
 	if (tokens.size() < 2)
 		return false;
@@ -187,14 +220,18 @@ bool BlockLocation::ValidLocationChecker(std::vector<std::string> &tokens, std::
 void BlockLocation::setRewrite(std::vector<std::string> &tokens)
 {
 	int code = std::atoi(tokens[1].c_str());
-	if (code < 300 || code > 399) {
-		Log::log(Log::FATAL, "Invalid return code: \"%s\" in file: %s:%d", tokens[1].c_str(), _filename.c_str(), ConfParser::countLineFile);
+	if (code < 300 || code > 399)
+	{
+		Log::log(Log::FATAL, "Invalid return code: \"%s\" in file: %s:%d",
+				 tokens[1].c_str(), _filename.c_str(),
+				 ConfParser::countLineFile);
 		exit(Log::FATAL);
 	}
 	_rewrite = std::make_pair(code, tokens[2]);
 }
 
-BlockLocation BlockLocation::getLocationConfig(std::ifstream &configFile, std::string &path)
+BlockLocation BlockLocation::getLocationConfig(std::ifstream &configFile,
+											   std::string &path)
 {
 	std::string line;
 	std::vector<std::string> tokens;
@@ -217,28 +254,30 @@ BlockLocation BlockLocation::getLocationConfig(std::ifstream &configFile, std::s
 		}
 		if (ValidLocationChecker(tokens, key))
 			continue;
-		else {
-			Log::log(Log::FATAL, "Invalid line: \"%s\" in file: %s:%d", line.c_str(), _filename.c_str(), ConfParser::countLineFile);
+		else
+		{
+			Log::log(Log::FATAL, "Invalid line: \"%s\" in file: %s:%d",
+					 line.c_str(), _filename.c_str(),
+					 ConfParser::countLineFile);
 			exit(Log::FATAL);
 		}
 	}
-	if (!isCloseLocation && !EmptyFileChecker()) {
-		Log::log(Log::FATAL, "Missing } in file: %s:%d", _filename.c_str(), ConfParser::countLineFile);
+	if (!isCloseLocation && !EmptyFileChecker())
+	{
+		Log::log(Log::FATAL, "Missing } in file: %s:%d", _filename.c_str(),
+				 ConfParser::countLineFile);
 		exit(Log::FATAL);
 	}
 	if (!DuplicateLineChecker())
-	{
-		Log::log(Log::FATAL, "Duplicate line in location context: %s", _path.c_str());
 		exit(Log::FATAL);
-	}
 	setDefaultValues();
 	return (*this);
 }
 
-
 bool BlockLocation::isMethodAllowed(e_Methods method)
 {
-	return (std::find(_allowedMethods.begin(), _allowedMethods.end(), method) != _allowedMethods.end());
+	return (std::find(_allowedMethods.begin(), _allowedMethods.end(), method) !=
+			_allowedMethods.end());
 }
 
 void BlockLocation::cleanPaths()
@@ -249,7 +288,8 @@ void BlockLocation::cleanPaths()
 	if (!_alias.empty() && _alias != "/" && _alias[_alias.size() - 1] == '/')
 		_alias.erase(_alias.size() - 1);
 
-	if (!_uploadPath.empty() && _uploadPath != "/" && _uploadPath[_uploadPath.size() - 1] == '/')
+	if (!_uploadPath.empty() && _uploadPath != "/" &&
+		_uploadPath[_uploadPath.size() - 1] == '/')
 		_uploadPath.erase(_uploadPath.size() - 1);
 }
 
@@ -274,27 +314,38 @@ e_Methods BlockLocation::ConvertStrtoMethod(const std::string &method)
  |_|   |_|  |_|_| |_|\__\___|_|  |___/
 									   */
 
-void BlockLocation::printPair(const std::string &title, const std::string &value)
+void BlockLocation::printPair(const std::string &title,
+							  const std::string &value)
 {
-	std::cout << std::setw(15) << std::left << title << ": " << (value.empty() ? "none" : value) << std::endl;
+	std::cout << std::setw(15) << std::left << title << ": "
+			  << (value.empty() ? "none" : value) << std::endl;
 }
 
-void BlockLocation::printBool(const std::string &title, bool value, const std::string &trueStr, const std::string &falseStr)
+void BlockLocation::printBool(const std::string &title, bool value,
+							  const std::string &trueStr,
+							  const std::string &falseStr)
 {
-	std::cout << std::setw(15) << std::left << title << ": " << (value ? trueStr : falseStr) << std::endl;
+	std::cout << std::setw(15) << std::left << title << ": "
+			  << (value ? trueStr : falseStr) << std::endl;
 }
 
-void BlockLocation::printVector(const std::string &title, const std::vector<std::string> &vec)
+void BlockLocation::printVector(const std::string &title,
+								const std::vector<std::string> &vec)
 {
-	std::cout << std::setw(15) << std::left << title << ": " << (vec.empty() ? "none" : "") << std::endl;
-	for (std::vector<std::string>::const_iterator it = vec.begin(); it != vec.end(); ++it)
+	std::cout << std::setw(15) << std::left << title << ": "
+			  << (vec.empty() ? "none" : "") << std::endl;
+	for (std::vector<std::string>::const_iterator it = vec.begin();
+		 it != vec.end(); ++it)
 		std::cout << "\t- " << *it << std::endl;
 }
 
-void BlockLocation::printMap(const std::string &title, const std::map<std::string, std::string> &map)
+void BlockLocation::printMap(const std::string &title,
+							 const std::map<std::string, std::string> &map)
 {
-	std::cout << std::setw(15) << std::left << title << ": " << (map.empty() ? "none" : "") << std::endl;
-	for (std::map<std::string, std::string>::const_iterator it = map.begin(); it != map.end(); ++it)
+	std::cout << std::setw(15) << std::left << title << ": "
+			  << (map.empty() ? "none" : "") << std::endl;
+	for (std::map<std::string, std::string>::const_iterator it = map.begin();
+		 it != map.end(); ++it)
 		std::cout << "\t- " << it->first << ": " << it->second << std::endl;
 }
 
@@ -308,12 +359,17 @@ void BlockLocation::printLocation(void)
 	printBool("Autoindex", _autoindex == TRUE, "on", "off");
 
 	std::cout << std::setw(15) << std::left << "Rewrite" << ": "
-			  << (_rewrite.first != 0 ? intToString(_rewrite.first) + " " + _rewrite.second : "none") << std::endl;
+			  << (_rewrite.first != 0
+					  ? intToString(_rewrite.first) + " " + _rewrite.second
+					  : "none")
+			  << std::endl;
 
 	printVector("Indexes", _indexes);
 
-	std::cout << std::setw(15) << std::left << "Allowed methods" << ": " << std::endl;
-	for (std::vector<e_Methods>::const_iterator it = _allowedMethods.begin(); it != _allowedMethods.end(); ++it)
+	std::cout << std::setw(15) << std::left << "Allowed methods" << ": "
+			  << std::endl;
+	for (std::vector<e_Methods>::const_iterator it = _allowedMethods.begin();
+		 it != _allowedMethods.end(); ++it)
 	{
 		std::cout << "\t- ";
 		if (*it == GET)

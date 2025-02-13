@@ -60,6 +60,21 @@ re: fclean all
 
 .PHONY: all clean fclean re
 
+run-bad-configs:
+	@echo "$(BOLD)$(RED)Running all .conf files in config/bad/$(RESET)"
+	@for file in config/bad/*.conf; do \
+		echo "$(BOLD)$(YELLOW)Running $$file$(RESET)"; \
+		./$(NAME) $$file; \
+	done
+
+# Cible pour exécuter tous les fichiers .conf dans config/good/
+run-good-configs:
+	@echo "$(BOLD)$(GREEN)Running all .conf files in config/good/$(RESET)"
+	@for file in config/good/*.conf; do \
+		echo "$(BOLD)$(YELLOW)Running $$file$(RESET)"; \
+		./$(NAME) $$file; \
+	done
+
 # Colors
 RED := \033[0;31m
 GREEN := \033[0;32m

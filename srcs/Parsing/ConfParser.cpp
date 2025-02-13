@@ -100,7 +100,7 @@ void ConfParser::printServers(void)
 
 /* CHECKERS Servers */
 
-void ConfParser::checkDoubleServerName()
+bool ConfParser::checkDoubleServerName()
 {
 	std::vector<std::string> serverNames;
 
@@ -109,11 +109,14 @@ void ConfParser::checkDoubleServerName()
 		std::vector<std::string> currNames = _servers[i].getServerNames();
 		for (size_t j = i + 1; j < _servers.size(); j++)
 		{
-			if (_servers[j].isServerNamePresent(currNames))
+			if (_servers[j].isServerNamePresent(currNames)) {
 				Log::log(Log::FATAL, "conflicting server name \"%s\" on %s",
 						 currNames[0].c_str(), currNames[1].c_str());
+				return false;
+			}
 		}
 	}
+	return true;
 }
 
 bool ConfParser::BlockServerBegin(std::vector<std::string> tokens)
@@ -175,7 +178,8 @@ void ConfParser::parsing(const std::string &filename)
 		_servers.push_back(server.getServerConfig(configFile));
 	}
 
-	checkDoubleServerName();
+	if (!checkDoubleServerName())
+		exit(Log::FATAL);
 	ServersListens();
 	configFile.close();
 }

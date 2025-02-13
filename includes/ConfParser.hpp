@@ -21,7 +21,7 @@ class ConfParser {
 		void parsing(const std::string &filename);
 
 		/* METHODS */
-		void checkDoubleServerName();
+		bool checkDoubleServerName();
 		bool BlockServerBegin(std::vector<std::string> tokens);
 		void ServersListens();
 
