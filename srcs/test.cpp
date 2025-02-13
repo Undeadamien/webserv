@@ -45,7 +45,7 @@ int simple_server()
 	while (true)
 	{
 		unsigned long resultLen = sizeof(sockaddr);
-		std::cout << INVERSE << "Iteration number: " << it++ << RESET
+		std::cout << INVERSE << "Request number: " << it++ << RESET
 				  << std::endl;
 		std::cout << "Listening on Port: " << PORT << std::endl;
 		connection = accept(fdSocket, (struct sockaddr *)(&address),
