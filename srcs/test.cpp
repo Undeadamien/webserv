@@ -11,7 +11,7 @@ std::string get_file_content(std::string path)
 	(void)path;
 	std::ifstream inFile(path.c_str());
 	if (!inFile)
-		throw std::runtime_error("Error: openning '" + path + "'");
+		throw std::runtime_error("Error: opening '" + path + "'");
 	std::string content;
 	std::string line;
 	while (std::getline(inFile, line)) content += line;
