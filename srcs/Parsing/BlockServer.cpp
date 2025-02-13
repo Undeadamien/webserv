@@ -425,5 +425,7 @@ BlockServer BlockServer::getServerConfig(std::ifstream &configFile)
 		exit(Log::FATAL);
 	setDefaultValue();
 	cleanPaths();
+	//if (Log::getLogDebugState())
+	//	printServer();
 	return (*this);
 }

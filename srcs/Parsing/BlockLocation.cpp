@@ -271,6 +271,8 @@ BlockLocation BlockLocation::getLocationConfig(std::ifstream &configFile,
 	if (!DuplicateLineChecker())
 		exit(Log::FATAL);
 	setDefaultValues();
+	//if (Log::getLogDebugState())
+	//	printLocation();
 	return (*this);
 }
 
