@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:49:03 by dtrala            #+#    #+#             */
-/*   Updated: 2025/02/06 01:45:50 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/02/13 00:53:31 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ typedef std::map<std::string, std::string> mapHeaders;
 class Request
 {
 public:
+	Request();
 	Request(const std::string &content);
 	Request(const Request &other);
 	Request &operator=(const Request &other);

@@ -11,7 +11,7 @@ std::string get_file_content(std::string path)
 	(void)path;
 	std::ifstream inFile(path.c_str());
 	if (!inFile)
-		throw std::exception();
+		throw std::runtime_error("Error: openning '" + path + "'");
 	std::string content;
 	std::string line;
 	while (std::getline(inFile, line)) content += line;
@@ -29,9 +29,15 @@ int simple_server()
 	address.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (bind(fdSocket, (const sockaddr *)(&address), sizeof(address)) == -1)
+	{
+		close(fdSocket);
 		return (EXIT_FAILURE);
+	}
 	if (listen(fdSocket, 10) == -1)
+	{
+		close(fdSocket);
 		return (EXIT_FAILURE);
+	}
 
 	int connection;
 	int it = 0;
@@ -45,16 +51,21 @@ int simple_server()
 		connection = accept(fdSocket, (struct sockaddr *)(&address),
 							(socklen_t *)&resultLen);
 		if ((connection) == -1)
+		{
+			close(fdSocket);
 			return (EXIT_FAILURE);
+		}
 
 		bzero(buffer, sizeof(buffer));	// clear the buffer between each request
 		read(connection, buffer, BUFFER_SIZE);
 		std::cout << "\n"
 				  << UNDERLINE << "Request" << RESET << "\n"
 				  << "\"" << buffer << "\"" << std::endl;
+
+		Request request;
 		try
 		{
-			Request request(buffer);
+			request = Request(buffer);
 			std::cout << request.getBody() << std::endl;
 		}
 		catch (std::exception &e)
@@ -65,19 +76,27 @@ int simple_server()
 
 		std::string content;
 		std::string contentLength;
+		std::string target = request.getTarget();
+		std::string root = "web";
+		if (target == "/")
+			target = "/index.html";
 		try
 		{
-			content = get_file_content("web/index.html");
+			content = get_file_content(root + target);
 			contentLength = itos(content.length());
 		}
 		catch (std::exception &e)
 		{
-			std::cerr << "Error: file content loading" << std::endl;
-			exit(1);
+			std::cerr << e.what() << std::endl;
 		}
+
+		// need to change this to Response
 		std::string response;
 		response += "HTTP/1.1 200 OK\r\n";
-		response += "Content-Type: text/html\r\n";
+		if (target.find(".html") != std::string::npos)
+			response += "Content-Type: text/html\r\n";
+		else if (target.find(".css") != std::string::npos)
+			response += "Content-Type: text/css\r\n";
 		response += "Content-Length: " + contentLength + "\r\n";
 		response += "\r\n";
 		response += content;
@@ -87,9 +106,7 @@ int simple_server()
 		send(connection, response.c_str(), response.size(), 0);
 		close(connection);
 	}
-
 	close(fdSocket);
-
 	return (EXIT_SUCCESS);
 }
 
