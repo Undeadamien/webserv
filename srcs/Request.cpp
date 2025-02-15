@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:48:41 by dtrala            #+#    #+#             */
-/*   Updated: 2025/02/11 11:37:43 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/02/13 01:49:07 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 #include "colors.hpp"
 #include "usefull.hpp"
 
+Request::Request()
+	: _method(UNKNOWN), _target(""), _protocol(""), _headers(), _body("") {};
 Request::Request(const std::string &content)
 	: _method(parseMethod(content)),
 	  _target(parseTarget(content)),
@@ -60,6 +62,7 @@ e_Methods Request::parseMethod(const std::string &content)
 	if (end == std::string::npos)
 		throw std::runtime_error("Error: parsing method of request");
 	std::string method = line.substr(0, end);
+	// this if block could be refactored
 	if (method == "GET")
 		return (GET);
 	if (method == "POST")
@@ -147,6 +150,7 @@ std::string Request::toString() const
 {
 	std::string str;
 	std::string method;
+	// this if block could be refactored
 	if (this->getMethod() == GET)
 		method = "GET";
 	else if (this->getMethod() == PUT)
