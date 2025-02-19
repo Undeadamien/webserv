@@ -3,6 +3,7 @@
 
 #include "usefull.hpp"
 #include "BlockServer.hpp"
+#include "ConfParser.hpp"
 # include <iostream>
 # include <fstream>
 # include <vector>
