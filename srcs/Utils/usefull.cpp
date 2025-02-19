@@ -10,7 +10,7 @@ std::string ullToStr(unsigned long long ull)
 	return (oss.str());
 }
 
-std::string itos(int value)
+std::string ft_itos(int value)
 {
 	std::stringstream ss;
 	ss << value;
@@ -54,7 +54,6 @@ std::vector<std::string> split(const std::string& str, char delimiter)
 	return tokens;
 }
 
-
 std::string intToString(int value)
 {
 	std::ostringstream oss;
@@ -75,9 +74,11 @@ int extractPort(const std::string& server)
 
 	if (colonPos != std::string::npos)
 	{
-		try {
+		try
+		{
 			return std::atoi((server.substr(colonPos + 1)).c_str());
-		} catch (std::runtime_error& e)
+		}
+		catch (std::runtime_error& e)
 		{
 			Log::log(Log::ERROR, e.what());
 			return -1;
@@ -90,13 +91,13 @@ std::string e_Methods_to_String(e_Methods method)
 {
 	switch (method)
 	{
-		case GET:
-			return "GET";
-		case DELETE:
-			return "DELETE";
-		case POST:
-			return "POST";
-		case UNKNOWN:
-			return "UNKNOWN";
+	case GET:
+		return "GET";
+	case DELETE:
+		return "DELETE";
+	case POST:
+		return "POST";
+	case UNKNOWN:
+		return "UNKNOWN";
 	}
 }

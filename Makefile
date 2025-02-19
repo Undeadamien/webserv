@@ -58,7 +58,8 @@ fclean: clean
 # Recompiler entièrement
 re: fclean all
 
-.PHONY: all clean fclean re
+test: all
+	valgrind -q ./$(NAME) config/good/maxBodySize.conf
 
 run-bad-configs:
 	@echo "$(BOLD)$(RED)Running all .conf files in config/bad/$(RESET)"
@@ -74,6 +75,8 @@ run-good-configs:
 		echo "$(BOLD)$(YELLOW)Running $$file$(RESET)"; \
 		./$(NAME) $$file; \
 	done
+
+.PHONY: all clean fclean re test
 
 # Colors
 RED := \033[0;31m

@@ -10,6 +10,8 @@
 
 class BlockServer;
 
+typedef std::map<std::string, std::vector<BlockServer> > MapServers;
+
 class ConfParser {
 	public:
 
@@ -32,8 +34,6 @@ class ConfParser {
 		static	bool						CheckerHttpVersion(std::string version);
 
 		/* GETTERS */
-		typedef std::map<std::string, std::vector<BlockServer> > MapServers;
-
 		MapServers getConfigs( void ) const { return _configs; }
 		MapServers &getServers( void ) { return _configs; }
 

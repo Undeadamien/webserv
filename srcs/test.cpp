@@ -1,3 +1,5 @@
+#include "test.hpp"
+
 #include <netinet/in.h>
 #include <sys/socket.h>
 
@@ -7,12 +9,12 @@
 #include <fstream>
 #include <map>
 
+#include "ConfParser.hpp"
+#include "Log.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 #include "colors.hpp"
 #include "usefull.hpp"
-#include "test.hpp"
-#include "Log.hpp"
 
 int fdSocket = -1;
 
@@ -52,11 +54,10 @@ std::string get_content_type(std::string target)
 
 int simple_server(ConfParser parser)
 {
-	//mettre dans un for
+	// mettre dans un for
 	(void)parser;
-	std::map<std::string, std::vector<BlockServer> > _servers = parser.getConfigs();
-
-	std::map<std::string, std::vector<BlockServer> >::iterator iter = _servers.begin();
+	MapServers _servers = parser.getConfigs();
+	MapServers::iterator iter = _servers.begin();
 
 	std::string server_port_str = iter->first;
 	int server_port = extractPort(server_port_str);
@@ -128,9 +129,8 @@ int simple_server(ConfParser parser)
 			exit(1);
 		};
 
-
-
-		if (parser.CheckerMethod(e_Methods_to_String(request.getMethod())) == false)
+		if (parser.CheckerMethod(e_Methods_to_String(request.getMethod())) ==
+			false)
 		{
 			Log::log(Log::ERROR, "Error: invalid method");
 			close(connection);
@@ -149,7 +149,7 @@ int simple_server(ConfParser parser)
 		try
 		{
 			content = get_file_content(root + target);
-			contentLength = itos(content.length());
+			contentLength = ft_itos(content.length());
 
 			std::map<std::string, std::string> headers;
 			headers["Content-Type"] = get_content_type(target);
@@ -163,12 +163,12 @@ int simple_server(ConfParser parser)
 		}
 		catch (std::exception &e)
 		{
-			std::cerr << e.what() << "\n";
+			Log::log(Log::ERROR, e.what());	 // change to info?
 			content = "Ressource not found";
 
 			std::map<std::string, std::string> headers;
 			headers["Content-Type"] = "text/html";
-			headers["Content-Length"] = itos(content.length());
+			headers["Content-Length"] = ft_itos(content.length());
 
 			response.setProtocol("HTTP/1.1");
 			response.setStatusCode(404);
@@ -195,7 +195,7 @@ void testResponse()
 
 	std::map<std::string, std::string> headers;
 	headers["Content-Type"] = "text/html";
-	headers["Content-Length"] = itos(content.length());
+	headers["Content-Length"] = ft_itos(content.length());
 
 	Response response;
 	response.setProtocol("HTTP/1.1");

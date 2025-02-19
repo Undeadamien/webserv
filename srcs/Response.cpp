@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:50:42 by dtrala            #+#    #+#             */
-/*   Updated: 2025/02/11 11:50:10 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/02/19 12:34:37 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ const std::string &Response::getBody() const { return (this->_body); };
 std::string Response::toString() const
 {
 	std::string str;
-	str += this->getProtocol() + " " + itos(this->getStatusCode()) + " " +
+	str += this->getProtocol() + " " + ft_itos(this->getStatusCode()) + " " +
 		   this->getStatusText() + "\r\n";
 	mapHeaders headers = this->getHeaders();
 	for (mapHeaders::iterator it = headers.begin(); it != headers.end(); it++)
@@ -92,7 +92,6 @@ std::ostream &operator<<(std::ostream &os, const Response &response)
 	os << GREEN << BOLD << "Headers:" << RESET << "\n";
 	for (mapHeaders::iterator it = headers.begin(); it != headers.end(); it++)
 		os << it->first << ": " << it->second << std::endl;
-	os << GREEN << BOLD << "Body:" << RESET << "\n"
-	   << response.getBody();
+	os << GREEN << BOLD << "Body:" << RESET << "\n" << response.getBody();
 	return (os);
 };

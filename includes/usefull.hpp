@@ -21,7 +21,7 @@ enum e_Methods
 };
 
 std::string ullToStr(unsigned long long ull);
-std::string itos(int value);
+std::string ft_itos(int value);
 std::string ltrim(std::string str, std::string set);
 std::string rtrim(std::string str, std::string set);
 std::string trim(std::string str, std::string set);
