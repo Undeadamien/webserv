@@ -31,5 +31,6 @@ std::string intToString(int value);
 std::string UIntToString(unsigned int value);
 int extractPort(const std::string& server);
 std::string e_Methods_to_String(e_Methods method);
+e_Methods str_to_e_Methods(std::string str);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:48:41 by dtrala            #+#    #+#             */
-/*   Updated: 2025/02/13 01:49:07 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/02/19 13:56:21 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,14 +62,7 @@ e_Methods Request::parseMethod(const std::string &content)
 	if (end == std::string::npos)
 		throw std::runtime_error("Error: parsing method of request");
 	std::string method = line.substr(0, end);
-	// this if block could be refactored
-	if (method == "GET")
-		return (GET);
-	if (method == "POST")
-		return (POST);
-	if (method == "DELETE")
-		return (DELETE);
-	return (UNKNOWN);  // throw an error ?
+	return (str_to_e_Methods(method));
 };
 std::string Request::parseTarget(const std::string &content)
 {
@@ -112,8 +105,7 @@ mapHeaders Request::parseHeaders(const std::string &content)
 	{
 		if (line[line.length() - 1] == '\r')
 			line = line.substr(0, line.length() - 1);
-		if (line.empty())
-			break;
+		if (line.empty()) break;
 		line = trim(line, " ");
 		if ((sep = line.find(":")) == std::string::npos)
 			throw std::runtime_error("Error: parsing missing ':' in headers");
@@ -150,11 +142,7 @@ std::string Request::toString() const
 {
 	std::string str;
 	std::string method;
-	// this if block could be refactored
-	if (this->getMethod() == GET)
-		method = "GET";
-	else if (this->getMethod() == POST)
-		method = "POST";
+	method = e_Methods_to_String(this->getMethod());
 	str += method + " " + this->getTarget() + " " + this->getProtocol();
 	str += "\r\n";
 	mapHeaders headers = this->getHeaders();

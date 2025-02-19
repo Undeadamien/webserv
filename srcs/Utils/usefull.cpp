@@ -89,15 +89,16 @@ int extractPort(const std::string& server)
 
 std::string e_Methods_to_String(e_Methods method)
 {
-	switch (method)
-	{
-	case GET:
-		return "GET";
-	case DELETE:
-		return "DELETE";
-	case POST:
-		return "POST";
-	case UNKNOWN:
-		return "UNKNOWN";
-	}
+	if (method == GET) return "GET";
+	if (method == DELETE) return "DELETE";
+	if (method == POST) return "POST";
+	return "UNKNOWN";
+}
+
+e_Methods str_to_e_Methods(std::string str)
+{
+	if (str == "GET") return (GET);
+	if (str == "POST") return (POST);
+	if (str == "DELETE") return (DELETE);
+	return (UNKNOWN);
 }

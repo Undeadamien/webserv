@@ -2,12 +2,15 @@
 
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 
 #include <cerrno>
 #include <csignal>
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <map>
+#include <stdexcept>
 
 #include "ConfParser.hpp"
 #include "Log.hpp"
@@ -37,6 +40,65 @@ std::string get_file_content(std::string path)
 	return (content);
 };
 
+std::string cgi_execute(std::string path, Request request, char **env)
+{
+	int fds[2];
+	int pid;
+	std::string method_str;
+
+	if (pipe(fds) == -1) throw std::runtime_error("Error: pipe failed");
+
+	pid = fork();
+	if (pid == -1) throw std::runtime_error("Error: fork failed");
+	if (pid == 0)
+	{
+		close(fds[0]);
+		dup2(fds[1], STDOUT_FILENO);
+		close(fds[1]);
+
+		(void)request;
+		// method_str = e_Methods_to_String(request.getMethod());
+		// setenv("REQUEST_METHOD", method_str.c_str(), 1);
+		// setenv("SCRIPT_FILENAME", path.c_str(), 1);
+
+		// determine the wrigth programm to call
+		std::string prog;
+		std::string::size_type start = path.find_last_of(".") + 1;
+		if (start == std::string::npos) return "application/octet-stream";
+		std::string extension = path.substr(start);
+		if (extension == "py") prog = "/usr/bin/python3";
+		if (extension == "pl") prog = "/usr/bin/perl";
+		if (extension == "sh") prog = "/usr/bin/bash";
+
+		char *argv[] = {
+			const_cast<char *>(prog.c_str()),
+			const_cast<char *>(path.c_str()),
+			NULL,
+		};
+		execve(prog.c_str(), argv, env);
+		exit(1);
+	}
+	else
+	{
+		close(fds[1]);
+		char buffer[1024];
+		std::string output;
+		int bytes_read;
+		while ((bytes_read = read(fds[0], buffer, sizeof(buffer) - 1)) > 0)
+		{
+			buffer[bytes_read] = '\0';
+			output += buffer;
+		}
+		close(fds[0]);
+		int status;
+		waitpid(pid, &status, 0);
+		if (output.empty()) throw std::runtime_error("Error: cgi empty output");
+		return (output);
+	}
+
+	return ("");
+}
+
 std::string get_content_type(std::string target)
 {
 	std::string::size_type start = target.find_last_of(".") + 1;
@@ -52,7 +114,7 @@ std::string get_content_type(std::string target)
 	return "application/octet-stream";
 }
 
-int simple_server(ConfParser parser)
+int simple_server(ConfParser parser, char **env)
 {
 	// mettre dans un for
 	(void)parser;
@@ -145,22 +207,54 @@ int simple_server(ConfParser parser)
 		std::string root = server.getRoot();
 		if (target == "/") target += server.getIndexes()[0];
 
+		// identify if the request is cgi
+
+		// ugly as fuck, sorry :(
 		Response response;
 		try
 		{
-			content = get_file_content(root + target);
-			contentLength = ft_itos(content.length());
+			if (target.find("/cgi-bin/") == 0)
+			{
+				// need to be improved
+				std::string uri = root + target;
+				size_t start, end;
+				start = uri.find("web/cgi-bin/");
+				end = uri.rfind("?");
+				if (start == std::string::npos || end == std::string::npos)
+					throw std::runtime_error("Error: invalid cgi uri");
+				std::string script = uri.substr(start, end - 2);
 
-			std::map<std::string, std::string> headers;
-			headers["Content-Type"] = get_content_type(target);
-			headers["Content-Length"] = contentLength;
+				std::string response_str = cgi_execute(script, request, env);
+				std::cout << UNDERLINE << "Response" << RESET << "\n"
+						  << response_str << "\n"
+						  << std::endl;
+				send(connection, response_str.c_str(), response_str.size(), 0);
+				close(connection);
+			}
+			else
+			{
+				content = get_file_content(root + target);
+				contentLength = ft_itos(content.length());
 
-			response.setProtocol("HTTP/1.1");
-			response.setStatusCode(200);
-			response.setStatusText("OK");
-			response.setHeaders(headers);
-			response.setBody(content);
+				std::map<std::string, std::string> headers;
+				headers["Content-Type"] = get_content_type(target);
+				headers["Content-Length"] = contentLength;
+
+				response.setProtocol("HTTP/1.1");
+				response.setStatusCode(200);
+				response.setStatusText("OK");
+				response.setHeaders(headers);
+				response.setBody(content);
+
+				std::string response_str = response.toString();
+				std::cout << UNDERLINE << "Response" << RESET << "\n"
+						  << response.toString() << "\n"
+						  << std::endl;
+				send(connection, response_str.c_str(), response_str.size(), 0);
+				close(connection);
+			}
 		}
+		// need to identify the error an load the appropriate page
 		catch (std::exception &e)
 		{
 			Log::log(Log::ERROR, e.what());	 // change to info?
@@ -178,12 +272,6 @@ int simple_server(ConfParser parser)
 		}
 
 		// need to change this to Response
-		std::string response_str = response.toString();
-		std::cout << UNDERLINE << "Response" << RESET << "\n"
-				  << response.toString() << "\n"
-				  << std::endl;
-		send(connection, response_str.c_str(), response_str.size(), 0);
-		close(connection);
 	}
 	close(fdSocket);
 	return (EXIT_SUCCESS);
