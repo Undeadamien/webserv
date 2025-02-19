@@ -3,7 +3,7 @@
 #include "ConfParser.hpp"
 #include "Log.hpp"
 
-std::string  ullToStr(unsigned long long ull)
+std::string ullToStr(unsigned long long ull)
 {
 	std::ostringstream oss;
 	oss << ull;
@@ -17,41 +17,32 @@ std::string itos(int value)
 	return (ss.str());
 }
 
-bool EmptyFileChecker()
-{
-	return (ConfParser::countLineFile == 0);
-}
+bool EmptyFileChecker() { return (ConfParser::countLineFile == 0); }
 
 std::string ltrim(std::string str, std::string set)
 {
-	if (set.empty())
-		return (str);
+	if (set.empty()) return (str);
 	size_t start = str.find_first_not_of(set);
-	if (start == std::string::npos)
-		return (str);
+	if (start == std::string::npos) return (str);
 	return (str.substr(start));
 }
 std::string rtrim(std::string str, std::string set)
 {
-	if (set.empty())
-		return (str);
+	if (set.empty()) return (str);
 	size_t end = str.find_last_not_of(set);
-	if (end == std::string::npos)
-		return (str);
+	if (end == std::string::npos) return (str);
 	return (str.substr(0, end + 1));
 }
 std::string trim(std::string str, std::string set)
 {
-	if (set.empty())
-		return (str);
+	if (set.empty()) return (str);
 	size_t start = str.find_first_not_of(set);
 	size_t end = str.find_last_not_of(set);
-	if (start == std::string::npos || end == std::string::npos)
-		return (str);
+	if (start == std::string::npos || end == std::string::npos) return (str);
 	return (str.substr(start, end - start + 1));
 };
 
-std::vector<std::string> split(const std::string &str, char delimiter)
+std::vector<std::string> split(const std::string& str, char delimiter)
 {
 	std::vector<std::string> tokens;
 	std::stringstream ss(str);	// Utilise un flux pour découper la chaîne
@@ -62,6 +53,7 @@ std::vector<std::string> split(const std::string &str, char delimiter)
 	}
 	return tokens;
 }
+
 
 std::string intToString(int value)
 {
@@ -75,4 +67,36 @@ std::string UIntToString(unsigned int value)
 	std::ostringstream oss;
 	oss << value;
 	return oss.str();
+}
+
+int extractPort(const std::string& server)
+{
+	size_t colonPos = server.find(':');
+
+	if (colonPos != std::string::npos)
+	{
+		try {
+			return std::atoi((server.substr(colonPos + 1)).c_str());
+		} catch (std::runtime_error& e)
+		{
+			Log::log(Log::ERROR, e.what());
+			return -1;
+		}
+	}
+	return -1;
+}
+
+std::string e_Methods_to_String(e_Methods method)
+{
+	switch (method)
+	{
+		case GET:
+			return "GET";
+		case DELETE:
+			return "DELETE";
+		case POST:
+			return "POST";
+		case UNKNOWN:
+			return "UNKNOWN";
+	}
 }

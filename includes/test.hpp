@@ -7,6 +7,6 @@
 #include "usefull.hpp"
 
 std::string get_file_content(std::string path);
-int simple_server();
+int simple_server(ConfParser parser);
 void testResponse();
 void testRequest();

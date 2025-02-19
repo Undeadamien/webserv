@@ -153,8 +153,6 @@ std::string Request::toString() const
 	// this if block could be refactored
 	if (this->getMethod() == GET)
 		method = "GET";
-	else if (this->getMethod() == PUT)
-		method = "PUT";
 	else if (this->getMethod() == POST)
 		method = "POST";
 	str += method + " " + this->getTarget() + " " + this->getProtocol();

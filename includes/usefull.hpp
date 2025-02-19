@@ -17,7 +17,6 @@ enum e_Methods
 	GET,
 	POST,
 	DELETE,
-	PUT,
 	UNKNOWN
 };
 
@@ -27,8 +26,10 @@ std::string ltrim(std::string str, std::string set);
 std::string rtrim(std::string str, std::string set);
 std::string trim(std::string str, std::string set);
 bool EmptyFileChecker();
-std::vector<std::string> split(const std::string &str, char delimiter);
+std::vector<std::string> split(const std::string& str, char delimiter);
 std::string intToString(int value);
 std::string UIntToString(unsigned int value);
+int extractPort(const std::string& server);
+std::string e_Methods_to_String(e_Methods method);
 
 #endif

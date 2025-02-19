@@ -145,7 +145,7 @@ void ConfParser::parsing(const std::string &filename)
 	{
 		Log::log(Log::FATAL, "File %s can't be opened or doesn't exist",
 				 _filename.c_str());
-		return;
+		exit(Log::FATAL);
 	}
 
 	std::string line;
@@ -169,6 +169,7 @@ void ConfParser::parsing(const std::string &filename)
 		{
 			Log::log(Log::FATAL, "Invalid line: \"%s\" in file: %s:%d",
 					 line.c_str(), _filename.c_str(), countLineFile);
+			exit(Log::FATAL);
 		}
 	}
 

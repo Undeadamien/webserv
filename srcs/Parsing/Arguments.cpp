@@ -25,14 +25,14 @@ bool check_arguments(int argc, char **argv)
 
 bool filename_parser(const std::string &filename)
 {
-	if (filename.size() < 6)
-	{
-		Log::log(Log::FATAL, "Less than 6 caracters");
-		return false;
-	}
 	if (filename.substr(filename.size() - 5) != ".conf")
 	{
 		Log::log(Log::FATAL, "Invalid extension");
+		return false;
+	}
+	if (filename.size() < 6)
+	{
+		Log::log(Log::FATAL, "Invalid filename");
 		return false;
 	}
 	return true;

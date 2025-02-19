@@ -11,6 +11,8 @@
 #include "Response.hpp"
 #include "colors.hpp"
 #include "usefull.hpp"
+#include "test.hpp"
+#include "Log.hpp"
 
 int fdSocket = -1;
 
@@ -48,8 +50,24 @@ std::string get_content_type(std::string target)
 	return "application/octet-stream";
 }
 
-int simple_server()
+int simple_server(ConfParser parser)
 {
+	//mettre dans un for
+	(void)parser;
+	std::map<std::string, std::vector<BlockServer> > _servers = parser.getConfigs();
+
+	std::map<std::string, std::vector<BlockServer> >::iterator iter = _servers.begin();
+
+	std::string server_port_str = iter->first;
+	int server_port = extractPort(server_port_str);
+	if (server_port == -1)
+	{
+		std::cerr << "Error: invalid server ip" << std::endl;
+		return (EXIT_FAILURE);
+	}
+
+	BlockServer server = iter->second[0];
+
 	signal(SIGINT, handle_signal);
 	if ((fdSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
@@ -58,7 +76,7 @@ int simple_server()
 	}
 	sockaddr_in address;
 	address.sin_family = AF_INET;
-	address.sin_port = htons(PORT);
+	address.sin_port = htons(server_port);
 	address.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (bind(fdSocket, (const sockaddr *)(&address), sizeof(address)) == -1)
@@ -82,7 +100,7 @@ int simple_server()
 		unsigned long resultLen = sizeof(sockaddr);
 		std::cout << INVERSE << "Request number: " << it++ << RESET
 				  << std::endl;
-		std::cout << "Listening on Port: " << PORT << std::endl;
+		std::cout << "Listening on Port: " << server_port << std::endl;
 		connection = accept(fdSocket, (struct sockaddr *)(&address),
 							(socklen_t *)&resultLen);
 		if ((connection) == -1)
@@ -110,11 +128,22 @@ int simple_server()
 			exit(1);
 		};
 
+
+
+		if (parser.CheckerMethod(e_Methods_to_String(request.getMethod())) == false)
+		{
+			Log::log(Log::ERROR, "Error: invalid method");
+			close(connection);
+			continue;
+		}
+
+		// bien verifier la priorite des indexes
+
 		std::string content;
 		std::string contentLength;
 		std::string target = request.getTarget();
-		std::string root = "web";
-		if (target == "/") target = "/index.html";
+		std::string root = server.getRoot();
+		if (target == "/") target += server.getIndexes()[0];
 
 		Response response;
 		try

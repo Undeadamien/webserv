@@ -32,8 +32,10 @@ class ConfParser {
 		static	bool						CheckerHttpVersion(std::string version);
 
 		/* GETTERS */
-		std::map<std::string, std::vector<BlockServer> > getConfigs( void ) const { return _configs; }
-		std::map<std::string, std::vector<BlockServer> > &getServers( void ) { return _configs; }
+		typedef std::map<std::string, std::vector<BlockServer> > MapServers;
+
+		MapServers getConfigs( void ) const { return _configs; }
+		MapServers &getServers( void ) { return _configs; }
 
 		void printServers();
 
@@ -41,7 +43,7 @@ class ConfParser {
 		std::string _filename;
 
 		std::vector<BlockServer> _servers;
-		std::map<std::string, std::vector<BlockServer> > _configs;
+		MapServers _configs;
 
 		/* GETTERS */
 		static std::vector<std::string>	_getSupportedMethods(void);
