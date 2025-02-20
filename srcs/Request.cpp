@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:48:41 by dtrala            #+#    #+#             */
-/*   Updated: 2025/02/19 13:56:21 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/02/20 03:11:41 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,12 @@
 
 Request::Request()
 	: _method(UNKNOWN), _target(""), _protocol(""), _headers(), _body("") {};
-Request::Request(const std::string &content)
-	: _method(parseMethod(content)),
-	  _target(parseTarget(content)),
-	  _protocol(parseProtocol(content)),
-	  _headers(parseHeaders(content)),
-	  _body(parseBody(content)) {};
+Request::Request(const std::string &raw)
+	: _method(parseMethod(raw)),
+	  _target(parseTarget(raw)),
+	  _protocol(parseProtocol(raw)),
+	  _headers(parseHeaders(raw)),
+	  _body(parseBody(raw)) {};
 Request::Request(const Request &other)
 	: _method(other._method),
 	  _target(other._target),
@@ -108,7 +108,8 @@ mapHeaders Request::parseHeaders(const std::string &content)
 		if (line.empty()) break;
 		line = trim(line, " ");
 		if ((sep = line.find(":")) == std::string::npos)
-			throw std::runtime_error("Error: parsing missing ':' in headers");
+			throw std::runtime_error(
+				"Error: parsing missing ':' in headers of request");
 		key = trim(line.substr(0, sep), " ");
 		value = trim(line.substr(sep + 1), " ");
 		headers[key] = value;

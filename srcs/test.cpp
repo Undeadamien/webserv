@@ -224,11 +224,12 @@ int simple_server(ConfParser parser, char **env)
 					throw std::runtime_error("Error: invalid cgi uri");
 				std::string script = uri.substr(start, end - 2);
 
-				std::string response_str = cgi_execute(script, request, env);
+				std::string cgi_output = cgi_execute(script, request, env);
+				response = Response(cgi_output);
 				std::cout << UNDERLINE << "Response" << RESET << "\n"
-						  << response_str << "\n"
+						  << response.toString() << "\n"
 						  << std::endl;
-				send(connection, response_str.c_str(), response_str.size(), 0);
+				send(connection, cgi_output.c_str(), cgi_output.size(), 0);
 				close(connection);
 			}
 			else
@@ -241,7 +242,7 @@ int simple_server(ConfParser parser, char **env)
 				headers["Content-Length"] = contentLength;
 
 				response.setProtocol("HTTP/1.1");
-				response.setStatusCode(200);
+				response.setStatusCode("200");
 				response.setStatusText("OK");
 				response.setHeaders(headers);
 				response.setBody(content);
@@ -265,7 +266,7 @@ int simple_server(ConfParser parser, char **env)
 			headers["Content-Length"] = ft_itos(content.length());
 
 			response.setProtocol("HTTP/1.1");
-			response.setStatusCode(404);
+			response.setStatusCode("404");
 			response.setStatusText("NOK");
 			response.setHeaders(headers);
 			response.setBody(content);
@@ -287,7 +288,7 @@ void testResponse()
 
 	Response response;
 	response.setProtocol("HTTP/1.1");
-	response.setStatusCode(200);
+	response.setStatusCode("200");
 	response.setStatusText("OK");
 	response.setHeaders(headers);
 	response.setBody(content);
