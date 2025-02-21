@@ -12,6 +12,7 @@
 #include <map>
 #include <stdexcept>
 
+#include "BlockServer.hpp"
 #include "ConfParser.hpp"
 #include "Log.hpp"
 #include "Request.hpp"
@@ -40,11 +41,20 @@ std::string get_file_content(std::string path)
 	return (content);
 };
 
-std::string cgi_execute(std::string path, Request request, char **env)
+std::string cgi_execute(Request request, BlockServer conf_server, char **env)
 {
 	int fds[2];
 	int pid;
 	std::string method_str;
+
+	std::string uri = conf_server.getRoot() + request.getTarget();
+	size_t start, end;
+	start = uri.find("web/cgi-bin/");
+	end = uri.rfind("?");
+	if (start == std::string::npos || end == std::string::npos)
+		throw std::runtime_error("Error: invalid cgi script path ?");
+	std::string path = uri.substr(start, end - 2);
+	std::cerr << RED << path << RESET << std::endl;
 
 	if (pipe(fds) == -1) throw std::runtime_error("Error: pipe failed");
 
@@ -66,6 +76,7 @@ std::string cgi_execute(std::string path, Request request, char **env)
 		std::string::size_type start = path.find_last_of(".") + 1;
 		if (start == std::string::npos) return "application/octet-stream";
 		std::string extension = path.substr(start);
+		// need to be changed
 		if (extension == "py") prog = "/usr/bin/python3";
 		if (extension == "pl") prog = "/usr/bin/perl";
 		if (extension == "sh") prog = "/usr/bin/bash";
@@ -215,16 +226,7 @@ int simple_server(ConfParser parser, char **env)
 		{
 			if (target.find("/cgi-bin/") == 0)
 			{
-				// need to be improved
-				std::string uri = root + target;
-				size_t start, end;
-				start = uri.find("web/cgi-bin/");
-				end = uri.rfind("?");
-				if (start == std::string::npos || end == std::string::npos)
-					throw std::runtime_error("Error: invalid cgi uri");
-				std::string script = uri.substr(start, end - 2);
-
-				std::string cgi_output = cgi_execute(script, request, env);
+				std::string cgi_output = cgi_execute(request, server, env);
 				response = Response(cgi_output);
 				std::cout << UNDERLINE << "Response" << RESET << "\n"
 						  << response.toString() << "\n"
