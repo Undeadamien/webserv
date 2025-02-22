@@ -8,6 +8,7 @@
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
 #include <fstream>
 #include <map>
 #include <stdexcept>
@@ -22,13 +23,36 @@
 
 int fdSocket = -1;
 
-// could delete this signal handler and use a destructor
 void handle_signal(int signal)
 {
 	if (signal != SIGINT) return;
 	std::cout << "\rStopping the server " << std::endl;
 	if (fdSocket != -1) close(fdSocket);
-	exit(EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);	 // will not cleanup, should be replaced with a flag
+}
+
+std::string get_content_type(std::string target)
+{
+	static std::map<std::string, std::string> mapMime;
+	if (mapMime.empty())
+	{
+		mapMime["css"] = "text/css";
+		mapMime["html"] = "text/html";
+		mapMime["jpeg"] = "image/jpeg";
+		mapMime["jpg"] = "image/jpeg";
+		mapMime["js"] = "application/javascript";
+		mapMime["json"] = "application/json";
+		mapMime["png"] = "image/png";
+		//...
+	}
+
+	std::string::size_type start = target.find_last_of(".") + 1;
+	if (start == std::string::npos) return "application/octet-stream";
+
+	std::string extension = target.substr(start);
+	std::map<std::string, std::string>::iterator it = mapMime.find(extension);
+	if (it != mapMime.end()) return it->second;
+	return "application/octet-stream";
 }
 
 std::string get_file_content(std::string path)
@@ -41,25 +65,116 @@ std::string get_file_content(std::string path)
 	return (content);
 };
 
-std::string cgi_execute(Request request, BlockServer conf_server, char **env)
+Response create_response_error(std::string protocol, std::string status_code,
+							   std::string status_text)
+{
+	Response response;
+	std::string content;
+	std::map<std::string, std::string> headers;
+
+	content += "<html>";
+	content += "<body>";
+	content += "<p>SpiderServ</p>";
+	content += "<p>Error " + status_code + "</p>";
+	content += "</body>";
+	content += "</html>";
+
+	headers["Content-Type"] = "text/html";
+	headers["Content-Length"] = ft_itos(content.length());
+
+	response.setProtocol(protocol);
+	response.setStatusCode(status_code);
+	response.setStatusText(status_text);
+	response.setHeaders(headers);
+	response.setBody(content);
+
+	return (response);
+};
+
+Response create_response_error(std::string protocol, std::string status_code,
+							   std::string status_text, std::string path)
+{
+	Response response;
+	std::string content;
+	std::map<std::string, std::string> headers;
+
+	try
+	{
+		std::string file_content = get_file_content(path);
+		if (file_content.empty())
+			throw std::runtime_error("Error: empty error page");
+		content = file_content;
+	}
+	catch (std::exception &e)
+	{
+		Log::log(Log::ERROR, e.what());
+		content += "<html>";
+		content += "<body>";
+		content += "<p>SpiderServ</p>";
+		content += "<p>Error " + status_code + "</p>";
+		content += "</body>";
+		content += "</html>";
+	}
+
+	headers["Content-Type"] = "text/html";
+	headers["Content-Length"] = ft_itos(content.length());
+
+	response.setProtocol(protocol);
+	response.setStatusCode(status_code);
+	response.setStatusText(status_text);
+	response.setHeaders(headers);
+	response.setBody(content);
+
+	return (response);
+};
+
+Response create_response_page(Request request, BlockServer server)
+{
+	Response response;
+	std::map<std::string, std::string> headers;
+	std::string content;
+	std::string contentLength;
+	std::string target = request.getTarget();
+	std::string root = server.getRoot();
+
+	if (target == "/") target += server.getIndexes()[0];  // need to be adapted
+
+	content = get_file_content(root + target);	// can throw
+	contentLength = ft_itos(content.length());
+
+	headers["Content-Type"] = get_content_type(target);
+	headers["Content-Length"] = contentLength;
+
+	response.setProtocol("HTTP/1.1");
+	response.setStatusCode("200");
+	response.setStatusText("OK");
+	response.setHeaders(headers);
+	response.setBody(content);
+
+	return (response);
+};
+
+std::string cgi_execute(const Request &request, const BlockServer &conf_server,
+						char **env)
 {
 	int fds[2];
 	int pid;
 	std::string method_str;
-
-	std::string uri = conf_server.getRoot() + request.getTarget();
 	size_t start, end;
-	start = uri.find("web/cgi-bin/");
-	end = uri.rfind("?");
+	std::string target;	 // might change the name
+	std::string path;
+
+	target = conf_server.getRoot() + request.getTarget();
+	start = target.find("web/cgi-bin/");
+	end = target.rfind("?");
 	if (start == std::string::npos || end == std::string::npos)
 		throw std::runtime_error("Error: invalid cgi script path ?");
-	std::string path = uri.substr(start, end - 2);
-	std::cerr << RED << path << RESET << std::endl;
+	path = target.substr(start, end - 2);
 
-	if (pipe(fds) == -1) throw std::runtime_error("Error: pipe failed");
+	if (pipe(fds) == -1) throw std::runtime_error("Error: cgi pipe failed");
 
 	pid = fork();
-	if (pid == -1) throw std::runtime_error("Error: fork failed");
+	if (pid == -1) throw std::runtime_error("Error: cgi fork failed");
 	if (pid == 0)
 	{
 		close(fds[0]);
@@ -76,6 +191,7 @@ std::string cgi_execute(Request request, BlockServer conf_server, char **env)
 		std::string::size_type start = path.find_last_of(".") + 1;
 		if (start == std::string::npos) return "application/octet-stream";
 		std::string extension = path.substr(start);
+
 		// need to be changed
 		if (extension == "py") prog = "/usr/bin/python3";
 		if (extension == "pl") prog = "/usr/bin/perl";
@@ -91,38 +207,24 @@ std::string cgi_execute(Request request, BlockServer conf_server, char **env)
 	}
 	else
 	{
-		close(fds[1]);
 		char buffer[1024];
-		std::string output;
 		int bytes_read;
+		int status;
+		std::string output;
+
+		close(fds[1]);
+
 		while ((bytes_read = read(fds[0], buffer, sizeof(buffer) - 1)) > 0)
 		{
 			buffer[bytes_read] = '\0';
 			output += buffer;
 		}
 		close(fds[0]);
-		int status;
 		waitpid(pid, &status, 0);
 		if (output.empty()) throw std::runtime_error("Error: cgi empty output");
 		return (output);
 	}
-
 	return ("");
-}
-
-std::string get_content_type(std::string target)
-{
-	std::string::size_type start = target.find_last_of(".") + 1;
-	if (start == std::string::npos) return "application/octet-stream";
-	std::string extension = target.substr(start);
-	if (extension == "css") return "text/css";
-	if (extension == "html") return "text/html";
-	if (extension == "jpeg") return "image/jpeg";
-	if (extension == "jpg") return "image/jpeg";
-	if (extension == "js") return "application/javascript";
-	if (extension == "json") return "application/json";
-	if (extension == "png") return "image/png";
-	return "application/octet-stream";
 }
 
 int simple_server(ConfParser parser, char **env)
@@ -199,7 +301,7 @@ int simple_server(ConfParser parser, char **env)
 		catch (std::exception &e)
 		{
 			std::cerr << e.what() << std::endl;
-			exit(1);
+			exit(1);  // should be replaced
 		};
 
 		if (parser.CheckerMethod(e_Methods_to_String(request.getMethod())) ==
@@ -210,71 +312,29 @@ int simple_server(ConfParser parser, char **env)
 			continue;
 		}
 
-		// bien verifier la priorite des indexes
-
-		std::string content;
-		std::string contentLength;
-		std::string target = request.getTarget();
-		std::string root = server.getRoot();
-		if (target == "/") target += server.getIndexes()[0];
-
-		// identify if the request is cgi
-
-		// ugly as fuck, sorry :(
 		Response response;
+		std::string target = request.getTarget();
+		if (target == "/")
+			target += server.getIndexes()[0];  // need to be adapted
 		try
 		{
 			if (target.find("/cgi-bin/") == 0)
-			{
-				std::string cgi_output = cgi_execute(request, server, env);
-				response = Response(cgi_output);
-				std::cout << UNDERLINE << "Response" << RESET << "\n"
-						  << response.toString() << "\n"
-						  << std::endl;
-				send(connection, cgi_output.c_str(), cgi_output.size(), 0);
-				close(connection);
-			}
+				response = Response(cgi_execute(request, server, env));
 			else
-			{
-				content = get_file_content(root + target);
-				contentLength = ft_itos(content.length());
-
-				std::map<std::string, std::string> headers;
-				headers["Content-Type"] = get_content_type(target);
-				headers["Content-Length"] = contentLength;
-
-				response.setProtocol("HTTP/1.1");
-				response.setStatusCode("200");
-				response.setStatusText("OK");
-				response.setHeaders(headers);
-				response.setBody(content);
-
-				std::string response_str = response.toString();
-				std::cout << UNDERLINE << "Response" << RESET << "\n"
-						  << response.toString() << "\n"
-						  << std::endl;
-				send(connection, response_str.c_str(), response_str.size(), 0);
-				close(connection);
-			}
+				response = create_response_page(request, server);
 		}
-		// need to identify the error an load the appropriate page
 		catch (std::exception &e)
 		{
-			Log::log(Log::ERROR, e.what());	 // change to info?
-			content = "Ressource not found";
-
-			std::map<std::string, std::string> headers;
-			headers["Content-Type"] = "text/html";
-			headers["Content-Length"] = ft_itos(content.length());
-
-			response.setProtocol("HTTP/1.1");
-			response.setStatusCode("404");
-			response.setStatusText("NOK");
-			response.setHeaders(headers);
-			response.setBody(content);
+			Log::log(Log::ERROR, e.what());
+			response = create_response_error("HTTP/1.1", "404", "NOK", "");
 		}
+		std::cout << UNDERLINE << "Response" << RESET << "\n"
+				  << response.toString() << "\n"
+				  << std::endl;
 
-		// need to change this to Response
+		std::string response_char = response.toString();
+		send(connection, response_char.c_str(), response_char.size(), 0);
+		close(connection);
 	}
 	close(fdSocket);
 	return (EXIT_SUCCESS);
@@ -282,13 +342,15 @@ int simple_server(ConfParser parser, char **env)
 
 void testResponse()
 {
-	std::string content = "Body of test response";
-
+	Response response;
 	std::map<std::string, std::string> headers;
+	std::string content;
+
+	content = "Body of test response";
+
 	headers["Content-Type"] = "text/html";
 	headers["Content-Length"] = ft_itos(content.length());
 
-	Response response;
 	response.setProtocol("HTTP/1.1");
 	response.setStatusCode("200");
 	response.setStatusText("OK");
