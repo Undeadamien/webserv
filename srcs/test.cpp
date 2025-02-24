@@ -14,6 +14,7 @@
 #include <stdexcept>
 
 #include "BlockServer.hpp"
+#include "BlockLocation.hpp"
 #include "ConfParser.hpp"
 #include "Log.hpp"
 #include "Request.hpp"
@@ -171,6 +172,9 @@ std::string cgi_execute(const Request &request, const BlockServer &conf_server,
 		throw std::runtime_error("Error: invalid cgi script path ?");
 	path = target.substr(start, end - 2);
 
+	BlockServer server = conf_server;
+	std::vector<BlockLocation> location = 
+
 	if (pipe(fds) == -1) throw std::runtime_error("Error: cgi pipe failed");
 
 	pid = fork();
@@ -196,6 +200,8 @@ std::string cgi_execute(const Request &request, const BlockServer &conf_server,
 		if (extension == "py") prog = "/usr/bin/python3";
 		if (extension == "pl") prog = "/usr/bin/perl";
 		if (extension == "sh") prog = "/usr/bin/bash";
+
+
 
 		char *argv[] = {
 			const_cast<char *>(prog.c_str()),

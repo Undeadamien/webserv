@@ -108,8 +108,7 @@ bool BlockServer::ValidServerChecker(std::vector<std::string> &tokens,
 									 std::string &key,
 									 std::ifstream &configFile)
 {
-	if (tokens.size() < 2)
-		return false;
+	if (tokens.size() < 2) return false;
 	if (isStartBlockLocation(tokens))
 	{
 		BlockLocation location(_filename);
@@ -174,10 +173,8 @@ void BlockServer::setDefaultValue()
 		ListenIpConfParse listen("0.0.0.0:1234");
 		_listens["0.0.0.0:1234"] = listen;
 	}
-	if (_root.empty())
-		_root = "./www/main";
-	if (_indexes.empty())
-		_indexes.push_back("index.html");
+	if (_root.empty()) _root = "./www/main";
+	if (_indexes.empty()) _indexes.push_back("index.html");
 }
 
 bool BlockServer::isServerNamePresent(std::vector<std::string> &otherNames)
@@ -217,14 +214,12 @@ void BlockServer::addErrorPages(int errorCode, std::string file)
 	{
 		Log::log(Log::FATAL, "Invalid error code: %d in file %s:%d", errorCode,
 				 _filename.c_str(), ConfParser::countLineFile);
-		exit(Log::FATAL);
 	}
 
 	// Vérifie qu'on n'ajoute pas un code d'erreur en double
 	if (_errorPages.find(errorCode) != _errorPages.end())
 	{
 		Log::log(Log::FATAL, "Duplicate error code: %d", errorCode);
-		exit(Log::FATAL);
 	}
 
 	// Ajoute le fichier d'erreur
@@ -376,8 +371,18 @@ BlockLocation *BlockServer::LocationPositionChecker(const std::string &part)
 
 	for (it = _locations.begin(); it != _locations.end(); ++it)
 	{
-		if (part.find(it->getPath()) == 0)
-			return &(*it);
+		if (part.find(it->getPath()) == 0) return &(*it);
+	}
+	return NULL;
+}
+
+BlockLocation *BlockServer::getLocationByPath(const std::string &path)
+{
+	std::vector<BlockLocation>::iterator it;
+
+	for (it = _locations.begin(); it != _locations.end(); ++it)
+	{
+		if (strcmp(it->getPath().c_str(), path.c_str()) == 0) return &(*it);
 	}
 	return NULL;
 }
@@ -402,8 +407,7 @@ BlockServer BlockServer::getServerConfig(std::ifstream &configFile)
 	{
 		ConfParser::countLineFile++;
 		line = trim(line, " \t\n\r\f\v");
-		if (line.empty() || line[0] == '#')
-			continue;
+		if (line.empty() || line[0] == '#') continue;
 		tokens = split(line, ' ');
 		key = tokens[0];
 		if (key[0] == '}' && key.size() == 1 && tokens.size() == 1)
@@ -421,11 +425,7 @@ BlockServer BlockServer::getServerConfig(std::ifstream &configFile)
 	if (isCloseServer == false && !EmptyFileChecker())
 		Log::log(Log::FATAL, "Missing } in file %s:%d", _filename.c_str(),
 				 ConfParser::countLineFile);
-	if ((!DoubleLocationChecker()) || (!DoubleLineChecker()))
-		exit(Log::FATAL);
-	setDefaultValue();
+	if ((!DoubleLocationChecker()) || (!DoubleLineChecker())) setDefaultValue();
 	cleanPaths();
-	if (Log::getLogDebugState())
-		printServer();
 	return (*this);
 }

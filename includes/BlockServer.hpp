@@ -48,6 +48,7 @@ class BlockServer {
 		BlockServer getServerConfig(std::ifstream &file_config);
 
 		// Getters
+		BlockLocation* getLocationByPath(const std::string &path);
 		const std::map<int, std::string> &getErrorPages() const { return _errorPages; }
 		const std::vector<std::string> &getServerNames() const { return _serverNames; }
 		std::vector<BlockLocation>* getLocations() { return &_locations; }
