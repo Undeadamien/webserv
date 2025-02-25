@@ -1,38 +1,48 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Socket.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/19 23:47:55 by dtrala            #+#    #+#             */
-/*   Updated: 2025/01/19 23:48:42 by dtrala           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "Socket.hpp"
 
 #include <netinet/in.h>
 
-Socket::Socket() {};
-Socket::Socket(const Socket &other)
+Socket::Socket(void) : _fd(-1) {}
+
+Socket::Socket(int fd, std::string ip, unsigned int port, std::vector<BlockServer>* servers) : _fd(fd), _ip(ip), _port(port), _servers(servers)
 {
-	this->_fd = other._fd;
-	this->_address = other._address;
-};
-Socket &Socket::operator=(const Socket &other)
-{
-	if (this != &other)
-	{
-		this->_fd = other._fd;
-		this->_address = other._address;
+	Log::log(Log::INFO, "Initializing socket on %s:%d", ip.c_str(), port);
+	try {
+		this->_addr.sin_family = AF_INET;
+		this->_addr.sin_port = htons(port);
+		this->_addr.sin_addr.s_addr = inet_addr(ip.c_str());
+		VerifFatalCallFonc(fcntl(this->_fd, F_SETFL, O_NONBLOCK), "[Socket] Failed to set socket to non-blocking");
+		int optval = 1;
+		VerifFatalCallFonc(setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int)), "[Socket] Failed to set socket options");
+		VerifFatalCallFonc(bind(this->_fd, (struct sockaddr *)&this->_addr, sizeof(this->_addr)), "[Socket] Failed to bind socket");
+		VerifFatalCallFonc(listen(this->_fd, BACKLOGS), "[Socket] Failed to listen on socket");	}
+	catch (std::exception &e) {
+		if (this->_fd != -1)
+			VerifFatalCallFonc(close(this->_fd), "[Socket] Faild to close socket", false);
+		Log::log(Log::FATAL, "Failed to initialize socket on %s:%d", ip.c_str(), port);
 	}
-	return (*this);
-};
-Socket::~Socket() {};
+}
 
-void Socket::setFd(int value) { this->_fd = value; };
-void Socket::setAddress(sockaddr_in address) { this->_address = address; };
+Socket::Socket(const Socket &src)
+{
+	*this = src;
+}
 
-int Socket::getFd() { return (this->_fd); };
-sockaddr_in Socket::getAddress() { return (this->_address); };
+Socket::~Socket(void)
+{
+	if (this->_fd != -1)
+		VerifFatalCallFonc(close(this->_fd), "Faild to close socket", false);
+}
+
+Socket &Socket::operator=(const Socket &rhs)
+{
+	if (this != &rhs)
+	{
+		this->_ip = rhs._ip;
+		this->_port = rhs._port;
+		this->_fd = rhs._fd;
+		this->_servers = rhs._servers;
+		this->_addr = rhs._addr;
+	}
+	return *this;
+}

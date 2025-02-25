@@ -173,7 +173,7 @@ std::string cgi_execute(const Request &request, const BlockServer &conf_server,
 	path = target.substr(start, end - 2);
 
 	BlockServer server = conf_server;
-	std::vector<BlockLocation> location = 
+	std::vector<BlockLocation> location =
 
 	if (pipe(fds) == -1) throw std::runtime_error("Error: cgi pipe failed");
 

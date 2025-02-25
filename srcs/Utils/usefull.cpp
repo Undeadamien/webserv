@@ -87,6 +87,19 @@ int extractPort(const std::string& server)
 	return -1;
 }
 
+std::string extractIp(const std::string& server)
+{
+    size_t colonPos = server.find(':');
+
+    if (colonPos != std::string::npos)
+    {
+        return server.substr(0, colonPos);
+    }
+    return server; // Retourne la chaîne complète si aucun ':' n'est trouvé
+}
+
+
+
 std::string e_Methods_to_String(e_Methods method)
 {
 	if (method == GET) return "GET";
@@ -101,4 +114,16 @@ e_Methods str_to_e_Methods(std::string str)
 	if (str == "POST") return (POST);
 	if (str == "DELETE") return (DELETE);
 	return (UNKNOWN);
+}
+
+int VerifFatalCallFonc(int ret, std::string msg, bool isFatal)
+{
+	if (ret < 0)
+	{
+		if (isFatal)
+			Log::log(Log::FATAL, msg.c_str());
+		else
+			Log::log(Log::ERROR, msg.c_str());
+	}
+	return ret;
 }

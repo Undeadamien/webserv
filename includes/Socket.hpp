@@ -1,38 +1,38 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Socket.hpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/19 23:47:55 by dtrala            #+#    #+#             */
-/*   Updated: 2025/01/30 12:34:45 by dtrala           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef SOCKET_HPP
-#define SOCKET_HPP
+# define SOCKET_HPP
 
-#include <netinet/in.h>
+# include <iostream>
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <arpa/inet.h>
+
+# include "usefull.hpp"
+# include "BlockServer.hpp"
+
+#define BACKLOGS 100
 
 class Socket
 {
-public:
-	Socket();
-	Socket(const Socket &other);
-	Socket &operator=(const Socket &other);
-	~Socket();
+	private:
+		int							_fd;
+		std::string					_ip;
+		unsigned int				_port;
+		std::vector<BlockServer>*	_servers;
+		struct sockaddr_in			_addr;
+	public:
+		Socket(void);
+		Socket(int fd, std::string ip, unsigned int port, std::vector<BlockServer>* servers);
+		Socket(Socket const &src);
+		~Socket(void);
 
-	void setFd(int value);
-	void setAddress(sockaddr_in address);
+		Socket &operator=(const Socket &rhs);
 
-	int getFd();
-	sockaddr_in getAddress();
-
-protected:
-private:
-	int _fd;
-	sockaddr_in _address;
+		/* GETTERS */
+		std::string getIp(void) const { return _ip; }
+		unsigned int getPort(void) const { return _port; }
+		int getFd(void) const { return _fd; }
+		std::vector<BlockServer>* getServers(void) const { return _servers; }
+		struct sockaddr_in getAddr(void) const { return _addr; }
 };
 
-#endif
+#endif // SOCKET_HPP
