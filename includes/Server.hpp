@@ -17,6 +17,9 @@
 # include "Request.hpp"
 #include "Socket_utils.hpp"
 
+class BlockServer;
+class ConfParser;
+class Socket;
 
 # define SERVER_DEFAULT_EPOLL_WAIT 500
 #define TIMEOUT_CHECK_INTERVAL 5
@@ -54,8 +57,18 @@ class Server
 
 
 		/* HANDLE */
-		void	_handleClientConnec(int fd);
-		void	_handleClientDisco(int fd);
+		void	_handleClientConnect(int fd);
+		void	_handleClientDisconnect(int fd);
+
+		/* HANDLE UTILS */
+		int Server::createClientSocket(int fd, struct sockaddr_in& addr,
+			socklen_t& addrLen);
+		Client* Server::createClient(int clientFD, int fd);
+		bool Server::setNonBlocking(int clientFD);
+		void Server::addClientToEpoll(int clientFD, Client* newClient);
+
+		void Server::removeSocketFromEpoll(int fd);
+		void Server::removeClient(int fd);
 
 	public:
 
@@ -68,7 +81,7 @@ class Server
 		void stop(void);
 
 		/* GETTERS */
-		int getSTEP(void) const { return _step; }
+		int getStep(void) const { return _step; }
 		int getEpollFD(void) const { return _epollFD; }
 		ConfParser& getParser(void) { return _parser; }
 		std::map<int, Socket*> getSockets(void) const { return _sockets; }
