@@ -87,7 +87,7 @@ void Server::_handleClientConnect(int fd)
 		return;
 	}
 
-	addClientToEpoll(clientFD, newClient);
+	addSocketEpoll(this->_epollFD, clientFD, REQUEST_FLAGS);
 }
 
 int Server::createClientSocket(int fd, struct sockaddr_in& addr,
@@ -110,11 +110,6 @@ bool Server::setNonBlocking(int clientFD)
 							  "Error with fcntl function") != -1;
 }
 
-void Server::addClientToEpoll(int clientFD, Client* newClient)
-{
-	addSocketEpoll(this->_epollFD, clientFD, REQUEST_FLAGS);
-}
-
 void Server::_handleClientDisconnect(int fd)
 {
 	Log::log(Log::DEBUG,
@@ -133,7 +128,8 @@ void Server::removeSocketFromEpoll(int fd)
 
 void Server::removeClient(int fd)
 {
-	auto it = this->_clients.find(fd);
+	// Utilisez le type explicite de l'itérateur
+	std::map<int, Client*>::iterator it = this->_clients.find(fd);
 	if (it != this->_clients.end())
 	{
 		delete it->second;
@@ -159,7 +155,7 @@ void Server::handleEvent(epoll_event* events, int i)
 			else
 			{
 				this->_clients[fd]->updateActivity();
-				this->_clients[fd]->handleRequest();
+				this->_clients[fd]->processClientRequest();
 			}
 		}
 		if (event & EPOLLOUT)
@@ -168,27 +164,26 @@ void Server::handleEvent(epoll_event* events, int i)
 			this->_clients[fd]->checkCgi();
 			if (this->_clients[fd]->getRequest() &&
 				this->_clients[fd]->getRequest()->getStep() == Request::FINISH)
-				this->_clients[fd]->handleResponse(this->_epollFD);
+				this->_clients[fd]->sendClientResponse(this->_epollFD);
 		}
 	}
-	//catch (ChildProcessException& e)
+	// catch (ChildProcessException& e)
 	//{  // Child process error (CGI)
 	//	throw ChildProcessException();
-	//}
+	// }
 	catch (Client::DisconnectedException& e)
 	{  // Client disconnected
 		this->_handleClientDisconnect(fd);
 	}
 	catch (const std::exception& e)
 	{  // Other exceptions
-		Log::log(Log::ERROR,
-					"[Server::handleEvent] Error with client %d : %s", fd,
-					e.what());
+		Log::log(Log::ERROR, "[Server::handleEvent] Error with client %d : %s",
+				 fd, e.what());
 		this->_handleClientDisconnect(fd);
 	}
 }
 
-void	Server::_checkTimeouts(time_t currentTime)
+void Server::_checkTimeouts(time_t currentTime)
 {
 	std::map<int, Client*>::iterator it = this->_clients.begin();
 	while (it != this->_clients.end())
@@ -196,7 +191,8 @@ void	Server::_checkTimeouts(time_t currentTime)
 		it->second->getRequest()->checkTimeout();
 		if (currentTime - it->second->getLastActivity() > INACTIVITY_TIMEOUT)
 		{
-			Log::log(Log::DEBUG, "[Server::_checkTimeouts] Client %d timed out", it->first);
+			Log::log(Log::DEBUG, "[Server::_checkTimeouts] Client %d timed out",
+					 it->first);
 			deleteSocketEpoll(this->_epollFD, it->first);
 			delete it->second;
 			this->_clients.erase(it++);
@@ -214,14 +210,18 @@ void Server::execute(void)
 
 	time_t lastTimeoutCheck = time(NULL);
 
-	epoll_event	events[MAX_EVENTS];
+	epoll_event events[MAX_EVENTS];
 	while (this->getStep() == S_STEP_EXEC)
 	{
-		int nfds = VerifFatalCallFonc(epoll_wait(this->_epollFD, events, MAX_EVENTS, SD_EPOLL_WAIT), "Error with epoll_wait function");
-		Log::log(Log::DEBUG, "|Server::run| There are %d file descriptors ready for I/O after epoll wait", nfds);
+		int nfds = VerifFatalCallFonc(
+			epoll_wait(this->_epollFD, events, MAX_EVENTS, SD_EPOLL_WAIT),
+			"Error with epoll_wait function");
+		Log::log(Log::DEBUG,
+				 "|Server::run| There are %d file descriptors ready for I/O "
+				 "after epoll wait",
+				 nfds);
 
-		for (int i = 0; i < nfds; i++)
-			handleEvent(events, i);
+		for (int i = 0; i < nfds; i++) handleEvent(events, i);
 
 		time_t currentTime = time(NULL);
 		if (currentTime - lastTimeoutCheck >= TIMEOUT_CHECK_INTERVAL)
@@ -232,7 +232,7 @@ void Server::execute(void)
 	}
 }
 
-void	Server::setStep(int step)
+void Server::setStep(int step)
 {
 	if (step == S_STEP_INIT)
 		Log::log(Log::INFO, "Parsing completed");

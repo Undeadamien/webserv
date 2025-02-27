@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Request.cpp                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/01/19 23:48:41 by dtrala            #+#    #+#             */
-/*   Updated: 2025/02/20 03:11:41 by dtrala           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "Request.hpp"
 
 #include <cstddef>
@@ -18,6 +6,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "Log.hpp"
 #include "colors.hpp"
 #include "usefull.hpp"
 
@@ -25,22 +14,22 @@ Request::Request()
 	: _method(UNKNOWN), _target(""), _protocol(""), _headers(), _body("") {};
 
 Request::Request(Client *client)
-	: _client(client),
-	  _server(NULL),
-	  _location(NULL),
-	  _rawRequest(""),
-	  _method(""),
-	  _uri(""),
-	  _path(""),
-	  _httpVersion(""),
-	  _isChunked(false),
-	//  _cgi(this), a faire class CgiHandler
-	  _contentLength(0),
-	  _chunkSize(-1),
-	  _timeout(0),
+	: _method(UNKNOWN),
 	  _step(Request::INIT),
+	  _client(client),
+	  _server(NULL),
+	  _rawRequest(NULL),
+	  _uri(NULL),
+	  _path(NULL),
+	  _httpVersion(NULL),
+	  //  _cgi(this), a faire class CgiHandler
+	  _timeout(0),
 	  _stepCode(REQUEST_DEFAULT_STEP_CODE)
 {
+	_location = NULL;
+	_isChunked = false;
+	_contentLength = 0;
+	_chunkSize = -1;
 	this->_initServer();
 }
 
@@ -192,7 +181,11 @@ std::ostream &operator<<(std::ostream &os, const Request &request)
 	return (os);
 };
 
-void Request::_setStep(e_parse_step state) { return; }
+void Request::_setStep(e_parse_step step)
+{
+	(void)step;
+	return;
+}
 
 void Request::setError(int code)
 {
@@ -223,4 +216,23 @@ void Request::_initServer(void)
 		return;
 	}
 	this->_server = &servers->front();
+}
+
+void	Request::checkTimeout(void)
+{
+	if (this->_timeout == 0 || this->_step == Request::FINISH)
+		return ;
+	time_t currentTime = time(NULL);
+	if (currentTime > this->_timeout)
+	{
+		Log::log(Log::ERROR, "[checkTimeout] Client %d timeout", this->_client->getFd());
+		// if its during cgi kill the process
+		if (this->_step >= Request::CGI_INIT)
+		{
+			//this->_cgi._kill(); faire le cgi handler
+			this->setError(504);
+		}
+		else
+			this->setError(408);
+	}
 }

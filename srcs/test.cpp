@@ -22,15 +22,6 @@
 #include "colors.hpp"
 #include "usefull.hpp"
 
-int fdSocket = -1;
-
-void handle_signal(int signal)
-{
-	if (signal != SIGINT) return;
-	std::cout << "\rStopping the server " << std::endl;
-	if (fdSocket != -1) close(fdSocket);
-	exit(EXIT_SUCCESS);	 // will not cleanup, should be replaced with a flag
-}
 
 std::string get_content_type(std::string target)
 {
@@ -171,9 +162,6 @@ std::string cgi_execute(const Request &request, const BlockServer &conf_server,
 	if (start == std::string::npos || end == std::string::npos)
 		throw std::runtime_error("Error: invalid cgi script path ?");
 	path = target.substr(start, end - 2);
-
-	BlockServer server = conf_server;
-	std::vector<BlockLocation> location =
 
 	if (pipe(fds) == -1) throw std::runtime_error("Error: cgi pipe failed");
 

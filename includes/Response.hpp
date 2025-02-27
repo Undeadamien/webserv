@@ -17,6 +17,10 @@
 #include <string>
 
 #include "Client.hpp"
+#include "Request.hpp"
+
+class Client;
+class Request;
 
 typedef std::map<std::string, std::string> mapHeaders;
 

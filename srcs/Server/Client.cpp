@@ -53,6 +53,7 @@ void Client::processClientRequest(void)
 
 void Client::sendClientResponse(int epollFD)
 {
+	(void)epollFD;
 	/*    if (this->_response->prepareResponse(epollFD) == -1)
 		{
 			return; // Response is not ready

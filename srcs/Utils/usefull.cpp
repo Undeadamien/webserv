@@ -1,7 +1,9 @@
 #include "usefull.hpp"
-
 #include "ConfParser.hpp"
 #include "Log.hpp"
+
+int fdSocket = -1;
+
 
 std::string ullToStr(unsigned long long ull)
 {
@@ -126,4 +128,12 @@ int VerifFatalCallFonc(int ret, std::string msg, bool isFatal)
 			Log::log(Log::ERROR, msg.c_str());
 	}
 	return ret;
+}
+
+void handle_signal(int signal)
+{
+	if (signal != SIGINT) return;
+	std::cout << "\rStopping the server " << std::endl;
+	if (fdSocket != -1) close(fdSocket);
+	exit(EXIT_SUCCESS);	 // will not cleanup, should be replaced with a flag
 }

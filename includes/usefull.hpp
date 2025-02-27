@@ -10,11 +10,13 @@
 #include <vector>
 #include <sys/epoll.h>
 #include <arpa/inet.h>
+#include <csignal>
 
 #define PORT 1234
 #define BUFFER_SIZE 4096
+extern int fdSocket;
 
-extern Server* glo_server;
+class Server;
 
 enum e_Methods
 {
@@ -39,8 +41,12 @@ std::string e_Methods_to_String(e_Methods method);
 e_Methods str_to_e_Methods(std::string str);
 int VerifFatalCallFonc(int ret, std::string msg, bool isFatal = true);
 
-#endif
+void handle_signal(int signal);
 
 #define REQUEST_FLAGS EPOLLIN | EPOLLRDHUP | EPOLLERR // Quand on attend une requete
 #define RESPONSE_FLAGS EPOLLIN | EPOLLRDHUP | EPOLLERR | EPOLLOUT // Quand la reponse est prete, et qu'on a la possibilite d'envoyer quelquer chose sur le socket
 #define MAX_EVENTS 100
+
+extern Server* glo_server;
+
+#endif

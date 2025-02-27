@@ -61,14 +61,14 @@ class Server
 		void	_handleClientDisconnect(int fd);
 
 		/* HANDLE UTILS */
-		int Server::createClientSocket(int fd, struct sockaddr_in& addr,
+		int createClientSocket(int fd, struct sockaddr_in& addr,
 			socklen_t& addrLen);
-		Client* Server::createClient(int clientFD, int fd);
-		bool Server::setNonBlocking(int clientFD);
-		void Server::addClientToEpoll(int clientFD, Client* newClient);
+		Client* createClient(int clientFD, int fd);
+		bool setNonBlocking(int clientFD);
+		void addClientToEpoll(int clientFD, Client* newClient);
 
-		void Server::removeSocketFromEpoll(int fd);
-		void Server::removeClient(int fd);
+		void removeSocketFromEpoll(int fd);
+		void removeClient(int fd);
 
 	public:
 

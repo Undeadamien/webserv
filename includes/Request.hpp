@@ -90,13 +90,13 @@ public:
 	const std::string &getBody() const;
 	e_parse_step getStep() const { return _step; };
 
-	void	Request::_initServer(void);
-	void	Request::setError(int code);
+	void	_initServer(void);
+	void	setError(int code);
 
 
 	std::string toString() const;
 
-	void Request::checkTimeout(void);
+	void checkTimeout(void);
 
 protected:
 private:
@@ -110,7 +110,6 @@ private:
 	BlockLocation *_location;
 	BlockServer *_server;
 	std::string _rawRequest;
-	std::string _method;
 	std::string _uri;
 	std::string _path;
 	std::string _httpVersion;
@@ -119,7 +118,6 @@ private:
 	size_t _contentLength;
 	int _chunkSize;
 	time_t _timeout;
-	e_parse_step _step;
 	int _stepCode;
 };
 

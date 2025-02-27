@@ -22,8 +22,11 @@ Response::Response()
 	: _protocol(""), _status_code(""), _status_text(""), _headers(), _body("") {
 	  };
 
-Response::Response(Client* client) : _request(client->getRequest()), _cgiHandler(this), _step(Response::INIT), _fileFd(-1)
+Response::Response(Client* client) : _request(client->getRequest()), _step(Response::INIT), _fileFd(-1)
 {
+	_fileFd = -1;
+	_step = Response::INIT;
+	//_cgiHandler(this);
 }
 
 Response::Response(std::string raw)
