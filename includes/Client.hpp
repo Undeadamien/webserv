@@ -30,8 +30,8 @@ class Client
 		~Client(void);
 
 		/* HANDLE */
-		void		handleRequest(void);
-		void 		handleResponse(int epollFD);
+		void		processClientRequest(void);
+		void 		sendClientResponse(int epollFD);
 
 		void 		reset(void);
 

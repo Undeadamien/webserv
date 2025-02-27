@@ -23,6 +23,27 @@
 
 Request::Request()
 	: _method(UNKNOWN), _target(""), _protocol(""), _headers(), _body("") {};
+
+Request::Request(Client *client)
+	: _client(client),
+	  _server(NULL),
+	  _location(NULL),
+	  _rawRequest(""),
+	  _method(""),
+	  _uri(""),
+	  _path(""),
+	  _httpVersion(""),
+	  _isChunked(false),
+	//  _cgi(this), a faire class CgiHandler
+	  _contentLength(0),
+	  _chunkSize(-1),
+	  _timeout(0),
+	  _step(Request::INIT),
+	  _stepCode(REQUEST_DEFAULT_STEP_CODE)
+{
+	this->_initServer();
+}
+
 Request::Request(const std::string &raw)
 	: _method(parseMethod(raw)),
 	  _target(parseTarget(raw)),
@@ -170,3 +191,36 @@ std::ostream &operator<<(std::ostream &os, const Request &request)
 	os << GREEN << BOLD << "Body:" << RESET << "\n" << request.getBody();
 	return (os);
 };
+
+void Request::_setStep(e_parse_step state) { return; }
+
+void Request::setError(int code)
+{
+	this->_stepCode = code;
+	this->_setStep(Request::FINISH);
+}
+
+void Request::_initServer(void)
+{
+	if (this->_client == NULL)
+	{
+		Log::log(Log::ERROR, "|_initServer| Client is NULL");
+		this->setError(500);
+		return;
+	}
+	Socket *socket = this->_client->getSocket();
+	if (socket == NULL)
+	{
+		Log::log(Log::ERROR, "|_initServer| Socket is NULL");
+		this->setError(500);
+		return;
+	}
+	std::vector<BlockServer> *servers = socket->getServers();
+	if (servers->empty())
+	{
+		Log::log(Log::ERROR, "|_initServer| No server found");
+		this->setError(500);
+		return;
+	}
+	this->_server = &servers->front();
+}

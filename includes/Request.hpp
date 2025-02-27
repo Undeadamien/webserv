@@ -17,14 +17,31 @@
 #include <ostream>
 #include <string>
 
+#include "BlockLocation.hpp"
+#include "BlockServer.hpp"
+#include "Client.hpp"
+#include "colors.hpp"
 #include "usefull.hpp"
+#include "Socket.hpp"
+#include "Socket_utils.hpp"
 
 typedef std::map<std::string, std::string> mapHeaders;
+
+#define REQUEST_DEFAULT_STEP_CODE 200
+#define REQUEST_DEFAULT_UPLOAD_PATH "./web/upload/"
+#define REQUEST_DEFAULT_HEADER_TIMEOUT 10
+#define REQUEST_DEFAULT_BODY_TIMEOUT 3600
+#define REQUEST_DEFAULT_CGI_TIMEOUT 3
+
+class Client;
+class BlockLocation;
+class BlockServer;
+class Socket;
 
 class Request
 {
 public:
-	enum	e_parse_step
+	enum e_parse_step
 	{
 		INIT,
 		REQUEST_LINE_METHOD,
@@ -45,7 +62,9 @@ public:
 		FINISH
 	};
 
+
 	Request();
+	Request(Client *client);
 	Request(const std::string &content);
 	Request(const Request &other);
 	Request &operator=(const Request &other);
@@ -62,6 +81,7 @@ public:
 	void setProtocol(std::string protocol);
 	void setHeaders(std::map<std::string, std::string> headers);
 	void setBody(std::string body);
+	void _setStep(e_parse_step state);
 
 	const e_Methods &getMethod() const;
 	const std::string &getTarget() const;
@@ -70,10 +90,13 @@ public:
 	const std::string &getBody() const;
 	e_parse_step getStep() const { return _step; };
 
+	void	Request::_initServer(void);
+	void	Request::setError(int code);
+
+
 	std::string toString() const;
 
-	void	Request::checkTimeout(void);
-
+	void Request::checkTimeout(void);
 
 protected:
 private:
@@ -83,6 +106,21 @@ private:
 	std::map<std::string, std::string> _headers;
 	std::string _body;
 	e_parse_step _step;
+	Client *_client;
+	BlockLocation *_location;
+	BlockServer *_server;
+	std::string _rawRequest;
+	std::string _method;
+	std::string _uri;
+	std::string _path;
+	std::string _httpVersion;
+	bool _isChunked;
+	// CgiHandler _cgi;
+	size_t _contentLength;
+	int _chunkSize;
+	time_t _timeout;
+	e_parse_step _step;
+	int _stepCode;
 };
 
 std::ostream &operator<<(std::ostream &os, const Request &request);

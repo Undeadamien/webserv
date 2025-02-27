@@ -16,12 +16,23 @@
 #include <map>
 #include <string>
 
+#include "Client.hpp"
+
 typedef std::map<std::string, std::string> mapHeaders;
 
 class Response
 {
 public:
+	enum e_response_state
+	{
+		INIT,
+		PROCESS,
+		CHUNK,
+		FINISH
+	};
+
 	Response();
+	Response(Client *client);
 	Response(std::string raw);
 	Response(const Response &other);
 	Response &operator=(const Response &other);
@@ -54,6 +65,10 @@ private:
 	std::string _status_text;
 	std::map<std::string, std::string> _headers;
 	std::string _body;
+	Request *_request;
+	//CgiHandler _cgiHandler;
+	e_response_state _step;
+	int _fileFd;
 };
 
 std::ostream &operator<<(std::ostream &os, const Response &response);

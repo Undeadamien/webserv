@@ -206,18 +206,18 @@ void	Server::_checkTimeouts(time_t currentTime)
 	}
 }
 
-void Server::start(void)
+void Server::execute(void)
 {
 	if (this->getStep() != S_STEP_READY)
 		Log::log(Log::FATAL, "Server is not ready to run");
-	this->setStep(S_STEP_RUN);
+	this->setStep(S_STEP_EXEC);
 
 	time_t lastTimeoutCheck = time(NULL);
 
 	epoll_event	events[MAX_EVENTS];
-	while (this->getStep() == S_STEP_RUN)
+	while (this->getStep() == S_STEP_EXEC)
 	{
-		int nfds = VerifFatalCallFonc(epoll_wait(this->_epollFD, events, MAX_EVENTS, SERVER_DEFAULT_EPOLL_WAIT), "Error with epoll_wait function");
+		int nfds = VerifFatalCallFonc(epoll_wait(this->_epollFD, events, MAX_EVENTS, SD_EPOLL_WAIT), "Error with epoll_wait function");
 		Log::log(Log::DEBUG, "|Server::run| There are %d file descriptors ready for I/O after epoll wait", nfds);
 
 		for (int i = 0; i < nfds; i++)
@@ -238,9 +238,11 @@ void	Server::setStep(int step)
 		Log::log(Log::INFO, "Parsing completed");
 	else if (step == S_STEP_READY)
 		Log::log(Log::INFO, "Server is ready to run");
-	else if (step == S_STEP_RUN)
+	else if (step == S_STEP_EXEC)
 		Log::log(Log::INFO, "Server is running");
 	else if (step == S_STEP_STOP)
 		Log::log(Log::INFO, "Server is stopping...");
+	else
+		Log::log(Log::ERROR, "Invalid step for server");
 	this->_step = step;
 }

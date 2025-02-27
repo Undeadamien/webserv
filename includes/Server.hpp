@@ -21,7 +21,7 @@ class BlockServer;
 class ConfParser;
 class Socket;
 
-# define SERVER_DEFAULT_EPOLL_WAIT 500
+# define SD_EPOLL_WAIT 500
 #define TIMEOUT_CHECK_INTERVAL 5
 #define INACTIVITY_TIMEOUT 60
 
@@ -32,7 +32,7 @@ enum ServerSTEP
 {
 	S_STEP_INIT = 0,
 	S_STEP_READY,
-	S_STEP_RUN,
+	S_STEP_EXEC,
 	S_STEP_STOP
 };
 
@@ -77,7 +77,7 @@ class Server
 		~Server(void);
 
 		void init(void);
-		void start(void);
+		void execute(void);
 		void stop(void);
 
 		/* GETTERS */
@@ -91,9 +91,4 @@ class Server
 };
 
 
-#endif // SERVER_HPP
-
-
-#define REQUEST_FLAGS EPOLLIN | EPOLLRDHUP | EPOLLERR // Quand on attend une requete
-#define RESPONSE_FLAGS EPOLLIN | EPOLLRDHUP | EPOLLERR | EPOLLOUT // Quand la reponse est prete, et qu'on a la possibilite d'envoyer quelquer chose sur le socket
-#define MAX_EVENTS 100
+#endif

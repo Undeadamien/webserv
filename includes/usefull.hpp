@@ -14,6 +14,8 @@
 #define PORT 1234
 #define BUFFER_SIZE 4096
 
+extern Server* glo_server;
+
 enum e_Methods
 {
 	GET,
@@ -38,3 +40,7 @@ e_Methods str_to_e_Methods(std::string str);
 int VerifFatalCallFonc(int ret, std::string msg, bool isFatal = true);
 
 #endif
+
+#define REQUEST_FLAGS EPOLLIN | EPOLLRDHUP | EPOLLERR // Quand on attend une requete
+#define RESPONSE_FLAGS EPOLLIN | EPOLLRDHUP | EPOLLERR | EPOLLOUT // Quand la reponse est prete, et qu'on a la possibilite d'envoyer quelquer chose sur le socket
+#define MAX_EVENTS 100
