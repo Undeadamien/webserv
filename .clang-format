@@ -3,7 +3,6 @@
   UseTab: Always,
   IndentWidth: 4,
   TabWidth: 4,
-  BreakBeforeBraces: Allman,
   AllowShortIfStatementsOnASingleLine: true,
   IndentCaseLabels: false,
   ColumnLimit: 80,

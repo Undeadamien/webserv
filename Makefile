@@ -59,7 +59,7 @@ fclean: clean
 re: fclean all
 
 test: all
-	valgrind -q ./$(NAME) config/good/maxBodySize.conf
+	valgrind -q ./$(NAME) config/good/maxBodySize.conf --debug
 
 run-bad-configs:
 	@echo "$(BOLD)$(RED)Running all .conf files in config/bad/$(RESET)"

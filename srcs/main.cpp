@@ -1,26 +1,25 @@
+#include <cstdlib>
+
 #include "Arguments.hpp"
-#include "Server.hpp"
 #include "ConfParser.hpp"
+#include "Log.hpp"
+#include "Server.hpp"
+#include "test.hpp"
 #include "usefull.hpp"
 
-class Server;
-class ConfParser;
-
-Server* glo_server;
+Server* g_server;
 
 int ConfParser::countLineFile = 0;
 
-int main(int argc, char** argv, char** env)
-{
+int main(int argc, char** argv, char** env) {
 	(void)env;
 	Server server;
-	glo_server = &server;
+	g_server = &server;
 
 	if (!check_arguments(argc, argv)) return 1;
 
 	signal(SIGINT, handle_signal);
-	try
-	{
+	try {
 		server.getParser().parsing(argv[1]);
 		Log::log(Log::DEBUG, "Parsing completed");
 		if (Log::getLogDebugState() == Log::DEBUG)
