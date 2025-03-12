@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:51:05 by dtrala            #+#    #+#             */
-/*   Updated: 2025/02/20 03:17:17 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/03/04 00:16:56 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,16 +27,7 @@ typedef std::map<std::string, std::string> mapHeaders;
 class Response
 {
 public:
-	enum e_response_state
-	{
-		INIT,
-		PROCESS,
-		CHUNK,
-		FINISH
-	};
-
 	Response();
-	Response(Client *client);
 	Response(std::string raw);
 	Response(const Response &other);
 	Response &operator=(const Response &other);
@@ -70,8 +61,7 @@ private:
 	std::map<std::string, std::string> _headers;
 	std::string _body;
 	Request *_request;
-	//CgiHandler _cgiHandler;
-	e_response_state _step;
+	// CgiHandler _cgiHandler;
 	int _fileFd;
 };
 

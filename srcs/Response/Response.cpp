@@ -6,28 +6,21 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:50:42 by dtrala            #+#    #+#             */
-/*   Updated: 2025/02/20 03:19:17 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/03/04 05:05:22 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
 #include <iostream>
+#include <sstream>
 #include <string>
 
-#include "colors.hpp"
 #include "usefull.hpp"
 
 Response::Response()
 	: _protocol(""), _status_code(""), _status_text(""), _headers(), _body("") {
 	  };
-
-Response::Response(Client* client) : _request(client->getRequest()), _step(Response::INIT), _fileFd(-1)
-{
-	_fileFd = -1;
-	_step = Response::INIT;
-	//_cgiHandler(this);
-}
 
 Response::Response(std::string raw)
 	: _protocol(parseProtocol(raw)),
@@ -42,10 +35,8 @@ Response::Response(const Response &other)
 	  _status_text(other._status_text),
 	  _headers(other._headers),
 	  _body(other._body) {};
-Response &Response::operator=(const Response &other)
-{
-	if (this != &other)
-	{
+Response &Response::operator=(const Response &other) {
+	if (this != &other) {
 		this->_protocol = other._protocol;
 		this->_status_code = other._status_code;
 		this->_status_text = other._status_text;
@@ -56,8 +47,7 @@ Response &Response::operator=(const Response &other)
 };
 Response::~Response() {};
 
-std::string Response::parseProtocol(const std::string &content)
-{
+std::string Response::parseProtocol(const std::string &content) {
 	std::istringstream str_stream(content);
 	std::string line;
 	if (!std::getline(str_stream, line))
@@ -70,8 +60,7 @@ std::string Response::parseProtocol(const std::string &content)
 		throw std::runtime_error("Error: parsing protocol of response");
 	return (line.substr(0, end));
 };
-std::string Response::parseStatusCode(const std::string &content)
-{
+std::string Response::parseStatusCode(const std::string &content) {
 	std::istringstream str_stream(content);
 	std::string line;
 	if (!std::getline(str_stream, line))
@@ -85,8 +74,7 @@ std::string Response::parseStatusCode(const std::string &content)
 		throw std::runtime_error("Error: parsing status_code or response");
 	return (line.substr(start, end - start + 1));
 };
-std::string Response::parseStatusText(const std::string &content)
-{
+std::string Response::parseStatusText(const std::string &content) {
 	std::istringstream str_stream(content);
 	std::string line;
 	if (!std::getline(str_stream, line))
@@ -100,16 +88,14 @@ std::string Response::parseStatusText(const std::string &content)
 	return (line.substr(start));
 };
 std::map<std::string, std::string> Response::parseHeaders(
-	const std::string &content)
-{
+	const std::string &content) {
 	mapHeaders headers;
 	size_t sep;
 	std::istringstream str_stream(content);
 	std::string key, value, line;
 
 	std::getline(str_stream, line);	 // skip the startline
-	while (std::getline(str_stream, line))
-	{
+	while (std::getline(str_stream, line)) {
 		if (line[line.length() - 1] == '\r')
 			line = line.substr(0, line.length() - 1);
 		if (line.empty()) break;
@@ -123,8 +109,7 @@ std::map<std::string, std::string> Response::parseHeaders(
 	}
 	return (headers);
 };
-std::string Response::parseBody(const std::string &content)
-{
+std::string Response::parseBody(const std::string &content) {
 	std::istringstream str_stream(content.c_str());
 	std::string line;
 	size_t delimiter = content.find("\r\n\r\n");
@@ -134,8 +119,7 @@ std::string Response::parseBody(const std::string &content)
 };
 
 // I should add some checks
-void Response::setProtocol(std::string protocol)
-{
+void Response::setProtocol(std::string protocol) {
 	this->_protocol = protocol;
 };
 void Response::setStatusCode(std::string code) { this->_status_code = code; };
@@ -144,19 +128,16 @@ void Response::setHeaders(mapHeaders headers) { this->_headers = headers; };
 void Response::setBody(std::string body) { this->_body = body; };
 
 const std::string &Response::getProtocol() const { return (this->_protocol); };
-const std::string &Response::getStatusCode() const
-{
+const std::string &Response::getStatusCode() const {
 	return (this->_status_code);
 };
-const std::string &Response::getStatusText() const
-{
+const std::string &Response::getStatusText() const {
 	return (this->_status_text);
 };
 const mapHeaders &Response::getHeaders() const { return (this->_headers); };
 const std::string &Response::getBody() const { return (this->_body); };
 
-std::string Response::toString() const
-{
+std::string Response::toString() const {
 	std::string str;
 	str += this->getProtocol() + " " + this->getStatusCode() + " " +
 		   this->getStatusText() + "\r\n";
@@ -166,20 +147,4 @@ std::string Response::toString() const
 	str += "\r\n";
 	str += this->getBody();
 	return (str);
-};
-
-std::ostream &operator<<(std::ostream &os, const Response &response)
-{
-	os << GREEN << BOLD << "Protocol:" << RESET << "\n"
-	   << response.getProtocol() << "\n";
-	os << GREEN << BOLD << "Status code:" << RESET << "\n"
-	   << response.getStatusCode() << "\n";
-	os << GREEN << BOLD << "Status text:" << RESET << "\n"
-	   << response.getStatusText() << "\n";
-	mapHeaders headers = response.getHeaders();
-	os << GREEN << BOLD << "Headers:" << RESET << "\n";
-	for (mapHeaders::iterator it = headers.begin(); it != headers.end(); it++)
-		os << it->first << ": " << it->second << std::endl;
-	os << GREEN << BOLD << "Body:" << RESET << "\n" << response.getBody();
-	return (os);
 };

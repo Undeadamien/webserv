@@ -1,19 +1,25 @@
 #include "usefull.hpp"
+
+#include <stdint.h>
+
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
 #include "ConfParser.hpp"
 #include "Log.hpp"
+#include "Response.hpp"
 
 int fdSocket = -1;
 
-
-std::string ullToStr(unsigned long long ull)
-{
+std::string ullToStr(unsigned long long ull) {
 	std::ostringstream oss;
 	oss << ull;
 	return (oss.str());
 }
 
-std::string ft_itos(int value)
-{
+std::string ft_itos(int value) {
 	std::stringstream ss;
 	ss << value;
 	return (ss.str());
@@ -21,22 +27,19 @@ std::string ft_itos(int value)
 
 bool EmptyFileChecker() { return (ConfParser::countLineFile == 0); }
 
-std::string ltrim(std::string str, std::string set)
-{
+std::string ltrim(std::string str, std::string set) {
 	if (set.empty()) return (str);
 	size_t start = str.find_first_not_of(set);
 	if (start == std::string::npos) return (str);
 	return (str.substr(start));
 }
-std::string rtrim(std::string str, std::string set)
-{
+std::string rtrim(std::string str, std::string set) {
 	if (set.empty()) return (str);
 	size_t end = str.find_last_not_of(set);
 	if (end == std::string::npos) return (str);
 	return (str.substr(0, end + 1));
 }
-std::string trim(std::string str, std::string set)
-{
+std::string trim(std::string str, std::string set) {
 	if (set.empty()) return (str);
 	size_t start = str.find_first_not_of(set);
 	size_t end = str.find_last_not_of(set);
@@ -44,44 +47,27 @@ std::string trim(std::string str, std::string set)
 	return (str.substr(start, end - start + 1));
 };
 
-std::vector<std::string> split(const std::string& str, char delimiter)
-{
+std::vector<std::string> ft_split(const std::string& str, char delimiter) {
 	std::vector<std::string> tokens;
 	std::stringstream ss(str);	// Utilise un flux pour découper la chaîne
 	std::string token;
-	while (std::getline(ss, token, delimiter))
-	{
-		tokens.push_back(token);  // Ajoute chaque partie au vecteur
-	}
+	while (std::getline(ss, token, delimiter)) tokens.push_back(token);
 	return tokens;
 }
 
-std::string intToString(int value)
-{
+std::string UIntToString(unsigned int value) {
 	std::ostringstream oss;
 	oss << value;
 	return oss.str();
 }
 
-std::string UIntToString(unsigned int value)
-{
-	std::ostringstream oss;
-	oss << value;
-	return oss.str();
-}
-
-int extractPort(const std::string& server)
-{
+int extractPort(const std::string& server) {
 	size_t colonPos = server.find(':');
 
-	if (colonPos != std::string::npos)
-	{
-		try
-		{
+	if (colonPos != std::string::npos) {
+		try {
 			return std::atoi((server.substr(colonPos + 1)).c_str());
-		}
-		catch (std::runtime_error& e)
-		{
+		} catch (std::runtime_error& e) {
 			Log::log(Log::ERROR, e.what());
 			return -1;
 		}
@@ -89,39 +75,29 @@ int extractPort(const std::string& server)
 	return -1;
 }
 
-std::string extractIp(const std::string& server)
-{
-    size_t colonPos = server.find(':');
+std::string extractIp(const std::string& server) {
+	size_t colonPos = server.find(':');
 
-    if (colonPos != std::string::npos)
-    {
-        return server.substr(0, colonPos);
-    }
-    return server; // Retourne la chaîne complète si aucun ':' n'est trouvé
+	if (colonPos != std::string::npos) return server.substr(0, colonPos);
+	return server;
 }
 
-
-
-std::string e_Methods_to_String(e_Methods method)
-{
+std::string e_Methods_to_String(e_Methods method) {
 	if (method == GET) return "GET";
 	if (method == DELETE) return "DELETE";
 	if (method == POST) return "POST";
 	return "UNKNOWN";
 }
 
-e_Methods str_to_e_Methods(std::string str)
-{
+e_Methods str_to_e_Methods(std::string str) {
 	if (str == "GET") return (GET);
 	if (str == "POST") return (POST);
 	if (str == "DELETE") return (DELETE);
 	return (UNKNOWN);
 }
 
-int VerifFatalCallFonc(int ret, std::string msg, bool isFatal)
-{
-	if (ret < 0)
-	{
+int VerifFatalCallFonc(int ret, std::string msg, bool isFatal) {
+	if (ret < 0) {
 		if (isFatal)
 			Log::log(Log::FATAL, msg.c_str());
 		else
@@ -130,10 +106,69 @@ int VerifFatalCallFonc(int ret, std::string msg, bool isFatal)
 	return ret;
 }
 
-void handle_signal(int signal)
-{
+void handle_signal(int signal) {
 	if (signal != SIGINT) return;
 	std::cout << "\rStopping the server " << std::endl;
 	if (fdSocket != -1) close(fdSocket);
 	exit(EXIT_SUCCESS);	 // will not cleanup, should be replaced with a flag
+}
+
+Response createResponseError(std::string protocol, std::string status_code,
+							 std::string status_text) {
+	Response response;
+	std::string content;
+	std::map<std::string, std::string> headers;
+
+	content += "<html>";
+	content += "<body>";
+	content += "<p>SpiderServ</p>";
+	content += "<p>Error " + status_code + "</p>";
+	content += "</body>";
+	content += "</html>";
+
+	headers["Content-Type"] = "text/html";
+	headers["Content-Length"] = ft_itos(content.length());
+
+	response.setProtocol(protocol);
+	response.setStatusCode(status_code);
+	response.setStatusText(status_text);
+	response.setHeaders(headers);
+	response.setBody(content);
+
+	return (response);
+};
+
+std::string getFileContent(std::string path) {
+	std::ifstream inFile(path.c_str());
+	if (!inFile) throw std::runtime_error("Error: opening '" + path + "'");
+	std::string content;
+	std::string line;
+	while (std::getline(inFile, line)) content += line + "\n";
+	return (content);
+};
+
+std::string getMimeType(std::string target) {
+	static std::map<std::string, std::string> mapMime;
+	if (mapMime.empty()) {
+		mapMime["js"] = "application/javascript";
+		mapMime["json"] = "application/json";
+		mapMime["jpeg"] = "image/jpeg";
+		mapMime["jpg"] = "image/jpeg";
+		mapMime["png"] = "image/png";
+		mapMime["css"] = "text/css";
+		mapMime["html"] = "text/html";
+		// might not be the appropriate type
+		mapMime["pl"] = "text/plain";
+		mapMime["py"] = "text/plain";
+		mapMime["sh"] = "text/plain";
+		//...
+	}
+
+	std::string::size_type start = target.find_last_of(".") + 1;
+	if (start == std::string::npos) return "application/octet-stream";
+
+	std::string extension = target.substr(start);
+	std::map<std::string, std::string>::iterator it = mapMime.find(extension);
+	if (it != mapMime.end()) return it->second;
+	return "application/octet-stream";
 }

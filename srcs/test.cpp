@@ -10,11 +10,11 @@
 #include <cstring>
 #include <exception>
 #include <fstream>
+#include <iostream>
 #include <map>
 #include <stdexcept>
 
 #include "BlockServer.hpp"
-#include "BlockLocation.hpp"
 #include "ConfParser.hpp"
 #include "Log.hpp"
 #include "Request.hpp"
@@ -22,12 +22,9 @@
 #include "colors.hpp"
 #include "usefull.hpp"
 
-
-std::string get_content_type(std::string target)
-{
+std::string get_content_type(std::string target) {
 	static std::map<std::string, std::string> mapMime;
-	if (mapMime.empty())
-	{
+	if (mapMime.empty()) {
 		mapMime["css"] = "text/css";
 		mapMime["html"] = "text/html";
 		mapMime["jpeg"] = "image/jpeg";
@@ -47,8 +44,7 @@ std::string get_content_type(std::string target)
 	return "application/octet-stream";
 }
 
-std::string get_file_content(std::string path)
-{
+std::string get_file_content(std::string path) {
 	std::ifstream inFile(path.c_str());
 	if (!inFile) throw std::runtime_error("Error: opening '" + path + "'");
 	std::string content;
@@ -58,8 +54,7 @@ std::string get_file_content(std::string path)
 };
 
 Response create_response_error(std::string protocol, std::string status_code,
-							   std::string status_text)
-{
+							   std::string status_text) {
 	Response response;
 	std::string content;
 	std::map<std::string, std::string> headers;
@@ -84,21 +79,17 @@ Response create_response_error(std::string protocol, std::string status_code,
 };
 
 Response create_response_error(std::string protocol, std::string status_code,
-							   std::string status_text, std::string path)
-{
+							   std::string status_text, std::string path) {
 	Response response;
 	std::string content;
 	std::map<std::string, std::string> headers;
 
-	try
-	{
+	try {
 		std::string file_content = get_file_content(path);
 		if (file_content.empty())
 			throw std::runtime_error("Error: empty error page");
 		content = file_content;
-	}
-	catch (std::exception &e)
-	{
+	} catch (std::exception &e) {
 		Log::log(Log::ERROR, e.what());
 		content += "<html>";
 		content += "<body>";
@@ -120,8 +111,7 @@ Response create_response_error(std::string protocol, std::string status_code,
 	return (response);
 };
 
-Response create_response_page(Request request, BlockServer server)
-{
+Response create_response_page(Request request, BlockServer server) {
 	Response response;
 	std::map<std::string, std::string> headers;
 	std::string content;
@@ -147,8 +137,7 @@ Response create_response_page(Request request, BlockServer server)
 };
 
 std::string cgi_execute(const Request &request, const BlockServer &conf_server,
-						char **env)
-{
+						char **env) {
 	int fds[2];
 	int pid;
 	std::string method_str;
@@ -167,8 +156,7 @@ std::string cgi_execute(const Request &request, const BlockServer &conf_server,
 
 	pid = fork();
 	if (pid == -1) throw std::runtime_error("Error: cgi fork failed");
-	if (pid == 0)
-	{
+	if (pid == 0) {
 		close(fds[0]);
 		dup2(fds[1], STDOUT_FILENO);
 		close(fds[1]);
@@ -189,8 +177,6 @@ std::string cgi_execute(const Request &request, const BlockServer &conf_server,
 		if (extension == "pl") prog = "/usr/bin/perl";
 		if (extension == "sh") prog = "/usr/bin/bash";
 
-
-
 		char *argv[] = {
 			const_cast<char *>(prog.c_str()),
 			const_cast<char *>(path.c_str()),
@@ -198,9 +184,7 @@ std::string cgi_execute(const Request &request, const BlockServer &conf_server,
 		};
 		execve(prog.c_str(), argv, env);
 		exit(1);
-	}
-	else
-	{
+	} else {
 		char buffer[1024];
 		int bytes_read;
 		int status;
@@ -208,8 +192,7 @@ std::string cgi_execute(const Request &request, const BlockServer &conf_server,
 
 		close(fds[1]);
 
-		while ((bytes_read = read(fds[0], buffer, sizeof(buffer) - 1)) > 0)
-		{
+		while ((bytes_read = read(fds[0], buffer, sizeof(buffer) - 1)) > 0) {
 			buffer[bytes_read] = '\0';
 			output += buffer;
 		}
@@ -221,8 +204,7 @@ std::string cgi_execute(const Request &request, const BlockServer &conf_server,
 	return ("");
 }
 
-int simple_server(ConfParser parser, char **env)
-{
+int simple_server(ConfParser parser, char **env) {
 	// mettre dans un for
 	(void)parser;
 	MapServers _servers = parser.getConfigs();
@@ -230,8 +212,7 @@ int simple_server(ConfParser parser, char **env)
 
 	std::string server_port_str = iter->first;
 	int server_port = extractPort(server_port_str);
-	if (server_port == -1)
-	{
+	if (server_port == -1) {
 		std::cerr << "Error: invalid server ip" << std::endl;
 		return (EXIT_FAILURE);
 	}
@@ -239,8 +220,7 @@ int simple_server(ConfParser parser, char **env)
 	BlockServer server = iter->second[0];
 
 	signal(SIGINT, handle_signal);
-	if ((fdSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-	{
+	if ((fdSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		std::cerr << "Error: socket" << std::endl;
 		return (EXIT_FAILURE);
 	}
@@ -249,14 +229,12 @@ int simple_server(ConfParser parser, char **env)
 	address.sin_port = htons(server_port);
 	address.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if (bind(fdSocket, (const sockaddr *)(&address), sizeof(address)) == -1)
-	{
+	if (bind(fdSocket, (const sockaddr *)(&address), sizeof(address)) == -1) {
 		close(fdSocket);
 		std::cerr << "Error: bind, error num " << errno << std::endl;
 		return (EXIT_FAILURE);
 	}
-	if (listen(fdSocket, 10) == -1)
-	{
+	if (listen(fdSocket, 10) == -1) {
 		close(fdSocket);
 		std::cerr << "Error: listen" << std::endl;
 		return (EXIT_FAILURE);
@@ -265,16 +243,14 @@ int simple_server(ConfParser parser, char **env)
 	int connection;
 	int it = 0;
 	char buffer[BUFFER_SIZE];
-	while (true)
-	{
+	while (true) {
 		unsigned long resultLen = sizeof(sockaddr);
 		std::cout << INVERSE << "Request number: " << it++ << RESET
 				  << std::endl;
 		std::cout << "Listening on Port: " << server_port << std::endl;
 		connection = accept(fdSocket, (struct sockaddr *)(&address),
 							(socklen_t *)&resultLen);
-		if ((connection) == -1)
-		{
+		if ((connection) == -1) {
 			close(fdSocket);
 			std::cerr << "Error: accept" << std::endl;
 			return (EXIT_FAILURE);
@@ -287,20 +263,16 @@ int simple_server(ConfParser parser, char **env)
 				  << "\"" << buffer << "\"" << std::endl;
 
 		Request request;
-		try
-		{
+		try {
 			request = Request(buffer);
 			std::cout << request.getBody() << std::endl;
-		}
-		catch (std::exception &e)
-		{
+		} catch (std::exception &e) {
 			std::cerr << e.what() << std::endl;
 			exit(1);  // should be replaced
 		};
 
 		if (parser.CheckerMethod(e_Methods_to_String(request.getMethod())) ==
-			false)
-		{
+			false) {
 			Log::log(Log::ERROR, "Error: invalid method");
 			close(connection);
 			continue;
@@ -310,15 +282,12 @@ int simple_server(ConfParser parser, char **env)
 		std::string target = request.getTarget();
 		if (target == "/")
 			target += server.getIndexes()[0];  // need to be adapted
-		try
-		{
+		try {
 			if (target.find("/cgi-bin/") == 0)
 				response = Response(cgi_execute(request, server, env));
 			else
 				response = create_response_page(request, server);
-		}
-		catch (std::exception &e)
-		{
+		} catch (std::exception &e) {
 			Log::log(Log::ERROR, e.what());
 			response = create_response_error("HTTP/1.1", "404", "NOK", "");
 		}
@@ -332,42 +301,4 @@ int simple_server(ConfParser parser, char **env)
 	}
 	close(fdSocket);
 	return (EXIT_SUCCESS);
-}
-
-void testResponse()
-{
-	Response response;
-	std::map<std::string, std::string> headers;
-	std::string content;
-
-	content = "Body of test response";
-
-	headers["Content-Type"] = "text/html";
-	headers["Content-Length"] = ft_itos(content.length());
-
-	response.setProtocol("HTTP/1.1");
-	response.setStatusCode("200");
-	response.setStatusText("OK");
-	response.setHeaders(headers);
-	response.setBody(content);
-
-	std::cout << response << std::endl;
-	std::cout << std::endl;
-	std::cout << response.toString() << std::endl;
-}
-
-void testRequest()
-{
-	std::string str =
-		"POST /help.txt HTTP/1.1\r\n"
-		"Host: www.example.re\r\n"
-		"Content-Type: text/plain\r\n"
-		"Content-Length: 51\r\n"
-		"\r\n"
-		"Please visit www.example.re for the latest updates!";
-	Request request(str);
-
-	std::cout << request << std::endl;
-	std::cout << std::endl;
-	std::cout << request.toString() << std::endl;
 }
