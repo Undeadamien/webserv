@@ -10,6 +10,7 @@
 #include "ConfParser.hpp"
 #include "Log.hpp"
 #include "Request.hpp"
+#include "colors.hpp"
 #include "usefull.hpp"
 
 Server::Server() : _step(S_STEP_INIT), _epollFD(-1) {}
@@ -240,9 +241,6 @@ BlockLocation* Server::findLocation(BlockServer* server, Request* request) {
 };
 
 Response Server::handleGetRequest(Request* request) {
-	// check if request target inside location
-	// need to retrieve the root
-	// need to retrieve the index
 	BlockLocation* location;
 	BlockServer* server;
 	Response response;
