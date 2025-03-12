@@ -1,8 +1,15 @@
 #include "Server.hpp"
 
+#include <algorithm>
+#include <exception>
 #include <iostream>
+#include <stdexcept>
 
+#include "BlockLocation.hpp"
+#include "BlockServer.hpp"
+#include "ConfParser.hpp"
 #include "Log.hpp"
+#include "Request.hpp"
 #include "usefull.hpp"
 
 Server::Server() : _step(S_STEP_INIT), _epollFD(-1) {}
@@ -123,7 +130,7 @@ void Server::removeClient(int fd) {
 }
 
 void Server::handleRequest(Client* client) {
-	std::string msg;
+	std::string msg, request_str;
 	int received;
 	char buffer[CLIENT_READ_BUFFER_SIZE + 1] = {0};
 
@@ -146,8 +153,9 @@ void Server::handleRequest(Client* client) {
 		std::cout << "debug error creating the request data" << std::endl;
 		return;
 	}
-	msg = "[processClientRequest] Request processing already completed";
-	Log::log(Log::DEBUG, msg.c_str());
+	msg = "[handleRequest] : Request processing already completed\n%s";
+	request_str = client->getRequest()->toString().c_str();
+	Log::log(Log::DEBUG, msg.c_str(), request_str.c_str());
 }
 
 void Server::handleResponse(Client* client, int epollFD) {
@@ -175,18 +183,87 @@ void Server::handleResponse(Client* client, int epollFD) {
 	modifySocketEpoll(epollFD, clientFd, REQUEST_FLAGS);
 }
 
+BlockServer* Server::findServer(Request* request) {
+	typedef std::vector<BlockServer> Blocks;
+	MapHeaders headers;
+	MapServers servers;
+	std::string host, port;
+	std::vector<BlockServer> blocks;
+	std::vector<std::string> names;
+	std::vector<std::string>::iterator find;
+
+	headers = request->getHeaders();
+	host = headers["Host"];
+	port = ft_itos(extractPort(host));
+
+	if (host.empty()) {
+		Log::log(Log::ERROR, "[_findServer] Host not found in headers");
+		throw std::runtime_error("Error: Missing 'Host' header in Request");
+		return NULL;  // might want to return instead of throwing
+	}
+
+	Log::log(Log::DEBUG, "[findServer] Host: %s", host.c_str());
+
+	servers = this->getParser().getConfigs();
+	for (MapServers::iterator it = servers.begin(); it != servers.end(); it++) {
+		if (ft_itos(extractPort(it->first)) == port) return (&it->second[0]);
+		blocks = it->second;
+		for (Blocks::iterator it2 = blocks.begin(); it2 != blocks.end();
+			 it2++) {
+			names = it2->getServerNames();
+			find = std::find(names.begin(), names.end(), host);
+			if (find != names.end()) return (&(*it2));
+		}
+	}
+	return (NULL);
+};
+
+BlockLocation* Server::findLocation(BlockServer* server, Request* request) {
+	BlockLocation* best_match;
+	std::string root, target, current, path;
+	std::vector<BlockLocation>* locations;
+	std::vector<BlockLocation>::iterator it;
+	std::vector<std::string>::iterator it2;
+
+	best_match = NULL;
+	target = request->getTarget();
+	locations = server->getLocations();
+
+	for (it = locations->begin(); it != locations->end(); it++) {
+		path = it->getPath();
+		if (target.find(path) == 0) {
+			if (!best_match) best_match = &(*it);
+			if (path.size() > best_match->getPath().size()) best_match = &(*it);
+		}
+	}
+	return (best_match);
+};
+
 Response Server::handleGetRequest(Request* request) {
 	// check if request target inside location
 	// need to retrieve the root
 	// need to retrieve the index
+	BlockLocation* location;
+	BlockServer* server;
 	Response response;
 	std::map<std::string, std::string> headers;
-	std::string content, contentLength, target;
+	std::string content, contentLength, target, root;
 
+	server = this->findServer(request);
+	if (!server) throw std::exception();  // should probably return an error
+	location = this->findLocation(server, request);
 	target = request->getTarget();
-	std::string root = "web";					// need to retrieve the root
-	if (target == "/") target += "index.html";	// need to retrieve the index
-	target = rtrim(target, "?");				// ? can be present in a form
+
+	if (location) {
+		root = location->getRoot();
+		if (target[target.size() - 1] == '/')
+			target += location->getIndexes()[0];
+		// target = rtrim(target, "?");  // need to parse queries correctly
+	} else {
+		root = server->getRoot();
+		if (target == "/") target += server->getIndexes()[0];
+		// target = rtrim(target, "?");  // need to parse queries correctly
+	}
 
 	try {
 		content = getFileContent(root + target);  // can throw

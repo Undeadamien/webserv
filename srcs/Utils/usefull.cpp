@@ -152,6 +152,7 @@ std::string getMimeType(std::string target) {
 	if (mapMime.empty()) {
 		mapMime["js"] = "application/javascript";
 		mapMime["json"] = "application/json";
+		mapMime["gif"] = "image/gif";
 		mapMime["jpeg"] = "image/jpeg";
 		mapMime["jpg"] = "image/jpeg";
 		mapMime["png"] = "image/png";

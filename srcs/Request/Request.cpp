@@ -76,8 +76,8 @@ std::string Request::parseProtocol(const std::string &content) {
 		throw std::runtime_error("Error: parsing protocol or request");
 	return (line.substr(start));
 };
-mapHeaders Request::parseHeaders(const std::string &content) {
-	mapHeaders headers;
+MapHeaders Request::parseHeaders(const std::string &content) {
+	MapHeaders headers;
 	size_t sep;
 	std::istringstream str_stream(content);
 	std::string key, value, line;
@@ -110,13 +110,13 @@ std::string Request::parseBody(const std::string &content) {
 void Request::setMethod(e_Methods method) { this->_method = method; };
 void Request::setTarget(std::string target) { this->_target = target; };
 void Request::setProtocol(std::string protocol) { this->_protocol = protocol; };
-void Request::setHeaders(mapHeaders headers) { this->_headers = headers; };
+void Request::setHeaders(MapHeaders headers) { this->_headers = headers; };
 void Request::setBody(std::string body) { this->_body = body; };
 
 const e_Methods &Request::getMethod() const { return (this->_method); };
 const std::string &Request::getTarget() const { return (this->_target); };
 const std::string &Request::getProtocol() const { return (this->_protocol); };
-const mapHeaders &Request::getHeaders() const { return (this->_headers); };
+const MapHeaders &Request::getHeaders() const { return (this->_headers); };
 const std::string &Request::getBody() const { return (this->_body); };
 
 std::string Request::toString() const {
@@ -125,8 +125,8 @@ std::string Request::toString() const {
 	method = e_Methods_to_String(this->getMethod());
 	str += method + " " + this->getTarget() + " " + this->getProtocol();
 	str += "\r\n";
-	mapHeaders headers = this->getHeaders();
-	for (mapHeaders::iterator it = headers.begin(); it != headers.end(); it++)
+	MapHeaders headers = this->getHeaders();
+	for (MapHeaders::iterator it = headers.begin(); it != headers.end(); it++)
 		str = str + it->first + ": " + it->second + "\r\n";
 	str += "\r\n";
 	str = str + this->getBody();

@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "BlockLocation.hpp"
 #include "BlockServer.hpp"
 #include "Client.hpp"
 #include "ConfParser.hpp"
@@ -26,16 +27,9 @@ class Socket;
 #define TIMEOUT_CGI 30
 
 // define step for server
-enum ServerSTEP
-{
-	S_STEP_INIT = 0,
-	S_STEP_READY,
-	S_STEP_EXEC,
-	S_STEP_STOP
-};
+enum ServerSTEP { S_STEP_INIT = 0, S_STEP_READY, S_STEP_EXEC, S_STEP_STOP };
 
-class Server
-{
+class Server {
 private:
 	int _step;
 	int _epollFD;
@@ -63,6 +57,9 @@ private:
 	Response handlePostRequest(Request* request);
 	Response handleDeleteRequest(Request* request);
 	Response generateResponse(Request* request);
+
+	BlockServer* findServer(Request* request);
+	BlockLocation* findLocation(BlockServer* server_conf, Request* request);
 
 	/* HANDLE UTILS */
 	int createClientSocket(int fd, struct sockaddr_in& addr,

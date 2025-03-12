@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:50:42 by dtrala            #+#    #+#             */
-/*   Updated: 2025/03/04 05:05:22 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/03/12 12:57:00 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ std::string Response::parseStatusText(const std::string &content) {
 };
 std::map<std::string, std::string> Response::parseHeaders(
 	const std::string &content) {
-	mapHeaders headers;
+	MapHeaders headers;
 	size_t sep;
 	std::istringstream str_stream(content);
 	std::string key, value, line;
@@ -124,7 +124,7 @@ void Response::setProtocol(std::string protocol) {
 };
 void Response::setStatusCode(std::string code) { this->_status_code = code; };
 void Response::setStatusText(std::string text) { this->_status_text = text; };
-void Response::setHeaders(mapHeaders headers) { this->_headers = headers; };
+void Response::setHeaders(MapHeaders headers) { this->_headers = headers; };
 void Response::setBody(std::string body) { this->_body = body; };
 
 const std::string &Response::getProtocol() const { return (this->_protocol); };
@@ -134,15 +134,15 @@ const std::string &Response::getStatusCode() const {
 const std::string &Response::getStatusText() const {
 	return (this->_status_text);
 };
-const mapHeaders &Response::getHeaders() const { return (this->_headers); };
+const MapHeaders &Response::getHeaders() const { return (this->_headers); };
 const std::string &Response::getBody() const { return (this->_body); };
 
 std::string Response::toString() const {
 	std::string str;
 	str += this->getProtocol() + " " + this->getStatusCode() + " " +
 		   this->getStatusText() + "\r\n";
-	mapHeaders headers = this->getHeaders();
-	for (mapHeaders::iterator it = headers.begin(); it != headers.end(); it++)
+	MapHeaders headers = this->getHeaders();
+	for (MapHeaders::iterator it = headers.begin(); it != headers.end(); it++)
 		str += it->first + ": " + it->second + "\r\n";
 	str += "\r\n";
 	str += this->getBody();

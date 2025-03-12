@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:51:05 by dtrala            #+#    #+#             */
-/*   Updated: 2025/03/04 00:16:56 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/03/12 12:01:43 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,10 +22,9 @@
 class Client;
 class Request;
 
-typedef std::map<std::string, std::string> mapHeaders;
+typedef std::map<std::string, std::string> MapHeaders;
 
-class Response
-{
+class Response {
 public:
 	Response();
 	Response(std::string raw);

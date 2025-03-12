@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:49:03 by dtrala            #+#    #+#             */
-/*   Updated: 2025/03/04 00:21:43 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/03/12 11:46:21 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 #include "Socket_utils.hpp"
 #include "usefull.hpp"
 
-typedef std::map<std::string, std::string> mapHeaders;
+typedef std::map<std::string, std::string> MapHeaders;
 
 #define REQUEST_DEFAULT_STEP_CODE 200
 #define REQUEST_DEFAULT_UPLOAD_PATH "./web/upload/"
@@ -36,8 +36,7 @@ class BlockLocation;
 class BlockServer;
 class Socket;
 
-class Request
-{
+class Request {
 public:
 	Request();
 	Request(const std::string &content);
