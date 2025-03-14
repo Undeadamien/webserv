@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:49:03 by dtrala            #+#    #+#             */
-/*   Updated: 2025/03/12 11:46:21 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/03/14 02:12:24 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,17 +50,23 @@ public:
 	std::map<std::string, std::string> parseHeaders(const std::string &content);
 	std::string parseBody(const std::string &content);
 
+	/*
 	void setMethod(e_Methods method);
 	void setTarget(std::string target);
 	void setProtocol(std::string protocol);
 	void setHeaders(std::map<std::string, std::string> headers);
 	void setBody(std::string body);
+	*/
 
 	const e_Methods &getMethod() const;
 	const std::string &getTarget() const;
 	const std::string &getProtocol() const;
 	const std::map<std::string, std::string> &getHeaders() const;
 	const std::string &getBody() const;
+
+	std::string parsePath() const;
+	std::string parseQuery() const;
+	std::map<std::string, std::string> parseQueryToMap();
 
 	std::string toString() const;
 
@@ -71,20 +77,6 @@ private:
 	std::string _protocol;
 	std::map<std::string, std::string> _headers;
 	std::string _body;
-	Client *_client;
-
-	BlockLocation *_location;
-	BlockServer *_server;
-	std::string _rawRequest;
-	std::string _uri;
-	std::string _path;
-	std::string _httpVersion;
-	bool _isChunked;
-	// CgiHandler _cgi;
-	size_t _contentLength;
-	int _chunkSize;
-	time_t _timeout;
-	int _stepCode;
 };
 
 std::ostream &operator<<(std::ostream &os, const Request &request);

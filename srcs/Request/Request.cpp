@@ -106,18 +106,46 @@ std::string Request::parseBody(const std::string &content) {
 	return (content.substr(delimiter + 4));
 };
 
-// I should add some checks
+/*
 void Request::setMethod(e_Methods method) { this->_method = method; };
 void Request::setTarget(std::string target) { this->_target = target; };
 void Request::setProtocol(std::string protocol) { this->_protocol = protocol; };
 void Request::setHeaders(MapHeaders headers) { this->_headers = headers; };
 void Request::setBody(std::string body) { this->_body = body; };
+*/
 
 const e_Methods &Request::getMethod() const { return (this->_method); };
 const std::string &Request::getTarget() const { return (this->_target); };
 const std::string &Request::getProtocol() const { return (this->_protocol); };
 const MapHeaders &Request::getHeaders() const { return (this->_headers); };
 const std::string &Request::getBody() const { return (this->_body); };
+
+std::string Request::parsePath() const {
+	std::string::size_type sep = this->_target.find("?");
+	if (sep == std::string::npos) return this->_target;
+	return this->_target.substr(sep);
+};
+std::string Request::parseQuery() const {
+	std::string::size_type sep = this->_target.find("?");
+	if (sep == std::string::npos) return "";
+	return this->_target.substr(sep + 1);
+};
+std::map<std::string, std::string> Request::parseQueryToMap() {
+	std::map<std::string, std::string> map;
+	std::string query, line, key, value;
+	std::string::size_type pos;
+
+	if ((query = this->parseQuery()).empty()) return map;
+	std::stringstream ss(query);
+	while (std::getline(ss, line, '&')) {
+		pos = line.find('=');
+		if (pos == std::string::npos) continue;	 // might want to throw an error
+		key = line.substr(0, pos);
+		value = line.substr(pos + 1);
+		map[key] = value;
+	}
+	return map;
+};
 
 std::string Request::toString() const {
 	std::string str;
