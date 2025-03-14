@@ -323,7 +323,7 @@ Response Server::generateResponse(Request* req) {
 	if (req->getMethod() == GET) return (this->handleGetRequest(req));
 	if (req->getMethod() == POST) return (this->handlePostRequest(req));
 	if (req->getMethod() == DELETE) return (this->handleDeleteRequest(req));
-	return (createResponseError("HTTP/1.1", "405", "Method Not Allowed"));
+	return (createResponseError("HTTP/1.1", "501", "Method Not Implemented"));
 }
 
 void Server::handleEvent(epoll_event* events, int i) {
