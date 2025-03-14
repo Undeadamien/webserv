@@ -187,7 +187,6 @@ void Server::handleResponse(Client* client, int epollFD) {
 BlockServer* Server::findServer(Request* request) {
 	typedef std::vector<BlockServer> Blocks;
 	MapHeaders headers;
-	MapServers servers;
 	std::string host, port;
 	std::vector<BlockServer> blocks;
 	std::vector<std::string> names;
@@ -205,7 +204,7 @@ BlockServer* Server::findServer(Request* request) {
 
 	Log::log(Log::DEBUG, "[findServer] Host: %s", host.c_str());
 
-	servers = this->getParser().getConfigs();
+	MapServers& servers = this->getParser().getServers();
 	for (MapServers::iterator it = servers.begin(); it != servers.end(); it++) {
 		if (ft_itos(extractPort(it->first)) == port) return (&it->second[0]);
 		blocks = it->second;
