@@ -250,6 +250,8 @@ Response Server::handleGetRequest(Request* request) {
 	server = this->findServer(request);
 	if (!server) throw std::exception();  // should probably return an error
 	location = this->findLocation(server, request);
+	if (location && !location->isMethodAllowed(GET))
+		return (createResponseError("HTTP/1.1", "405", "Method not allowed"));
 	target = request->getTarget();
 
 	if (location) {
@@ -270,7 +272,7 @@ Response Server::handleGetRequest(Request* request) {
 	}
 	contentLength = ft_itos(content.length());
 
-	headers["Content-Type"] = getMimeType(root + target);  // can throw
+	headers["Content-Type"] = getMimeType(root + target);
 	headers["Content-Length"] = contentLength;
 
 	response.setProtocol("HTTP/1.1");
@@ -282,13 +284,33 @@ Response Server::handleGetRequest(Request* request) {
 	return (response);
 };
 Response Server::handlePostRequest(Request* request) {
-	(void)request;
+	BlockLocation* location;
+	BlockServer* server;
 	Response response;
+	std::map<std::string, std::string> headers;
+	std::string content, contentLength, target, root;
+
+	server = this->findServer(request);
+	if (!server) throw std::exception();  // should probably return an error
+	location = this->findLocation(server, request);
+	if (location && !location->isMethodAllowed(DELETE))
+		return (createResponseError("HTTP/1.1", "405", "Method not allowed"));
+
 	return (response);
 };
 Response Server::handleDeleteRequest(Request* request) {
-	(void)request;
+	BlockLocation* location;
+	BlockServer* server;
 	Response response;
+	std::map<std::string, std::string> headers;
+	std::string content, contentLength, target, root;
+
+	server = this->findServer(request);
+	if (!server) throw std::exception();  // should probably return an error
+	location = this->findLocation(server, request);
+	if (location && !location->isMethodAllowed(DELETE))
+		return (createResponseError("HTTP/1.1", "405", "Method not allowed"));
+
 	return (response);
 };
 // might need to allocate  the return response
