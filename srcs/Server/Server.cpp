@@ -239,29 +239,21 @@ BlockLocation* Server::findLocation(BlockServer* server, Request* request) {
 	return (best_match);
 };
 
-Response Server::handleGetRequest(Request* request) {
-	BlockLocation* location;
-	BlockServer* server;
+Response Server::handleGetRequest(Request* request, BlockServer* server,
+								  BlockLocation* location) {
 	Response response;
 	std::map<std::string, std::string> headers;
 	std::string content, contentLength, target, root;
 
-	server = this->findServer(request);
-	if (!server) throw std::exception();  // should probably return an error
-	location = this->findLocation(server, request);
-	if (location && !location->isMethodAllowed(GET))
-		return (createResponseError("HTTP/1.1", "405", "Method not allowed"));
-	target = request->getTarget();
+	target = request->parsePath();
 
 	if (location) {
 		root = location->getRoot();
 		if (target[target.size() - 1] == '/')
 			target += location->getIndexes()[0];
-		// target = rtrim(target, "?");  // need to parse queries correctly
 	} else {
 		root = server->getRoot();
 		if (target == "/") target += server->getIndexes()[0];
-		// target = rtrim(target, "?");  // need to parse queries correctly
 	}
 
 	try {
@@ -282,46 +274,66 @@ Response Server::handleGetRequest(Request* request) {
 
 	return (response);
 };
-Response Server::handlePostRequest(Request* request) {
-	BlockLocation* location;
-	BlockServer* server;
+
+Response Server::handlePostRequest(Request* request, BlockServer* server,
+								   BlockLocation* location) {
 	Response response;
 	std::map<std::string, std::string> headers;
 	std::string content, contentLength, target, root;
 
-	server = this->findServer(request);
-	if (!server) throw std::exception();  // should probably return an error
-	location = this->findLocation(server, request);
-	if (location && !location->isMethodAllowed(DELETE))
+	(void)request;
+	(void)server;
+
+	if (location && !location->isMethodAllowed(POST))
 		return (createResponseError("HTTP/1.1", "405", "Method not allowed"));
+
+	// handle the post request
 
 	return (response);
 };
-Response Server::handleDeleteRequest(Request* request) {
-	BlockLocation* location;
-	BlockServer* server;
+
+Response Server::handleDeleteRequest(Request* request, BlockServer* server,
+									 BlockLocation* location) {
 	Response response;
 	std::map<std::string, std::string> headers;
 	std::string content, contentLength, target, root;
 
-	server = this->findServer(request);
-	if (!server) throw std::exception();  // should probably return an error
-	location = this->findLocation(server, request);
+	(void)request;
+	(void)server;
+
 	if (location && !location->isMethodAllowed(DELETE))
 		return (createResponseError("HTTP/1.1", "405", "Method not allowed"));
 
+	// handle the delete request
+
+	// 200 OK
+	// 202 Accepted, still processing, async ?
+	// 204 No Content, ressource deleted but no response body
+	// 404 Forbidden
+	// 404 Not Found
+
 	return (response);
 };
-// might need to allocate  the return response
-Response Server::generateResponse(Request* req) {
+
+Response Server::generateResponse(Request* request) {
+	BlockLocation* location;
+	BlockServer* server;
 	Response res;
-	// handle redirect
-	// check for cgi
-	// check for chunk
 
-	if (req->getMethod() == GET) return (this->handleGetRequest(req));
-	if (req->getMethod() == POST) return (this->handlePostRequest(req));
-	if (req->getMethod() == DELETE) return (this->handleDeleteRequest(req));
+	server = this->findServer(request);
+	if (!server)
+		return createResponseError("HTTP/1.1", "500", "Internal Server Error");
+	location = this->findLocation(server, request);	 // can return NULL
+
+	// check redirect
+	// check for cgi
+
+	if (request->getMethod() == GET)
+		return (this->handleGetRequest(request, server, location));
+	if (request->getMethod() == POST)
+		return (this->handlePostRequest(request, server, location));
+	if (request->getMethod() == DELETE)
+		return (this->handleDeleteRequest(request, server, location));
 	return (createResponseError("HTTP/1.1", "501", "Method Not Implemented"));
 }
 

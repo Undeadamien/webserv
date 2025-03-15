@@ -278,10 +278,8 @@ void BlockLocation::cleanPaths() {
 e_Methods BlockLocation::ConvertStrtoMethod(const std::string &method) {
 	if (method == "GET") return (GET);
 	if (method == "POST") return (POST);
-	if (method == "DELETE")
-		return (DELETE);
-	else
-		return (UNKNOWN);
+	if (method == "DELETE") return (DELETE);
+	return (UNKNOWN);
 }
 
 /*_____      _       _

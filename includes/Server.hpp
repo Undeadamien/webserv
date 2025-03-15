@@ -53,9 +53,12 @@ private:
 
 	void handleRequest(Client* client);
 	void handleResponse(Client* client, int epollFD);
-	Response handleGetRequest(Request* request);
-	Response handlePostRequest(Request* request);
-	Response handleDeleteRequest(Request* request);
+	Response handleGetRequest(Request* request, BlockServer* server,
+							  BlockLocation* location);
+	Response handlePostRequest(Request* request, BlockServer* server,
+							   BlockLocation* location);
+	Response handleDeleteRequest(Request* request, BlockServer* server,
+								 BlockLocation* location);
 	Response generateResponse(Request* request);
 
 	BlockServer* findServer(Request* request);
