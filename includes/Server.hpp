@@ -51,15 +51,14 @@ private:
 	void _handleClientConnect(int fd);
 	void _handleClientDisconnect(int fd);
 
-	void handleRequest(Client* client);
-	void handleResponse(Client* client, int epollFD);
-	Response handleGetRequest(Request* request, BlockServer* server,
-							  BlockLocation* location);
-	Response handlePostRequest(Request* request, BlockServer* server,
-							   BlockLocation* location);
-	Response handleDeleteRequest(Request* request, BlockServer* server,
-								 BlockLocation* location);
-	Response generateResponse(Request* request);
+	void handleRequest(Client*);
+	void handleResponse(Client*, int epollFD);
+	Response handleGetRequest(Request*, BlockServer*, BlockLocation*);
+	Response handlePostRequest(Request*, BlockServer*, BlockLocation*);
+	Response handleDeleteRequest(Request*, BlockServer*, BlockLocation*);
+	Response handleCgiRequest(Request*, BlockServer*, BlockLocation*);
+	Response resolveRequest(Request*);
+	bool isCgi(Request*, BlockServer*, BlockLocation*);
 
 	BlockServer* findServer(Request* request);
 	BlockLocation* findLocation(BlockServer* server_conf, Request* request);
