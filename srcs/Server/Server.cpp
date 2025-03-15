@@ -165,7 +165,7 @@ void Server::handleResponse(Client* client, int epollFD) {
 	int sent = -1;
 	std::string msg;
 
-	response = this->generateResponse(client->getRequest());
+	response = this->resolveRequest(client->getRequest());
 	client->setResponse(new Response(response));
 
 	Log::log(Log::DEBUG, "Response to be sent: \n%s",
@@ -315,7 +315,24 @@ Response Server::handleDeleteRequest(Request* request, BlockServer* server,
 	return (response);
 };
 
-Response Server::generateResponse(Request* request) {
+bool Server::isCgi(Request* request, BlockServer* server,
+				   BlockLocation* location) {
+	(void)request;
+	(void)server;
+	(void)location;
+	return false;
+}
+
+Response Server::handleCgiRequest(Request* request, BlockServer* server,
+								  BlockLocation* location) {
+	(void)request;
+	(void)server;
+	(void)location;
+
+	return Response();	// tmp
+};
+
+Response Server::resolveRequest(Request* request) {
 	BlockLocation* location;
 	BlockServer* server;
 	Response res;
