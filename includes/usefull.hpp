@@ -43,4 +43,5 @@ Response createResponseError(std::string protocol, std::string status_code,
 							 std::string status_text);
 std::string getFileContent(std::string path);
 std::string getMimeType(std::string target);
+std::string parseFileExtension(const std::string&);
 #endif
