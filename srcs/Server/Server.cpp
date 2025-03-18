@@ -1,5 +1,7 @@
 #include "Server.hpp"
 
+#include <sys/epoll.h>
+
 #include <algorithm>
 #include <exception>
 #include <iostream>
@@ -174,7 +176,7 @@ void Server::handleResponse(Client* client, int epollFD) {
 	if (clientFd != -1) {
 		std::string str = client->getResponse()->toString();
 		sent = send(clientFd, str.c_str(), str.size(), 0);
-	}
+	}  // might need to throw an error if not openned
 
 	if (sent < 0) throw std::runtime_error("send function failed");
 
@@ -315,13 +317,24 @@ Response Server::handleDeleteRequest(Request* request, BlockServer* server,
 	return (response);
 };
 
-bool Server::isCgi(Request* request, BlockServer* server,
-				   BlockLocation* location) {
-	(void)request;
-	(void)server;
-	(void)location;
-	return false;
+bool Server::isCgi(Request* request, BlockLocation* location) {
+	typedef std::map<std::string, std::string> MapCgi;
+	MapCgi cgis;
+	std::string ext;
+
+	if (!location) return false;
+	cgis = location->getCGI();
+	ext = parseFileExtension(request->parsePath());
+	if (ext.empty()) return false;
+	return cgis.find(ext) != cgis.end();
 }
+bool Server::hasRedirection(BlockLocation* location) {
+	std::pair<int, std::string> rewrite;
+
+	if (!location) return false;
+	rewrite = location->getRewrite();
+	return !rewrite.first || !rewrite.second.empty();  // probably wrong
+};
 
 Response Server::handleCgiRequest(Request* request, BlockServer* server,
 								  BlockLocation* location) {
@@ -338,12 +351,16 @@ Response Server::resolveRequest(Request* request) {
 	Response res;
 
 	server = this->findServer(request);
-	if (!server)
+	if (!server)  // should never happen
 		return createResponseError("HTTP/1.1", "500", "Internal Server Error");
 	location = this->findLocation(server, request);	 // can return NULL
 
-	// check redirect
-	// check for cgi
+	if (location && this->hasRedirection(location)) {
+		;  // placeholder
+	}
+	if (location && this->isCgi(request, location)) {
+		;  // placeholder
+	}
 
 	if (request->getMethod() == GET)
 		return (this->handleGetRequest(request, server, location));

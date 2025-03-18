@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 
+#include <cstddef>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -173,3 +174,12 @@ std::string getMimeType(std::string target) {
 	if (it != mapMime.end()) return it->second;
 	return "application/octet-stream";
 }
+
+std::string parseFileExtension(const std::string& path) {
+	size_t pos;
+	std::string ext;
+
+	if ((pos = path.rfind('.')) == std::string::npos) return ("");
+	ext = path.substr(pos);
+	return ext;
+};

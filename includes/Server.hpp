@@ -58,7 +58,8 @@ private:
 	Response handleDeleteRequest(Request*, BlockServer*, BlockLocation*);
 	Response handleCgiRequest(Request*, BlockServer*, BlockLocation*);
 	Response resolveRequest(Request*);
-	bool isCgi(Request*, BlockServer*, BlockLocation*);
+	bool isCgi(Request*, BlockLocation*);
+	bool hasRedirection(BlockLocation*);
 
 	BlockServer* findServer(Request* request);
 	BlockLocation* findLocation(BlockServer* server_conf, Request* request);
