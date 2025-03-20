@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:51:05 by dtrala            #+#    #+#             */
-/*   Updated: 2025/03/12 12:01:43 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/03/20 10:30:59 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,6 @@
 #include <map>
 #include <string>
 
-#include "Client.hpp"
-#include "Request.hpp"
-
-class Client;
 class Request;
 
 typedef std::map<std::string, std::string> MapHeaders;
@@ -59,9 +55,6 @@ private:
 	std::string _status_text;
 	std::map<std::string, std::string> _headers;
 	std::string _body;
-	Request *_request;
-	// CgiHandler _cgiHandler;
-	int _fileFd;
 };
 
 std::ostream &operator<<(std::ostream &os, const Response &response);
