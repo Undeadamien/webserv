@@ -15,19 +15,35 @@
 #include "usefull.hpp"
 
 Server::Server() : _step(S_STEP_INIT), _epollFD(-1) {}
+
 Server::~Server() {
-	if (this->_epollFD != -1)
-		VerifFatalCallFonc(close(_epollFD), "Faild to close epoll instance",
-						   false);
-	// Delete all the sockets
+	// Fermeture sécurisée du descripteur epoll
+	if (this->_epollFD != -1) {
+		VerifFatalCallFonc(close(this->_epollFD),
+						   "Failed to close epoll instance", false);
+		this->_epollFD = -1;  // Éviter un double close accidentel
+	}
+
+	// Suppression sécurisée des sockets
 	for (std::map<int, Socket*>::iterator it = this->_sockets.begin();
-		 it != this->_sockets.end(); ++it)
-		delete it->second;
+		 it != this->_sockets.end(); ++it) {
+		if (it->second)	 // Vérification avant delete
+		{
+			delete it->second;
+			it->second = NULL;	// Sécurisation
+		}
+	}
 	this->_sockets.clear();
-	// Delete all the clients
+
+	// Suppression sécurisée des clients
 	for (std::map<int, Client*>::iterator it = this->_clients.begin();
-		 it != this->_clients.end(); ++it)
-		delete it->second;
+		 it != this->_clients.end(); ++it) {
+		if (it->second)	 // Vérification avant delete
+		{
+			delete it->second;
+			it->second = NULL;	// Sécurisation
+		}
+	}
 	this->_clients.clear();
 }
 

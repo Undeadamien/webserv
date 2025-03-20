@@ -12,6 +12,12 @@
 #include "ConfParser.hpp"
 #include "Log.hpp"
 #include "Response.hpp"
+#include "Server.hpp"
+
+class Log;
+class Server;
+class Response;
+class ConfParser;
 
 int fdSocket = -1;
 
@@ -112,7 +118,7 @@ void handle_signal(int signal) {
 	if (signal != SIGINT) return;
 	std::cout << "\rStopping the server " << std::endl;
 	if (fdSocket != -1) close(fdSocket);
-	exit(EXIT_SUCCESS);	 // will not cleanup, should be replaced with a flag
+	g_server->stop();
 }
 
 Response createResponseError(BlockServer* server, std::string protocol,

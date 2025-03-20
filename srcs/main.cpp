@@ -22,7 +22,7 @@ int main(int argc, char** argv, char** env) {
 	try {
 		server.getParser().parsing(argv[1]);
 		Log::log(Log::DEBUG, "Parsing completed");
-		if (Log::getLogDebugState() == Log::DEBUG)
+		if (Log::getLogDebugState() == true)
 			server.getParser().printServers();
 		server.init();
 		server.execute();

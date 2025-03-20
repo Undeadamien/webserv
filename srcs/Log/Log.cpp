@@ -135,8 +135,8 @@ void Log::log(Log::LogStep level, const char *msg, ...) {
 		Log::_InLogFile(level, buffer.data(), timeBuffer);
 
 	// Throw a fatal exception if the log level is FATAL
-	/*    if (level == Log::FATAL)
-			throw std::runtime_error(buffer.data());*/
+	//if (level == Log::FATAL)
+	//	throw std::runtime_error(buffer.data());
 }
 
 /* _____ ______ _______ _______ ______ _____   _____

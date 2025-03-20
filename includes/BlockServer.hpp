@@ -67,6 +67,7 @@ public:
 
 	//	// Util
 	bool isServerNamePresent(std::vector<std::string> &otherNames);
+	bool VerifUploadPath(const std::string &uploadpath);
 
 	//// Setters
 	void setClientMaxBodySize(std::string clientMaxBodySize);
@@ -78,6 +79,7 @@ public:
 	void setErrorPages(const std::map<int, std::string> &errorPage) {
 		_errorPages = errorPage;
 	}
+	void setUploadPath(std::string uploadpath) {_uploadPath = uploadpath;};
 
 	//// Adders
 	void addErrorPages(int errorCode, std::string file);

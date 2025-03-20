@@ -9,6 +9,7 @@
 #include <iostream>
 #include <map>
 #include <set>
+#include <sys/stat.h>
 
 #include "ConfParser.hpp"
 #include "Log.hpp"
@@ -104,6 +105,18 @@ void BlockServer::cleanPaths() {
 	}
 }
 
+bool BlockServer::VerifUploadPath(const std::string &uploadpath) {
+	if (!uploadpath.empty() && uploadpath != "/" &&
+		uploadpath[uploadpath.size() - 1] == '/') {
+		struct stat info;
+
+		if (stat(uploadpath.c_str(), &info) == 0 && (info.st_mode & S_IFDIR)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool BlockServer::ValidServerChecker(std::vector<std::string> &tokens,
 									 std::string &key,
 									 std::ifstream &configFile) {
@@ -121,12 +134,18 @@ bool BlockServer::ValidServerChecker(std::vector<std::string> &tokens,
 		setRoot(tokens[1]);
 	else if (key == "client_max_body_size" && tokens.size() == 2)
 		setClientMaxBodySize(tokens[1]);
-	else if (key == "error_page" && tokens.size() == 3) {
+	else if (key == "error_page" && tokens.size() == 3)
 		addErrorPages(std::atoi(tokens[1].c_str()), tokens[2]);
+	else if (key == "upload_path" && tokens.size() == 2 &&
+			 VerifUploadPath(tokens[1])) {
+		setUploadPath(tokens[1]);
 	} else
 		return (false);
 	return (true);
 }
+
+
+
 /* _____ ______ _______ _______ ______ _____   _____
   / ____|  ____|__   __|__   __|  ____|  __ \ / ____|
  | (___ | |__     | |     | |  | |__  | |__) | (___
@@ -306,6 +325,7 @@ void BlockServer::printServer(void) {
 	printVector("Server names", _serverNames);
 	printListens();
 	printVector("Indexes", _indexes);
+	printPair("Upload Path", _uploadPath);
 	printPair("Root", _root);
 	std::cout << "Client max body size: " << ullToStr(_clientMaxBodySize)
 			  << std::endl;
