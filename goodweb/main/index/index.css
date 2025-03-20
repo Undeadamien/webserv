@@ -30,12 +30,12 @@ header {
 }
 
 .title-link {
-    text-decoration: none; /* Supprime le soulignement */
-    color: inherit; /* Utilise la couleur de texte par défaut */
+    text-decoration: none;
+    color: inherit;
 }
 
 .title-link h1 {
-    color: black; /* Change la couleur du texte si nécessaire */
+    color: black;
 }
 
 h1 {
@@ -44,9 +44,9 @@ h1 {
 }
 
 .github-logo {
-    width: 32px; /* Ajuste la taille selon tes besoins */
+    width: 32px;
     height: 32px;
-	margin-right: 30px;
+    margin-right: 30px;
 }
 
 .download-container {
@@ -57,28 +57,61 @@ h1 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width:110px; /* Même largeur que le logo GitHub */
-    height: 32px; /* Même hauteur que le logo GitHub */
+    width: 110px;
+    height: 32px;
     background-color: #5865F2;
     color: white;
     text-decoration: none;
     border-radius: 5px;
     transition: background-color 0.3s;
-	padding: 5px 8px; /* Augmente l'espace interne */
-	font-size: 18px; /* Augmente la taille du texte */
-	margin-right: 50px;
-	margin-top: -4px;
+    padding: 5px 8px;
+    font-size: 18px;
+    margin-right: 50px;
+    margin-top: -4px;
 }
 
 .download-button:hover {
     background-color: #43484D;
 }
 
-
 main {
     padding: 20px;
     width: 100%;
     max-width: 1200px;
+    display: flex;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+}
+
+.file-list-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 200px;
+    text-align: center;
+    margin-right: 20px;
+    height: fit-content;
+}
+
+.file-list-card .card-title {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    color: #333333;
+}
+
+.file-list-card .card-content {
+    background-color: #e0e0e0;
+    height: 300px;
+    border-radius: 4px;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
 }
 
 .portfolios {
@@ -92,7 +125,7 @@ main {
 }
 
 .portfolios h2 {
-	margin-bottom: 40px;
+    margin-bottom: 40px;
 }
 
 .portfolio-cards {
@@ -101,40 +134,47 @@ main {
     gap: 40px;
 }
 
+.mandatory-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
 .card {
-    width: 300px; /* Largeur agrandie */
-    padding: 30px; /* Plus d'espace intérieur */
-    border: 1px solid #000; /* Bordure fine noire */
-    border-radius: 16px; /* Coins plus arrondis */
+    width: 300px;
+    padding: 30px;
+    border: 1px solid #000;
+    border-radius: 16px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     text-align: center;
-    background-color: #fff; /* Fond blanc */
+    background-color: #fff;
 }
 
 .card h3, .card p {
-    font-weight: bold; /* Texte en gras */
+    font-weight: bold;
 }
 
 .card h3 {
     margin: 0;
-    font-size: 20px; /* Taille de police augmentée */
+    font-size: 20px;
 }
 
 .card p {
     margin: 10px 0;
-    font-size: 16px; /* Taille de police augmentée */
+    font-size: 16px;
     color: #555;
 }
 
 .card button {
-    width: 80%; /* Largeur réduite pour laisser de l'espace */
-    padding: 10px 16px; /* Bouton plus épais */
-    background-color: #000; /* Couleur de fond noire */
+    width: 80%;
+    padding: 10px 16px;
+    background-color: #000;
     color: #fff;
     border: none;
-    border-radius: 24px; /* Coins plus arrondis */
+    border-radius: 24px;
     cursor: pointer;
-    font-size: 16px; /* Taille de police augmentée */
+    font-size: 16px;
     margin-top: 10px;
 }
 
@@ -147,7 +187,7 @@ main {
 }
 
 .mandatory h2 {
-	margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 .mandatory img {
@@ -158,8 +198,6 @@ main {
 .hidden {
     display: none;
 }
-
-/* Partie upload delete */
 
 .file-transfer {
     padding: 20px;
@@ -179,5 +217,3 @@ main {
     color: #f0f0f0;
     cursor: pointer;
 }
-
-
