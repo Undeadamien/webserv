@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <cstdlib>
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -114,18 +115,38 @@ void handle_signal(int signal) {
 	exit(EXIT_SUCCESS);	 // will not cleanup, should be replaced with a flag
 }
 
-Response createResponseError(std::string protocol, std::string status_code,
-							 std::string status_text) {
+Response createResponseError(BlockServer* server, std::string protocol,
+							 std::string status_code, std::string status_text) {
 	Response response;
-	std::string content;
+	int code;
+	std::map<int, std::string> error_pages;
 	std::map<std::string, std::string> headers;
+	std::string content, path;
 
-	content += "<html>";
-	content += "<body>";
-	content += "<p>SpiderServ</p>";
-	content += "<p>Error " + status_code + "</p>";
-	content += "</body>";
-	content += "</html>";
+	error_pages = server->getErrorPages();
+	std::stringstream(status_code) >> code;
+
+	if (!error_pages[code].empty()) {
+		try {
+			std::cout << code << std::endl;
+			content = getFileContent(error_pages[code]);
+		} catch (std::exception& e) {
+			std::cout << "Error openning file" << std::endl;
+			content += "<html>";
+			content += "<body>";
+			content += "<p>SpiderServ</p>";
+			content += "<p>Error " + status_code + "</p>";
+			content += "</body>";
+			content += "</html>";
+		}
+	} else {
+		content += "<html>";
+		content += "<body>";
+		content += "<p>SpiderServ</p>";
+		content += "<p>Error " + status_code + "</p>";
+		content += "</body>";
+		content += "</html>";
+	}
 
 	headers["Content-Type"] = "text/html";
 	headers["Content-Length"] = ft_itos(content.length());
