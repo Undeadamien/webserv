@@ -17,12 +17,14 @@ BlockServer::BlockServer(void)
 	: _clientMaxBodySize(DF_CLIENT_MAX_BODY), _filename("") {
 	_counterBase["root"] = 0;
 	_counterBase["clientMaxBodySize"] = 0;
+	_uploadPath = "./goodweb/main/cgi-bin/uploads";
 }
 
 BlockServer::BlockServer(std::string filename)
 	: _clientMaxBodySize(DF_CLIENT_MAX_BODY), _filename(filename) {
 	_counterBase["root"] = 0;
 	_counterBase["clientMaxBodySize"] = 0;
+	_uploadPath = "./goodweb/main/cgi-bin/uploads";
 }
 
 BlockServer::BlockServer(const BlockServer &other) { *this = other; }
@@ -40,6 +42,7 @@ BlockServer &BlockServer::operator=(const BlockServer &other) {
 		_errorPages = other._errorPages;
 		_filename = other._filename;
 		_counterBase = other._counterBase;
+		_uploadPath = other._uploadPath;
 	}
 	return *this;
 }

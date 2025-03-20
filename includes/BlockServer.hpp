@@ -11,8 +11,7 @@ class ListenIpConfParse;
 class Usefull;
 
 #define DF_CLIENT_MAX_BODY 1048576	// 1MB
-class BlockServer
-{
+class BlockServer {
 private:
 	std::map<std::string, ListenIpConfParse> _listens;
 	std::vector<std::string> _serverNames;
@@ -21,6 +20,7 @@ private:
 	unsigned long long _clientMaxBodySize;
 	std::vector<BlockLocation> _locations;
 	std::map<int, std::string> _errorPages;
+	std::string _uploadPath;
 
 	// divers
 	std::string _filename;
@@ -48,25 +48,22 @@ public:
 
 	// Getters
 	BlockLocation *getLocationByPath(const std::string &path);
-	const std::map<int, std::string> &getErrorPages() const
-	{
+	const std::map<int, std::string> &getErrorPages() const {
 		return _errorPages;
 	}
-	const std::vector<std::string> &getServerNames() const
-	{
+	const std::vector<std::string> &getServerNames() const {
 		return _serverNames;
 	}
 	std::vector<BlockLocation> *getLocations() { return &_locations; }
 	const std::string &getRoot() const { return _root; }
-	unsigned long long getClientMaxBodySize() const
-	{
+	unsigned long long getClientMaxBodySize() const {
 		return _clientMaxBodySize;
 	}
-	const std::map<std::string, ListenIpConfParse> &getListens() const
-	{
+	const std::map<std::string, ListenIpConfParse> &getListens() const {
 		return _listens;
 	}
 	const std::vector<std::string> &getIndexes() const { return _indexes; }
+	std::string getUploadPath() { return _uploadPath; }
 
 	//	// Util
 	bool isServerNamePresent(std::vector<std::string> &otherNames);
@@ -75,19 +72,16 @@ public:
 	void setClientMaxBodySize(std::string clientMaxBodySize);
 	void setRoot(const std::string &root);
 	void setDefaultValue();
-	void setLocations(const std::vector<BlockLocation> &locations)
-	{
+	void setLocations(const std::vector<BlockLocation> &locations) {
 		_locations = locations;
 	}
-	void setErrorPages(const std::map<int, std::string> &errorPage)
-	{
+	void setErrorPages(const std::map<int, std::string> &errorPage) {
 		_errorPages = errorPage;
 	}
 
 	//// Adders
 	void addErrorPages(int errorCode, std::string file);
-	void addLocation(const BlockLocation &locations)
-	{
+	void addLocation(const BlockLocation &locations) {
 		_locations.push_back(locations);
 	}
 	void addListen(std::string &token);
