@@ -18,6 +18,7 @@
 
 class Response;
 class Server;
+class BlockServer;
 
 extern Server* g_server;
 extern int fdSocket;
@@ -39,8 +40,8 @@ std::string e_Methods_to_String(e_Methods method);
 e_Methods str_to_e_Methods(std::string str);
 int VerifFatalCallFonc(int ret, std::string msg, bool isFatal = true);
 void handle_signal(int signal);
-Response createResponseError(std::string protocol, std::string status_code,
-							 std::string status_text);
+Response createResponseError(BlockServer*, std::string, std::string,
+							 std::string);
 std::string getFileContent(std::string path);
 std::string getMimeType(std::string target);
 std::string parseFileExtension(const std::string&);

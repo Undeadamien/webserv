@@ -12,7 +12,6 @@
 #include "ConfParser.hpp"
 #include "Log.hpp"
 #include "Request.hpp"
-#include "colors.hpp"
 #include "usefull.hpp"
 
 Server::Server() : _step(S_STEP_INIT), _epollFD(-1) {}
@@ -261,7 +260,7 @@ Response Server::handleGetRequest(Request* request, BlockServer* server,
 	try {
 		content = getFileContent(root + target);  // can throw
 	} catch (std::exception& e) {
-		return (createResponseError("HTTP/1.1", "404", "Not Found"));
+		return (createResponseError(server, "HTTP/1.1", "404", "Not Found"));
 	}
 	contentLength = ft_itos(content.length());
 
@@ -287,7 +286,8 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 	(void)server;
 
 	if (location && !location->isMethodAllowed(POST))
-		return (createResponseError("HTTP/1.1", "405", "Method not allowed"));
+		return (createResponseError(server, "HTTP/1.1", "405",
+									"Method not allowed"));
 
 	// handle the post request
 
@@ -304,7 +304,8 @@ Response Server::handleDeleteRequest(Request* request, BlockServer* server,
 	(void)server;
 
 	if (location && !location->isMethodAllowed(DELETE))
-		return (createResponseError("HTTP/1.1", "405", "Method not allowed"));
+		return (createResponseError(server, "HTTP/1.1", "405",
+									"Method not allowed"));
 
 	// handle the delete request
 
@@ -352,7 +353,8 @@ Response Server::resolveRequest(Request* request) {
 
 	server = this->findServer(request);
 	if (!server)  // should never happen
-		return createResponseError("HTTP/1.1", "500", "Internal Server Error");
+		return createResponseError(server, "HTTP/1.1", "500",
+								   "Internal Server Error");
 	location = this->findLocation(server, request);	 // can return NULL
 
 	if (location && this->hasRedirection(location)) {
@@ -368,7 +370,8 @@ Response Server::resolveRequest(Request* request) {
 		return (this->handlePostRequest(request, server, location));
 	if (request->getMethod() == DELETE)
 		return (this->handleDeleteRequest(request, server, location));
-	return (createResponseError("HTTP/1.1", "501", "Method Not Implemented"));
+	return (createResponseError(server, "HTTP/1.1", "501",
+								"Method Not Implemented"));
 }
 
 void Server::handleEvent(epoll_event* events, int i) {

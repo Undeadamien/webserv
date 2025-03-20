@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:49:03 by dtrala            #+#    #+#             */
-/*   Updated: 2025/03/14 02:12:24 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/03/20 11:18:16 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,6 @@
 #include <ostream>
 #include <string>
 
-#include "BlockLocation.hpp"
-#include "BlockServer.hpp"
-#include "Client.hpp"
 #include "Socket_utils.hpp"
 #include "usefull.hpp"
 
