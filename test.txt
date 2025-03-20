@@ -1,0 +1,6 @@
+------WebKitFormBoundaryf8SOT5dpFnOMcGAM
+Content-Disposition: form-data; name="file"; filename="qweqwe"
+Content-Type: text/plain
+
+qweqweqweqwe
+------WebKitFormBoundaryf8SOT5dpFnOMcGAM--

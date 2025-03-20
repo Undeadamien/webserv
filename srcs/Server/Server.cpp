@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <exception>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
 
@@ -296,16 +297,40 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 								   BlockLocation* location) {
 	Response response;
 	std::map<std::string, std::string> headers;
-	std::string content, contentLength, target, root;
-
-	(void)request;
-	(void)server;
+	std::string content, contentLength;
+	std::string message, messageLength;
+	std::string target, root, path;
 
 	if (location && !location->isMethodAllowed(POST))
 		return (createResponseError(server, "HTTP/1.1", "405",
 									"Method not allowed"));
 
-	// handle the post request
+	content = request->getBody();
+	path = "test.txt";	// placeholder
+
+	std::ofstream file(path.c_str());
+	if (file.is_open()) {
+		file << content;
+		file.close();
+	} else {
+		Log::log(Log::ERROR,
+				 "[Server::handlePostRequest] Error creating the file %s",
+				 path.c_str());
+		return createResponseError(server, "HTTP/1.1", "500",
+								   "Internal Server Error");
+	}
+
+	message = "File created\n";	 // placeholder
+	messageLength = ft_itos(message.length());
+
+	headers["Content-Type"] = "text/html";
+	headers["Content-Length"] = messageLength;
+
+	response.setProtocol("HTTP/1.1");
+	response.setStatusCode("200");	// for created file
+	response.setStatusText("OK");
+	response.setHeaders(headers);
+	response.setBody(message);
 
 	return (response);
 };
