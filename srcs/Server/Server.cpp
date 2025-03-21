@@ -350,11 +350,19 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 	MapJson parsebody = ParseJson(body);
 	filename = parsebody["filename"];  // placeholder
 	content = parsebody["content"];
-	
-	Log::log(Log::INFO, "Filename : %s | content : %s", filename.c_str(), content.c_str());
+
+	Log::log(Log::INFO, "Filename : %s | content : %s", filename.c_str(),
+			 content.c_str());
+
+	std::string::size_type index = 0;
+	while ((index = content.find("\\n", index)) != std::string::npos) {
+		content.replace(index, 2, "\n");
+		++index;
+	}
 
 	std::ofstream file((upload_path + filename).c_str());
 	if (file.is_open()) {
+		file.clear();
 		file << content;
 		file.close();
 	} else {
