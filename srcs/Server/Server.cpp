@@ -332,6 +332,127 @@ MapJson Server::ParseJson(const std::string& content) {
 	return result;
 }
 
+std::string unescapeJsonString(const std::string& escaped) {
+	std::string unescaped;
+	unescaped.reserve(escaped.size());	// Optimisation mémoire
+
+	for (size_t i = 0; i < escaped.size(); ++i) {
+		if (escaped[i] == '\\' && i + 1 < escaped.size()) {
+			char nextChar = escaped[i + 1];
+			switch (nextChar) {
+			case 'n':
+				unescaped += '\n';
+				break;
+			case 't':
+				unescaped += '\t';
+				break;
+			case 'r':
+				unescaped += '\r';
+				break;
+			case 'b':
+				unescaped += '\b';
+				break;
+			case 'f':
+				unescaped += '\f';
+				break;
+			case '\\':
+				unescaped += '\\';
+				break;
+			case '"':
+				unescaped += '"';
+				break;
+			case '/':
+				unescaped += '/';
+				break;
+			case 'u':  // Unicode non supporté en C++98, on le laisse tel quel
+				unescaped += "\\u";
+				if (i + 5 < escaped.size()) {
+					unescaped += escaped.substr(i + 2, 4);
+					i += 4;	 // On saute les 4 caractères hexadécimaux
+				}
+				break;
+			default:
+				// Séquence inconnue, on la garde telle quelle
+				unescaped += '\\';
+				unescaped += nextChar;
+				break;
+			}
+			++i;  // On saute le caractère d'échappement traité
+		} else {
+			unescaped += escaped[i];
+		}
+	}
+
+	return unescaped;
+}
+
+std::string getBoundary(const std::string& contentType) {
+	std::string boundary = "boundary=";
+	size_t pos = contentType.find(boundary);
+	if (pos != std::string::npos) {
+		return "--" + contentType.substr(pos + boundary.length());
+	}
+	return "";
+}
+
+std::map<std::string, std::string> parseHeaders(std::istream& input) {
+	std::map<std::string, std::string> headers;
+	std::string line;
+
+	while (std::getline(input, line) && line != "\r") {
+		size_t pos = line.find(": ");
+		if (pos != std::string::npos) {
+			std::string key = line.substr(0, pos);
+			std::string value = line.substr(pos + 2);
+			if (!value.empty() && value[value.length() - 1] == '\r') {
+				value.erase(value.length() - 1);
+			}
+			headers[key] = value;
+		}
+	}
+	return headers;
+}
+
+bool saveUploadedFile(std::istream& input, const std::string& boundary) {
+	std::string line;
+	std::ofstream outFile;
+	bool isFileSection = false;
+	std::string filename;
+
+	while (std::getline(input, line)) {
+		if (line.find(boundary) != std::string::npos) {
+			if (outFile.is_open()) {
+				outFile.close();
+			}
+			isFileSection = false;
+			continue;
+		}
+
+		if (line.find("Content-Disposition:") != std::string::npos &&
+			line.find("filename=") != std::string::npos) {
+			size_t pos = line.find("filename=\"");
+			if (pos != std::string::npos) {
+				filename = line.substr(pos + 10);
+				size_t endPos = filename.find("\"");
+				if (endPos != std::string::npos) {
+					filename = filename.substr(0, endPos);
+				}
+				outFile.open(filename.c_str(), std::ios::binary);
+				isFileSection = true;
+			}
+			continue;
+		}
+
+		if (isFileSection) {
+			if (outFile.is_open()) {
+				outFile << line << "\n";
+			}
+		}
+	}
+
+	return outFile.is_open();
+}
+
 Response Server::handlePostRequest(Request* request, BlockServer* server,
 								   BlockLocation* location) {
 	Response response;
@@ -347,40 +468,81 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 	std::string upload_path = server->getUploadPath();
 
 	body = request->getBody();
-	MapJson parsebody = ParseJson(body);
-	filename = parsebody["filename"];  // placeholder
-	content = parsebody["content"];
+	MapHeaders header = request->getHeaders();
+	std::string content_type = header["Content-Type"];
 
-	Log::log(Log::INFO, "Filename : %s | content : %s", filename.c_str(),
-			 content.c_str());
+	if (content_type == "multipart/form-data") {
+		std::string boundary = getBoundary(content_type);
 
-	std::string::size_type index = 0;
-	while ((index = content.find("\\n", index)) != std::string::npos) {
-		content.replace(index, 2, "\n");
-		++index;
+		if (boundary.empty()) {
+			Log::log(Log::ERROR, "Boundary not found");
+			message = "{\"success\":false}";	 // JSON valide avec des guillemets
+											 // doubles
+			messageLength = ft_itos(message.length());
+
+			// Définition des en-têtes
+			headers["Content-Type"] =
+				"application/json";	 // Correctement défini pour JSON
+			headers["Content-Length"] = messageLength;
+			response.setProtocol("HTTP/1.1");
+			response.setStatusCode("500");	// Statut OK
+			response.setStatusText("KO");
+			response.setHeaders(headers);
+			response.setBody(message);
+			return response;
+		}
+
+		if (!saveUploadedFile(std::cin, boundary)) {
+			message = "{\"success\":false}";	 // JSON valide avec des guillemets
+											 // doubles
+			messageLength = ft_itos(message.length());
+
+			// Définition des en-têtes
+			headers["Content-Type"] =
+				"application/json";	 // Correctement défini pour JSON
+			headers["Content-Length"] = messageLength;
+			Log::log(Log::ERROR, "Failed to save file");
+			response.setProtocol("HTTP/1.1");
+			response.setStatusCode("501");	//ajuster les codes d'erreur
+			response.setStatusText("KO");
+			response.setHeaders(headers);
+			response.setBody(message);
+			return response;
+		}
+	} else if (content_type == "application/json") {
+		MapJson parsebody = ParseJson(body);
+		filename = parsebody["filename"];  // placeholder
+		content = unescapeJsonString(parsebody["content"]);
+
+		std::ofstream file((upload_path + filename).c_str());
+		if (file.is_open()) {
+			file.clear();
+			file << content;
+			file.close();
+		} else {
+			Log::log(Log::ERROR,
+					 "[Server::handlePostRequest] Error creating the file %s",
+					 filename.c_str());
+			return createResponseError(server, "HTTP/1.1", "500",
+									   "Internal Server Error");
+		}
+
+		Log::log(Log::DEBUG, "[POST] | filename : %s", filename.c_str());
 	}
 
-	std::ofstream file((upload_path + filename).c_str());
-	if (file.is_open()) {
-		file.clear();
-		file << content;
-		file.close();
-	} else {
-		Log::log(Log::ERROR,
-				 "[Server::handlePostRequest] Error creating the file %s",
-				 filename.c_str());
-		return createResponseError(server, "HTTP/1.1", "500",
-								   "Internal Server Error");
-	}
-
-	message = "File created\n";	 // placeholder
+	// Création de la réponse JSON
+	message =
+	"{\"success\":true}";  // JSON valide avec des guillemets doubles
 	messageLength = ft_itos(message.length());
 
-	headers["Content-Type"] = "text/html";
+	// Définition des en-têtes
+	headers["Content-Type"] =
+	"application/json";	 // Correctement défini pour JSON
 	headers["Content-Length"] = messageLength;
 
+	// Configuration de la réponse
 	response.setProtocol("HTTP/1.1");
-	response.setStatusCode("200");	// for created file
+	response.setStatusCode("200");	// Statut OK
 	response.setStatusText("OK");
 	response.setHeaders(headers);
 	response.setBody(message);
