@@ -299,23 +299,25 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 	std::map<std::string, std::string> headers;
 	std::string content, contentLength;
 	std::string message, messageLength;
-	std::string target, root, path;
+	std::string target, root, filename;
 
 	if (location && !location->isMethodAllowed(POST))
 		return (createResponseError(server, "HTTP/1.1", "405",
 									"Method not allowed"));
 
-	content = request->getBody();
-	path = "test.txt";	// placeholder
+	std::string upload_path = server->getUploadPath();
 
-	std::ofstream file(path.c_str());
+	content = request->getBody();
+	filename = "test.txt";	// placeholder
+
+	std::ofstream file((upload_path + filename).c_str());
 	if (file.is_open()) {
 		file << content;
 		file.close();
 	} else {
 		Log::log(Log::ERROR,
 				 "[Server::handlePostRequest] Error creating the file %s",
-				 path.c_str());
+				 filename.c_str());
 		return createResponseError(server, "HTTP/1.1", "500",
 								   "Internal Server Error");
 	}

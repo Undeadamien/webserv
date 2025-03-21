@@ -1,0 +1,6 @@
+-----------------------------259407507942654134854112059903
+Content-Disposition: form-data; name="file"; filename="qwe"
+Content-Type: text/plain
+
+qwe
+-----------------------------259407507942654134854112059903--
