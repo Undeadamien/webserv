@@ -334,74 +334,72 @@ MapJson Server::ParseJson(const std::string& content) {
 
 Response Server::handlePostRequest(Request* request, BlockServer* server,
 								   BlockLocation* location) {
+	MapHeaders headers, requestHeaders;
+	MapJson parsedJson;
 	Response response;
-	std::map<std::string, std::string> headers;
-	std::string body, contentLength;
-	std::string message, messageLength;
-	std::string target, root, filename, content;
+	std::string body, upload_path, bodyLength, content, content_type, filename;
+	std::string message, msg, root, target;
 
-	if (location && !location->isMethodAllowed(POST))
-		return (createResponseError(server, "HTTP/1.1", "405",
-									"Method not allowed"));
-
-	// Création de la réponse JSON
-	message = "{\"success\":true}";	 // JSON valide avec des guillemets doubles
-	messageLength = ft_itos(message.length());
-
-	// Définition des en-têtes
-	headers["Content-Type"] =
-		"application/json";	 // Correctement défini pour JSON
-	headers["Content-Length"] = messageLength;
-
-	// Configuration de la réponse
+	// will not change
+	headers["Content-Type"] = "application/json";
 	response.setProtocol("HTTP/1.1");
-	response.setStatusCode("201");	// Statut OK
-	response.setStatusText("OK");
-	response.setHeaders(headers);
-	response.setBody(message);
 
-	//std::string upload_path = server->getUploadPath();
-	std::string upload_path = location->getUploadPath();
-
-	body = request->getBody();
-	MapHeaders header = request->getHeaders();
-	std::string content_type = header["Content-Type"];
-
-	if (content_type == "multipart/form-data") {
-		Log::log(Log::DEBUG, "multipart");
-	} else if (content_type == "application/json") {
-		MapJson parsebody = ParseJson(body);
-		filename = parsebody["filename"];  // placeholder
-		content = unescapeJsonString(parsebody["content"]);
-
-		std::ofstream file((upload_path + filename).c_str());
-		if (file.is_open()) {
-			file.clear();
-			file << content;
-			file.close();
-			Log::log(Log::DEBUG, "[POST] | filename : %s", filename.c_str());
-		} else {
-			Log::log(Log::ERROR,
-					 "[Server::handlePostRequest] Error creating the file %s",
-					 filename.c_str());
-			message = "{\"success\":false}";	 // JSON valide avec des guillemets
-											 // doubles
-			messageLength = ft_itos(message.length());
-
-			// Définition des en-têtes
-			headers["Content-Type"] =
-				"application/json";	 // Correctement défini pour JSON
-			headers["Content-Length"] = messageLength;
-
-			// Configuration de la réponse
-			response.setProtocol("HTTP/1.1");
-			response.setStatusCode("500");	// Statut OK
-			response.setStatusText("KO");
-			response.setHeaders(headers);
-			response.setBody(message);
-		}
+	// maybe an || rather then &&
+	if (!location && !location->isMethodAllowed(POST)) {
+		message = "{\"success\":false}";
+		headers["Content-Length"] = ft_itos(message.length());
+		response.setStatusCode("405");	// Status Created
+		response.setStatusText("Not Allowed");
+		response.setHeaders(headers);
+		response.setBody(message);
+		return response;
 	}
 
+	upload_path = server->getUploadPath();
+	body = request->getBody();
+	requestHeaders = request->getHeaders();
+	content_type = requestHeaders["Content-Type"];
+
+	if (content_type != "application/json") {
+		msg = "[Server::handlePostRequest] Content-Type not handled '%s'";
+		Log::log(Log::ERROR, msg.c_str(), content_type.c_str());
+		message = "{\"success\":false}";
+		headers["Content-Length"] = ft_itos(message.length());
+		response.setStatusCode("501");
+		response.setStatusText("Not Implemented");
+		response.setHeaders(headers);
+		response.setBody(message);
+		return (response);
+	}
+
+	std::ofstream file((upload_path + filename).c_str());
+	if (!file.is_open()) {
+		msg = "[Server::handlePostRequest] Error creating the file %s";
+		Log::log(Log::ERROR, msg.c_str(), filename.c_str());
+		message = "{\"success\":false}";
+		headers["Content-Length"] = ft_itos(message.length());
+		response.setStatusCode("500");
+		response.setStatusText("Internal Server Error");
+		response.setHeaders(headers);
+		response.setBody(message);
+	}
+
+	parsedJson = ParseJson(body);
+	filename = parsedJson["filename"];
+	content = unescapeJsonString(parsedJson["content"]);
+
+	file << content;
+	file.close();
+
+	Log::log(Log::DEBUG, "[POST] | filename : %s", filename.c_str());
+
+	message = "{\"success\":true}";
+	headers["Content-Length"] = ft_itos(message.length());
+	headers["Location"] = upload_path + filename;
+	response.setStatusCode("201");
+	response.setStatusText("Created");
+	response.setHeaders(headers);
+	response.setBody(message);
 	return (response);
 };
 
