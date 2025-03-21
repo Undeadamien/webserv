@@ -1,6 +1,1 @@
------------------------------366814595339849643002400992171
-Content-Disposition: form-data; name="file"; filename="qwe"
-Content-Type: text/plain
-
-qew
------------------------------366814595339849643002400992171--
+{"filename":"test1","content":"on test"}

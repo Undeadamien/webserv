@@ -21,6 +21,7 @@
 #include "usefull.hpp"
 
 typedef std::map<std::string, std::string> MapHeaders;
+typedef MapHeaders MapJson;
 
 #define REQUEST_DEFAULT_STEP_CODE 200
 #define REQUEST_DEFAULT_UPLOAD_PATH "./web/upload/"

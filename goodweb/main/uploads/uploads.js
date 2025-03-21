@@ -17,23 +17,32 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Handle simple file upload
-    simpleUploadForm.addEventListener('submit', function (event) {
-        event.preventDefault();
+// Handle simple file upload
+document.getElementById('simpleUploadForm').addEventListener('submit', function (event) {
+    event.preventDefault();
 
-        const fileInput = document.getElementById('fileInput');
-        const file = fileInput.files[0];
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
 
-        if (!file) {
-            alert('Please select a file to upload');
-            return;
-        }
+    if (!file) {
+        alert('Please select a file to upload');
+        return;
+    }
 
-        const formData = new FormData();
-        formData.append('file', file);
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const content = e.target.result;
+        const jsonData = {
+            filename: file.name,
+            content: content
+        };
 
         fetch('/upload', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(jsonData)
         })
         .then(response => response.json())
         .then(data => {
@@ -47,43 +56,48 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('Error uploading file:', error);
             alert('Failed to upload file');
         });
-    });
+    };
+    reader.readAsText(file);
+});
 
-    // Handle advanced file upload
-    advancedUploadForm.addEventListener('submit', function (event) {
-        event.preventDefault();
+// Handle advanced file upload
+document.getElementById('advancedUploadForm').addEventListener('submit', function (event) {
+    event.preventDefault();
 
-        const filenameInput = document.getElementById('filenameInput');
-        const contentInput = document.getElementById('contentInput');
-        const filename = filenameInput.value;
-        const content = contentInput.value;
+    const filenameInput = document.getElementById('filenameInput');
+    const contentInput = document.getElementById('contentInput');
+    const filename = filenameInput.value;
+    const content = contentInput.value;
 
-        if (!filename || !content) {
-            alert('Please provide both file name and content');
-            return;
-        }
+    if (!filename || !content) {
+        alert('Please provide both file name and content');
+        return;
+    }
 
-        const blob = new Blob([content], { type: 'text/plain' });
-        const file = new File([blob], filename, { type: 'text/plain' });
+    const jsonData = {
+        filename: filename,
+        content: content
+    };
 
-        const formData = new FormData();
-        formData.append('file', file);
-
-        fetch('/upload', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('File created and uploaded successfully');
-            } else {
-                alert('Failed to upload file');
-            }
-        })
-        .catch(error => {
-            console.error('Error uploading file:', error);
+    fetch('/upload', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(jsonData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('File created and uploaded successfully');
+        } else {
             alert('Failed to upload file');
-        });
+        }
+    })
+    .catch(error => {
+        console.error('Error uploading file:', error);
+        alert('Failed to upload file');
     });
+});
+
 });

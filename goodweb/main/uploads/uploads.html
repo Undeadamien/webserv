@@ -28,14 +28,14 @@
                     <span class="toggle-label">Advanced Upload</span>
                 </div>
                 <div id="simple-upload" class="upload-mode">
-                    <form id="simpleUploadForm">
+                    <form id="simpleUploadForm" method="post">
                         <label for="fileInput">Select File:</label>
                         <input id="fileInput" type="file" name="file">
                         <button type="submit" id="upload-button" class="button">Upload File</button>
                     </form>
                 </div>
                 <div id="advanced-upload" class="upload-mode hidden">
-                    <form id="advancedUploadForm">
+                    <form id="advancedUploadForm" method="post">
                         <label for="filenameInput">File Name:</label>
                         <input id="filenameInput" type="text" name="filename">
                         <label for="contentInput">File Content:</label>

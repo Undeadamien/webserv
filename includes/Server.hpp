@@ -54,6 +54,8 @@ private:
 	void handleRequest(Client*);
 	void handleResponse(Client*, int epollFD);
 	Response handleGetRequest(Request*, BlockServer*, BlockLocation*);
+	MapJson ParseJson(const std::string& content);
+	std::string extractJsonValue(const std::string& json, const std::string& key);
 	Response handlePostRequest(Request*, BlockServer*, BlockLocation*);
 	Response handleDeleteRequest(Request*, BlockServer*, BlockLocation*);
 	Response handleCgiRequest(Request*, BlockServer*, BlockLocation*);

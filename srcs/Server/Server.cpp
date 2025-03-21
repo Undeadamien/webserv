@@ -293,13 +293,52 @@ Response Server::handleGetRequest(Request* request, BlockServer* server,
 	return (response);
 };
 
+std::string Server::extractJsonValue(const std::string& json,
+									 const std::string& key) {
+	std::size_t keyPos = json.find("\"" + key + "\"");
+	if (keyPos == std::string::npos) {
+		Log::log(Log::ERROR, "Key not found in JSON");
+	}
+
+	std::size_t valueStart = json.find(":", keyPos);
+	if (valueStart == std::string::npos) {
+		Log::log(Log::FATAL, "Invalid JSON format");
+	}
+
+	valueStart += 1;  // Skip the colon
+	while (json[valueStart] == ' ' || json[valueStart] == '\t' ||
+		   json[valueStart] == '\n') {
+		valueStart++;  // Skip whitespace
+	}
+
+	if (json[valueStart] != '\"') {
+		throw std::runtime_error("Expected string value");
+	}
+
+	valueStart++;  // Skip the opening quote
+	std::size_t valueEnd = json.find("\"", valueStart);
+	if (valueEnd == std::string::npos) {
+		Log::log(Log::FATAL, "Invalid JSON format");
+	}
+
+	return json.substr(valueStart, valueEnd - valueStart);
+}
+
+// Fonction pour analyser le JSON et extraire filename et content
+MapJson Server::ParseJson(const std::string& content) {
+	MapJson result;
+	result["filename"] = extractJsonValue(content, "filename");
+	result["content"] = extractJsonValue(content, "content");
+	return result;
+}
+
 Response Server::handlePostRequest(Request* request, BlockServer* server,
 								   BlockLocation* location) {
 	Response response;
 	std::map<std::string, std::string> headers;
-	std::string content, contentLength;
+	std::string body, contentLength;
 	std::string message, messageLength;
-	std::string target, root, filename;
+	std::string target, root, filename, content;
 
 	if (location && !location->isMethodAllowed(POST))
 		return (createResponseError(server, "HTTP/1.1", "405",
@@ -307,8 +346,12 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 
 	std::string upload_path = server->getUploadPath();
 
-	content = request->getBody();
-	filename = "test.txt";	// placeholder
+	body = request->getBody();
+	MapJson parsebody = ParseJson(body);
+	filename = parsebody["filename"];  // placeholder
+	content = parsebody["content"];
+	
+	Log::log(Log::INFO, "Filename : %s | content : %s", filename.c_str(), content.c_str());
 
 	std::ofstream file((upload_path + filename).c_str());
 	if (file.is_open()) {
