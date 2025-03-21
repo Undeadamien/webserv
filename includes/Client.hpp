@@ -6,6 +6,8 @@
 
 #include <ctime>
 
+#include "Request.hpp"
+#include "Response.hpp"
 #include "Socket.hpp"
 
 #define CLIENT_READ_BUFFER_SIZE 8192  // 4096
@@ -13,8 +15,7 @@
 class Request;
 class Response;
 
-class Client
-{
+class Client {
 private:
 	int _fd;
 	Socket* _socket;
@@ -37,8 +38,14 @@ public:
 	Response* getResponse(void) const { return _response; }
 
 	/* SETTERS */
-	void setRequest(Request* request) { this->_request = request; }
-	void setResponse(Response* response) { this->_response = response; }
+	void setRequest(Request* request) {
+		if (this->_request) delete this->_request;
+		this->_request = request;
+	}
+	void setResponse(Response* response) {
+		if (this->_response) delete this->_response;
+		this->_response = response;
+	}
 
 	// timeout
 	time_t getLastActivity() const { return _lastActivity; }
@@ -47,11 +54,9 @@ public:
 	// Checkers
 	void checkCgi(void);
 
-	class DisconnectedException : public std::exception
-	{
+	class DisconnectedException : public std::exception {
 	public:
-		virtual const char* what() const throw()
-		{
+		virtual const char* what() const throw() {
 			return "Client disconnected";
 		}
 	};
