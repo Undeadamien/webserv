@@ -210,3 +210,57 @@ std::string parseFileExtension(const std::string& path) {
 	ext = path.substr(pos);
 	return ext;
 };
+
+std::string unescapeJsonString(const std::string& escaped) {
+	std::string unescaped;
+	unescaped.reserve(escaped.size());	// Optimisation mémoire
+
+	for (size_t i = 0; i < escaped.size(); ++i) {
+		if (escaped[i] == '\\' && i + 1 < escaped.size()) {
+			char nextChar = escaped[i + 1];
+			switch (nextChar) {
+			case 'n':
+				unescaped += '\n';
+				break;
+			case 't':
+				unescaped += '\t';
+				break;
+			case 'r':
+				unescaped += '\r';
+				break;
+			case 'b':
+				unescaped += '\b';
+				break;
+			case 'f':
+				unescaped += '\f';
+				break;
+			case '\\':
+				unescaped += '\\';
+				break;
+			case '"':
+				unescaped += '"';
+				break;
+			case '/':
+				unescaped += '/';
+				break;
+			case 'u':  // Unicode non supporté en C++98, on le laisse tel quel
+				unescaped += "\\u";
+				if (i + 5 < escaped.size()) {
+					unescaped += escaped.substr(i + 2, 4);
+					i += 4;	 // On saute les 4 caractères hexadécimaux
+				}
+				break;
+			default:
+				// Séquence inconnue, on la garde telle quelle
+				unescaped += '\\';
+				unescaped += nextChar;
+				break;
+			}
+			++i;  // On saute le caractère d'échappement traité
+		} else {
+			unescaped += escaped[i];
+		}
+	}
+
+	return unescaped;
+}

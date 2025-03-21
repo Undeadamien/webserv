@@ -45,4 +45,6 @@ Response createResponseError(BlockServer*, std::string, std::string,
 std::string getFileContent(std::string path);
 std::string getMimeType(std::string target);
 std::string parseFileExtension(const std::string&);
+std::string unescapeJsonString(const std::string& escaped);
+
 #endif
