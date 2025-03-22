@@ -65,6 +65,7 @@ public:
 	const std::string &getAlias() const { return _alias; }
 	const std::vector<std::string> &getIndexes() const { return _indexes; }
 	const std::map<std::string, std::string> &getCGI() const
+	const std::string &getUploadPath() const { return _uploadPath; }
 	{
 		return _cgiExtension;
 	}

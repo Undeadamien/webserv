@@ -360,7 +360,9 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 	response.setHeaders(headers);
 	response.setBody(message);
 
-	std::string upload_path = server->getUploadPath();
+	//std::string upload_path = server->getUploadPath();
+	BlockLocation* location = server->getLocationByPath("/upload");
+	std::string upload_path = location->getUploadPath();
 
 	body = request->getBody();
 	MapHeaders header = request->getHeaders();
