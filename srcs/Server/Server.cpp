@@ -414,7 +414,7 @@ Response Server::handleDeleteRequest(Request* request, BlockServer* server,
 	headers["Content-Type"] = "text/plain";
 	response.setProtocol("HTTP/1.1");
 
-	if (location && !location->isMethodAllowed(DELETE)) {
+	if (!location || !location->isMethodAllowed(DELETE)) {
 		message = "";
 		headers["Content-Length"] = ft_itos(message.length());
 		response.setStatusCode("405");	// No Allowed
