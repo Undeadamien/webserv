@@ -216,8 +216,7 @@ BlockServer* Server::findServer(Request* request) {
 
 	if (host.empty()) {
 		Log::log(Log::ERROR, "[_findServer] Host not found in headers");
-		throw std::runtime_error("Error: Missing 'Host' header in Request");
-		return NULL;  // might want to return instead of throwing
+		return NULL;
 	}
 
 	Log::log(Log::DEBUG, "[findServer] Host: %s", host.c_str());
@@ -344,8 +343,7 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 	headers["Content-Type"] = "application/json";
 	response.setProtocol("HTTP/1.1");
 
-	// maybe an || rather then &&
-	if (!location && !location->isMethodAllowed(POST)) {
+	if (!location || !location->isMethodAllowed(POST)) {
 		message = "{\"success\":false}";
 		headers["Content-Length"] = ft_itos(message.length());
 		response.setStatusCode("405");	// Status Created
@@ -372,6 +370,8 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 		return (response);
 	}
 
+	filename = parsedJson["filename"];
+
 	std::ofstream file((upload_path + filename).c_str());
 	if (!file.is_open()) {
 		msg = "[Server::handlePostRequest] Error creating the file %s";
@@ -385,7 +385,6 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 	}
 
 	parsedJson = ParseJson(body);
-	filename = parsedJson["filename"];
 	content = unescapeJsonString(parsedJson["content"]);
 
 	file << content;
@@ -407,24 +406,53 @@ Response Server::handleDeleteRequest(Request* request, BlockServer* server,
 									 BlockLocation* location) {
 	Response response;
 	std::map<std::string, std::string> headers;
-	std::string content, contentLength, target, root;
+	std::string content, contentLength, target, root, message, filePath;
+	struct stat fileStat;
 
-	(void)request;
 	(void)server;
 
-	if (location && !location->isMethodAllowed(DELETE))
-		return (createResponseError(server, "HTTP/1.1", "405",
-									"Method not allowed"));
+	headers["Content-Type"] = "text/plain";
+	response.setProtocol("HTTP/1.1");
 
-	// handle the delete request
+	if (location && !location->isMethodAllowed(DELETE)) {
+		message = "";
+		headers["Content-Length"] = ft_itos(message.length());
+		response.setStatusCode("405");	// No Allowed
+		response.setStatusText("Not Allowed");
+		response.setHeaders(headers);
+		response.setBody(message);
+		return response;
+	}
 
-	// 200 OK
-	// 202 Accepted, still processing, async ?
-	// 204 No Content, ressource deleted but no response body
-	// 404 Forbidden
-	// 404 Not Found
+	filePath = request->parsePath();  // might be modified
 
-	return (response);
+	if (stat(filePath.c_str(), &fileStat) != 0) {
+		message = "File Not Found";
+		headers["Content-Length"] = ft_itos(message.length());
+		response.setStatusCode("404");
+		response.setStatusText("Not Found");
+		response.setHeaders(headers);
+		response.setBody(message);
+		return response;
+	}
+
+	if (unlink(filePath.c_str()) != 0) {
+		message = "Cannot delete file";
+		headers["Content-Length"] = ft_itos(message.length());
+		response.setStatusCode("403");	// Forbidden
+		response.setStatusText("Forbidden");
+		response.setHeaders(headers);
+		response.setBody(message);
+		return response;
+	}
+
+	message = "File deleted succefully";
+	headers["Content-Length"] = ft_itos(message.length());
+	response.setStatusCode("200");	// OK
+	response.setStatusText("OK");
+	response.setHeaders(headers);
+	response.setBody(message);
+	return response;
 };
 
 bool Server::isCgi(Request* request, BlockLocation* location) {
