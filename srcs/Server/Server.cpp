@@ -339,6 +339,8 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 	std::string body, upload_path, bodyLength, content, content_type, filename;
 	std::string message, msg, root, target;
 
+	(void)server;
+
 	// will not change
 	headers["Content-Type"] = "application/json";
 	response.setProtocol("HTTP/1.1");
@@ -353,7 +355,7 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 		return response;
 	}
 
-	upload_path = server->getUploadPath();
+	upload_path = location->getUploadPath();
 	body = request->getBody();
 	requestHeaders = request->getHeaders();
 	content_type = requestHeaders["Content-Type"];
@@ -370,9 +372,10 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 		return (response);
 	}
 
+	parsedJson = ParseJson(body);
 	filename = parsedJson["filename"];
 
-	std::ofstream file((upload_path + filename).c_str());
+	std::ofstream file((upload_path + "/" + filename).c_str());
 	if (!file.is_open()) {
 		msg = "[Server::handlePostRequest] Error creating the file %s";
 		Log::log(Log::ERROR, msg.c_str(), filename.c_str());
@@ -382,11 +385,10 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 		response.setStatusText("Internal Server Error");
 		response.setHeaders(headers);
 		response.setBody(message);
+		return (response);
 	}
 
-	parsedJson = ParseJson(body);
 	content = unescapeJsonString(parsedJson["content"]);
-
 	file << content;
 	file.close();
 
@@ -394,7 +396,7 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 
 	message = "{\"success\":true}";
 	headers["Content-Length"] = ft_itos(message.length());
-	headers["Location"] = upload_path + filename;
+	headers["Location"] = upload_path + "/" + filename;
 	response.setStatusCode("201");
 	response.setStatusText("Created");
 	response.setHeaders(headers);
