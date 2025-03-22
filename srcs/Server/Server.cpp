@@ -361,7 +361,6 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 	response.setBody(message);
 
 	//std::string upload_path = server->getUploadPath();
-	BlockLocation* location = server->getLocationByPath("/upload");
 	std::string upload_path = location->getUploadPath();
 
 	body = request->getBody();
