@@ -10,14 +10,9 @@
 
 #include "usefull.hpp"
 
-enum e_boolMod
-{
-	FALSE = 0,
-	TRUE
-};
+enum e_boolMod { FALSE = 0, TRUE };
 
-class BlockLocation
-{
+class BlockLocation {
 private:
 	std::string _path;
 	std::string _root;
@@ -64,42 +59,35 @@ public:
 	const std::pair<int, std::string> &getRewrite() const { return _rewrite; }
 	const std::string &getAlias() const { return _alias; }
 	const std::vector<std::string> &getIndexes() const { return _indexes; }
-	const std::map<std::string, std::string> &getCGI() const
 	const std::string &getUploadPath() const { return _uploadPath; }
-	{
+	const std::map<std::string, std::string> &getCGI() const {
 		return _cgiExtension;
 	}
 	const std::vector<std::string> &getFiles() const { return _indexes; }
-	const std::vector<e_Methods> &getAllowedMethods() const
-	{
+	const std::vector<e_Methods> &getAllowedMethods() const {
 		return _allowedMethods;
 	}
-	std::string getCgiPath(const std::string &path) const
-	{
+	std::string getCgiPath(const std::string &path) const {
 		return _cgiExtension.at(path);
 	}
 	e_boolMod getAutoIndex() const { return _autoindex; }
 
 	// Setters
 	void setPath(const std::string &path) { _path = path; }
-	void setUploadPath(const std::string &uploadPath)
-	{
+	void setUploadPath(const std::string &uploadPath) {
 		_uploadPath = uploadPath;
 		_counterBase["upload_path"]++;
 	}
-	void setRoot(const std::string &root)
-	{
+	void setRoot(const std::string &root) {
 		_root = root;
 		_counterBase["root"]++;
 	}
 	void setRewrite(std::vector<std::string> &tokens);
-	void setAlias(const std::string &alias)
-	{
+	void setAlias(const std::string &alias) {
 		_alias = alias;
 		_counterBase["alias"]++;
 	}
-	void setAutoIndex(e_boolMod autoindex)
-	{
+	void setAutoIndex(e_boolMod autoindex) {
 		_autoindex = autoindex;
 		_counterBase["autoindex"]++;
 	}
@@ -107,8 +95,7 @@ public:
 	// METHODS
 
 	// Checker
-	bool isEnableCgi(const std::string &path) const
-	{
+	bool isEnableCgi(const std::string &path) const {
 		return _cgiExtension.find(path) != _cgiExtension.end();
 	}
 
