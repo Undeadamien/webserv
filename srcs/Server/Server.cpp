@@ -149,32 +149,33 @@ void Server::removeClient(int fd) {
 }
 
 void Server::handleRequest(Client* client) {
-	std::string msg, request_str;
-	int received;
-	char buffer[CLIENT_READ_BUFFER_SIZE + 1] = {0};
+	std::string msg, request_str, raw;
+	char buffer[CLIENT_BUFFER_SIZE + 1] = {0};
+	int received, buffer_size = CLIENT_BUFFER_SIZE;
 
-	msg = "[processClientRequest] Processing request from client %d";
-	Log::log(Log::DEBUG, msg.c_str(), client->getFd());
+	Log::log(Log::DEBUG,
+			 "[processClientRequest] Processing request from client %d",
+			 client->getFd());
 
-	received = recv(client->getFd(), buffer, CLIENT_READ_BUFFER_SIZE, 0);
-	if (received == 0) throw Client::DisconnectedException();
-	if (received < 0) throw std::runtime_error("recv function failed");
-	msg = "[processClientRequest] Read %d bytes from client %d";
-	Log::log(Log::DEBUG, msg.c_str(), received, client->getFd());
-	buffer[received] = '\0';
-
-	std::string requestRaw(buffer, received);
-	try {
-		client->setRequest(new Request(requestRaw));
+	// we cannot check for errno after recv
+	// recv return -1 when non-blocking
+	while ((received = recv(client->getFd(), buffer, buffer_size, 0)) > 0) {
+		Log::log(Log::DEBUG,
+				 "[processClientRequest] Read %d bytes from client %d",
+				 received, client->getFd());
+		buffer[received] = '\0';
+		raw += buffer;
 	}
-	// add some error
-	catch (std::exception& e) {
+
+	try {
+		client->setRequest(new Request(raw));
+	} catch (std::exception& e) {
 		std::cout << "debug error creating the request data" << std::endl;
 		return;
 	}
-	msg = "[handleRequest] : Request processing already completed\n%s";
-	request_str = client->getRequest()->toString().c_str();
-	Log::log(Log::DEBUG, msg.c_str(), request_str.c_str());
+	Log::log(Log::DEBUG,
+			 "[handleRequest] : Request processing already completed\n%s",
+			 client->getRequest()->toString().c_str());
 }
 
 void Server::handleResponse(Client* client, int epollFD) {
