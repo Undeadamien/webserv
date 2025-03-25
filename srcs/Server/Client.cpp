@@ -9,8 +9,9 @@
 Client::Client(int fd, Socket* socket)
 	: _fd(fd),
 	  _socket(socket),
-	  _request(new Request()),
-	  _response(new Response()),
+	  _request(NULL),
+	  _response(NULL),
+	  _requestBuffer(""),
 	  _lastActivity(time(NULL)) {
 	Log::log(Log::DEBUG, "[Client] Initializing client with fd %d", fd);
 }

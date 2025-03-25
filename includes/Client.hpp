@@ -21,6 +21,7 @@ private:
 	Socket* _socket;
 	Request* _request;
 	Response* _response;
+	std::string _requestBuffer;
 	time_t _lastActivity;
 
 public:
@@ -36,6 +37,7 @@ public:
 	Request* getRequest(void) const { return _request; }
 	Socket* getSocket(void) const { return _socket; }
 	Response* getResponse(void) const { return _response; }
+	std::string getRequestBuffer(void) const { return _requestBuffer; }
 
 	/* SETTERS */
 	void setRequest(Request* request) {
@@ -46,6 +48,9 @@ public:
 		if (this->_response) delete this->_response;
 		this->_response = response;
 	}
+	void setRequestBuffer(std::string raw) { this->_requestBuffer = raw; };
+
+	void appendRequestBuffer(std::string raw) { this->_requestBuffer += raw; };
 
 	// timeout
 	time_t getLastActivity() const { return _lastActivity; }

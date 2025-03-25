@@ -27,6 +27,14 @@ Request::Request(const std::string &raw)
 	if (this->_headers.find("Transfer-Encoding") != this->_headers.end() &&
 		_headers["Transfer-Encoding"] == "chunked")
 		this->_body = Request::unchunkBody(this->_rawBody);
+
+	std::string content_length = this->_headers["Content-Length"];
+	if (!content_length.empty()) {
+		size_t length = ft_stoi(content_length);
+		if (length != this->_body.length())
+			throw(std::runtime_error(
+				"Mismatch between the 'Content-Length' and the actual length"));
+	}
 };
 Request::Request(const Request &other)
 	: _method(other._method),
@@ -199,4 +207,30 @@ std::string Request::unchunkBody(std::string chunked) {
 		ss.ignore(2);
 	}
 	return (result.str());
+};
+
+bool Request::isComplete(std::string raw) {
+	size_t headerEnd = raw.find("\r\n\r\n");
+	if (headerEnd == std::string::npos) return false;
+
+	if (raw.find("Transfer-Encoding: chunked") != std::string::npos &&
+		raw.find("\r\n0\r\n\r\n", headerEnd) == std::string::npos)
+		return false;
+
+	size_t contentLengthPos = raw.find("Content-Length:");
+	if (contentLengthPos != std::string::npos) {
+		size_t start = contentLengthPos + 15;
+		size_t end = raw.find("\r\n", start);
+		if (end == std::string::npos) return false;
+
+		std::string contentLengthStr = raw.substr(start, end - start);
+		size_t contentLength = ft_stoi(contentLengthStr);
+
+		size_t bodyStart = headerEnd + 4;
+		size_t actualBodyLength = raw.size() - bodyStart;
+
+		if (actualBodyLength < contentLength) return false;
+	}
+
+	return true;
 };

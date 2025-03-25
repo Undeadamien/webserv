@@ -1,9 +1,11 @@
 #!/bin/env bash
 
+IP="localhost"
 PORT=3434
-echo "Testing for port: ${PORT}"
 
-curl "http://localhost:${PORT}" \
+DATA='{"key1":"value1", "key2":"value2"}'
+
+echo "Testing for port: ${PORT}"
+printf "${DATA}" | curl -X POST "http://${IP}:${PORT}" \
 	-H "Content-Type: application/json" \
-	-d '{"key1":"value1", "key2":"value2"}' \
-	-X POST
+	--trace-ascii output.log

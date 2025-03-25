@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:49:03 by dtrala            #+#    #+#             */
-/*   Updated: 2025/03/25 14:32:34 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/03/25 17:10:04 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,7 @@ public:
 	std::string toString() const;
 
 	static std::string unchunkBody(std::string chunked);
+	static bool isComplete(std::string raw);
 
 protected:
 private:

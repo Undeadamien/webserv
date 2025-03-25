@@ -165,9 +165,14 @@ void Server::handleRequest(Client* client) {
 				 "[processClientRequest] Read %d bytes from client %d",
 				 received, client->getFd());
 		buffer[received] = '\0';
-		raw += buffer;
+		client->appendRequestBuffer(buffer);
 	}
 	if (received == 0) throw Client::DisconnectedException();
+
+	if (!Request::isComplete(client->getRequestBuffer())) return;
+	raw = client->getRequestBuffer();
+	client->setRequestBuffer("");
+
 	try {
 		client->setRequest(new Request(raw));
 	} catch (std::exception& e) {
@@ -539,8 +544,10 @@ void Server::handleEvent(epoll_event* events, int i) {
 		}
 		if (event & EPOLLOUT) {
 			this->_clients[fd]->updateActivity();
-			this->handleResponse(this->_clients[fd], this->_epollFD);
-			modifySocketEpoll(g_server->getEpollFD(), fd, REQUEST_FLAGS);
+			if (this->_clients[fd]->getRequest() != NULL) {
+				this->handleResponse(this->_clients[fd], this->_epollFD);
+				modifySocketEpoll(g_server->getEpollFD(), fd, REQUEST_FLAGS);
+			}
 		}
 	} catch (Client::DisconnectedException& e) {
 		this->_handleClientDisconnect(fd);

@@ -27,12 +27,12 @@ enum e_Methods { GET, POST, DELETE, UNKNOWN };
 
 std::string ullToStr(unsigned long long ull);
 std::string ft_itos(int value);
+int ft_stoi(std::string str);
 std::string ltrim(std::string str, std::string set);
 std::string rtrim(std::string str, std::string set);
 std::string trim(std::string str, std::string set);
 bool EmptyFileChecker();
 std::vector<std::string> ft_split(const std::string& str, char delimiter);
-std::string ft_itos(int value);
 std::string UIntToString(unsigned int value);
 int extractPort(const std::string& server);
 std::string extractIp(const std::string& server);

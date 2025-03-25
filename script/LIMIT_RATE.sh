@@ -3,11 +3,11 @@
 IP="localhost"
 PORT=3434
 
-DATA="Hello world this is a chunked request"
+DATA="Hello world this is a request request"
 
 echo "Testing for port: ${PORT}"
 printf "${DATA}" |
 	curl -X POST "http://${IP}:${PORT}" \
-		-H "Transfer-Encoding: chunked" \
+		--data-binary @- \
 		--trace-ascii output.log \
-		--data-binary @-
+		--limit-rate "${RATE}"

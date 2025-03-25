@@ -33,6 +33,14 @@ std::string ft_itos(int value) {
 	return (ss.str());
 }
 
+int ft_stoi(std::string str) {
+	std::stringstream ss;
+	int res = 0;
+	ss << str;
+	ss >> res;
+	return (res);
+}
+
 bool EmptyFileChecker() { return (ConfParser::countLineFile == 0); }
 
 std::string ltrim(std::string str, std::string set) {
