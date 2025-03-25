@@ -166,7 +166,7 @@ void Server::handleRequest(Client* client) {
 		buffer[received] = '\0';
 		raw += buffer;
 	}
-
+	if (received == 0) throw Client::DisconnectedException();
 	try {
 		client->setRequest(new Request(raw));
 	} catch (std::exception& e) {
@@ -495,7 +495,12 @@ Response Server::resolveRequest(Request* request) {
 	if (!server)  // should never happen
 		return createResponseError(server, "HTTP/1.1", "500",
 								   "Internal Server Error");
-	location = this->findLocation(server, request);	 // can return NULL
+
+	// the request body is too large for the server
+	if (request->getBody().length() > server->getClientMaxBodySize())
+		return createResponseError(server, "HTTP/1.1", "400", "Bad Request");
+
+	location = this->findLocation(server, request);
 
 	if (location && this->hasRedirection(location)) {
 		;  // placeholder
