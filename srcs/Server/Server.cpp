@@ -13,6 +13,7 @@
 #include "ConfParser.hpp"
 #include "Log.hpp"
 #include "Request.hpp"
+#include "Response.hpp"
 #include "usefull.hpp"
 
 Server::Server() : _step(S_STEP_INIT), _epollFD(-1) {}
@@ -170,7 +171,8 @@ void Server::handleRequest(Client* client) {
 	try {
 		client->setRequest(new Request(raw));
 	} catch (std::exception& e) {
-		std::cout << "debug error creating the request data" << std::endl;
+		client->setResponse(new Response(
+			createResponseError("HTTP/1.1", "400", "Bad Request")));
 		return;
 	}
 	Log::log(Log::DEBUG,

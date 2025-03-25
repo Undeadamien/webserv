@@ -9,20 +9,32 @@
 #include "usefull.hpp"
 
 Request::Request()
-	: _method(UNKNOWN), _target(""), _protocol(""), _headers(), _body("") {};
+	: _method(UNKNOWN),
+	  _target(""),
+	  _protocol(""),
+	  _headers(),
+	  _body(""),
+	  _rawBody("") {};
 
 Request::Request(const std::string &raw)
 	: _method(parseMethod(raw)),
 	  _target(parseTarget(raw)),
 	  _protocol(parseProtocol(raw)),
 	  _headers(parseHeaders(raw)),
-	  _body(parseBody(raw)) {};
+	  _body(parseBody(raw)),
+	  _rawBody("") {
+	this->_rawBody = this->_body;
+	if (this->_headers.find("Transfer-Encoding") != this->_headers.end() &&
+		_headers["Transfer-Encoding"] == "chunked")
+		this->_body = Request::unchunkBody(this->_rawBody);
+};
 Request::Request(const Request &other)
 	: _method(other._method),
 	  _target(other._target),
 	  _protocol(other._protocol),
 	  _headers(other._headers),
-	  _body(other._body) {};
+	  _body(other._body),
+	  _rawBody(other._rawBody) {};
 Request &Request::operator=(const Request &other) {
 	if (this != &other) {
 		this->_method = other._method;
@@ -30,6 +42,7 @@ Request &Request::operator=(const Request &other) {
 		this->_protocol = other._protocol;
 		this->_headers = other._headers;
 		this->_body = other._body;
+		this->_rawBody = other._rawBody;
 	}
 	return (*this);
 };
@@ -159,4 +172,31 @@ std::string Request::toString() const {
 	str += "\r\n";
 	str = str + this->getBody();
 	return (str);
+};
+
+std::string Request::unchunkBody(std::string chunked) {
+	size_t chunkSize, last;
+	std::istringstream ss(chunked);
+	std::ostringstream result;
+	std::string unchunked, line;
+
+	while (std::getline(ss, line)) {
+		last = line.size() - 1;
+		if (!line.empty() && line[last] == '\r') line.erase(last);
+
+		std::istringstream hexStream(line);
+		hexStream >> std::hex >> chunkSize;
+
+		if (hexStream.fail())
+			throw std::runtime_error("Error: invalid chunk size format");
+		if (chunkSize == 0) break;
+
+		char *buffer = new char[chunkSize];
+		ss.read(buffer, chunkSize);
+		result.write(buffer, chunkSize);
+		delete[] buffer;
+
+		ss.ignore(2);
+	}
+	return (result.str());
 };

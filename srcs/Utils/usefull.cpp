@@ -121,6 +121,32 @@ void handle_signal(int signal) {
 	g_server->stop();
 }
 
+Response createResponseError(std::string protocol, std::string status_code,
+							 std::string status_text) {
+	Response response;
+	std::map<int, std::string> error_pages;
+	std::map<std::string, std::string> headers;
+	std::string content, path;
+
+	content += "<html>";
+	content += "<body>";
+	content += "<p>SpiderServ</p>";
+	content += "<p>Error " + status_code + "</p>";
+	content += "</body>";
+	content += "</html>";
+
+	headers["Content-Type"] = "text/html";
+	headers["Content-Length"] = ft_itos(content.length());
+
+	response.setProtocol(protocol);
+	response.setStatusCode(status_code);
+	response.setStatusText(status_text);
+	response.setHeaders(headers);
+	response.setBody(content);
+
+	return (response);
+};
+
 Response createResponseError(BlockServer* server, std::string protocol,
 							 std::string status_code, std::string status_text) {
 	Response response;

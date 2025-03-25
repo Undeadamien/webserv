@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:49:03 by dtrala            #+#    #+#             */
-/*   Updated: 2025/03/20 11:18:16 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/03/25 14:32:34 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 #include "usefull.hpp"
 
 typedef std::map<std::string, std::string> MapHeaders;
-typedef MapHeaders MapJson;
+typedef std::map<std::string, std::string> MapJson;
 
 #define REQUEST_DEFAULT_STEP_CODE 200
 #define REQUEST_DEFAULT_UPLOAD_PATH "./web/upload/"
@@ -61,12 +61,15 @@ public:
 	const std::string &getProtocol() const;
 	const std::map<std::string, std::string> &getHeaders() const;
 	const std::string &getBody() const;
+	const std::string &getRawBody() const;
 
 	std::string parsePath() const;
 	std::string parseQuery() const;
 	std::map<std::string, std::string> parseQueryToMap();
 
 	std::string toString() const;
+
+	static std::string unchunkBody(std::string chunked);
 
 protected:
 private:
@@ -75,6 +78,7 @@ private:
 	std::string _protocol;
 	std::map<std::string, std::string> _headers;
 	std::string _body;
+	std::string _rawBody;
 };
 
 std::ostream &operator<<(std::ostream &os, const Request &request);

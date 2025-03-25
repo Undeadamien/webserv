@@ -1,7 +1,8 @@
+*.log
 *.o
 .vscode
+Session.vim
+logs
 obj
 webserv
-logs
-Session.vim
 www
