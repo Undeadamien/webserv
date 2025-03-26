@@ -51,17 +51,18 @@ private:
 	void _handleClientConnect(int fd);
 	void _handleClientDisconnect(int fd);
 
+	MapJson ParseJson(const std::string& content);
+	Response handleCgiRequest(Request*, BlockServer*, BlockLocation*);
+	Response handleDeleteRequest(Request*, BlockServer*, BlockLocation*);
+	Response handleGetRequest(Request*, BlockServer*, BlockLocation*);
+	Response handlePostRequest(Request*, BlockServer*, BlockLocation*);
+	Response handleRedirection(Request*, BlockServer*, BlockLocation*);
+	Response resolveRequest(Request*);
+	bool hasRedirection(BlockLocation*);
+	bool isCgi(Request*, BlockLocation*);
+	std::string extractJsonValue(const std::string&, const std::string&);
 	void handleRequest(Client*);
 	void handleResponse(Client*, int epollFD);
-	Response handleGetRequest(Request*, BlockServer*, BlockLocation*);
-	MapJson ParseJson(const std::string& content);
-	std::string extractJsonValue(const std::string& json, const std::string& key);
-	Response handlePostRequest(Request*, BlockServer*, BlockLocation*);
-	Response handleDeleteRequest(Request*, BlockServer*, BlockLocation*);
-	Response handleCgiRequest(Request*, BlockServer*, BlockLocation*);
-	Response resolveRequest(Request*);
-	bool isCgi(Request*, BlockLocation*);
-	bool hasRedirection(BlockLocation*);
 
 	BlockServer* findServer(Request* request);
 	BlockLocation* findLocation(BlockServer* server_conf, Request* request);

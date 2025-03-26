@@ -10,12 +10,12 @@
 
 #include "BlockLocation.hpp"
 #include "BlockServer.hpp"
+#include "CgiHandler.hpp"
 #include "ConfParser.hpp"
 #include "Log.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 #include "usefull.hpp"
-#include "CgiHandler.hpp"
 
 Server::Server() : _step(S_STEP_INIT), _epollFD(-1) {}
 
@@ -208,6 +208,7 @@ void Server::handleResponse(Client* client, int epollFD) {
 	Log::log(Log::DEBUG, "Transmitted %d bytes to client %d", sent, clientFd);
 	Log::log(Log::DEBUG, "Response sent to client %d", clientFd);
 	client->reset();
+	throw Client::DisconnectedException();	// not sure about this one :(
 	modifySocketEpoll(epollFD, clientFd, REQUEST_FLAGS);
 }
 
@@ -215,7 +216,6 @@ BlockServer* Server::findServer(Request* request) {
 	typedef std::vector<BlockServer> Blocks;
 	MapHeaders headers;
 	std::string host, port;
-	std::vector<BlockServer> blocks;
 	std::vector<std::string> names;
 	std::vector<std::string>::iterator find;
 
@@ -233,7 +233,7 @@ BlockServer* Server::findServer(Request* request) {
 	MapServers& servers = this->getParser().getServers();
 	for (MapServers::iterator it = servers.begin(); it != servers.end(); it++) {
 		if (ft_itos(extractPort(it->first)) == port) return (&it->second[0]);
-		blocks = it->second;
+		std::vector<BlockServer>& blocks = it->second;
 		for (Blocks::iterator it2 = blocks.begin(); it2 != blocks.end();
 			 it2++) {
 			names = it2->getServerNames();
@@ -255,12 +255,14 @@ BlockLocation* Server::findLocation(BlockServer* server, Request* request) {
 	target = request->getTarget();
 	locations = server->getLocations();
 
+	if (target.empty()) return NULL;
+
 	for (it = locations->begin(); it != locations->end(); it++) {
 		path = it->getPath();
-		if (target.find(path) == 0) {
-			if (!best_match) best_match = &(*it);
-			if (path.size() > best_match->getPath().size()) best_match = &(*it);
-		}
+		if (path.empty()) continue;
+		if (target.find(path) != 0 && target.find(path + "/") != 0) continue;
+		if (!best_match || path.size() > best_match->getPath().size())
+			best_match = &(*it);
 	}
 	return (best_match);
 };
@@ -268,7 +270,7 @@ BlockLocation* Server::findLocation(BlockServer* server, Request* request) {
 Response Server::handleGetRequest(Request* request, BlockServer* server,
 								  BlockLocation* location) {
 	Response response;
-	std::map<std::string, std::string> headers;
+	MapHeaders headers;
 	std::string content, contentLength, target, root;
 
 	target = request->parsePath();
@@ -474,8 +476,8 @@ bool Server::isCgi(Request* request, BlockLocation* location) {
 	if (!location) return false;
 	cgis = location->getCGI();
 	ext = parseFileExtension(request->parsePath());
-	if (ext.empty()) return (Log::log(Log::ERROR, "Extension file empty"),false);
-
+	if (ext.empty())
+		return (Log::log(Log::ERROR, "Extension file empty"), false);
 
 	return cgis.find(ext) != cgis.end();
 }
@@ -484,16 +486,37 @@ bool Server::hasRedirection(BlockLocation* location) {
 
 	if (!location) return false;
 	rewrite = location->getRewrite();
-	return !rewrite.first || !rewrite.second.empty();  // probably wrong
+	return rewrite.first != 0 && !rewrite.second.empty();
 };
 
 Response Server::handleCgiRequest(Request* request, BlockServer* server,
 								  BlockLocation* location) {
+	CgiHandler cgi;
+	return cgi.CgiMaker(request, location, server);
+};
+
+Response Server::handleRedirection(Request* request, BlockServer* server,
+								   BlockLocation* location) {
+	Response response;
+	MapHeaders headers;
+	std::string content, new_target, status_code, status_text;
+
 	(void)request;
 	(void)server;
-	(void)location;
 
-	return Response();	// tmp
+	new_target = location->getRewrite().second;
+	status_code = location->getRewrite().first;
+	status_text = "Moved Permanently";	// create a map
+
+	headers["Location"] = new_target;
+
+	response.setProtocol("HTTP/1.1");
+	response.setStatusCode("301");
+	response.setStatusText(status_text);
+	response.setHeaders(headers);
+	response.setBody(content);
+
+	return response;
 };
 
 Response Server::resolveRequest(Request* request) {
@@ -503,8 +526,7 @@ Response Server::resolveRequest(Request* request) {
 
 	server = this->findServer(request);
 	if (!server)  // should never happen
-		return createResponseError(server, "HTTP/1.1", "500",
-								   "Internal Server Error");
+		return createResponseError("HTTP/1.1", "500", "Internal Server Error");
 
 	// the request body is too large for the server
 	if (request->getBody().length() > server->getClientMaxBodySize())
@@ -512,13 +534,10 @@ Response Server::resolveRequest(Request* request) {
 
 	location = this->findLocation(server, request);
 
-	if (location && this->hasRedirection(location)) {
-		;  // placeholder
-	}
-	if (location && this->isCgi(request, location)) {
-		CgiHandler cgi;
-		return (cgi.CgiMaker(request, location, server));
-	}
+	if (location && this->hasRedirection(location))
+		return (this->handleRedirection(request, server, location));
+	if (location && this->isCgi(request, location))
+		return (this->handleCgiRequest(request, server, location));
 
 	if (request->getMethod() == GET)
 		return (this->handleGetRequest(request, server, location));
@@ -589,13 +608,7 @@ void Server::execute(void) {
 		int nfds = VerifFatalCallFonc(
 			epoll_wait(this->_epollFD, events, MAX_EVENTS, SD_EPOLL_WAIT),
 			"Error with epoll_wait function");
-
-		// generate too much clutter
-		// Log::log(Log::DEBUG, "|Server::run| There are %d file descriptors
-		// ready for I/O " "after epoll wait", nfds);
-
 		for (int i = 0; i < nfds; i++) handleEvent(events, i);
-
 		time_t currentTime = time(NULL);
 		if (currentTime - lastTimeoutCheck >= TIMEOUT_CHECK_INTERVAL) {
 			this->_checkTimeouts(currentTime);

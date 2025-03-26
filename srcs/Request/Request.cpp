@@ -127,13 +127,11 @@ std::string Request::parseBody(const std::string &content) {
 	return (content.substr(delimiter + 4));
 };
 
-/*
 void Request::setMethod(e_Methods method) { this->_method = method; };
 void Request::setTarget(std::string target) { this->_target = target; };
 void Request::setProtocol(std::string protocol) { this->_protocol = protocol; };
 void Request::setHeaders(MapHeaders headers) { this->_headers = headers; };
 void Request::setBody(std::string body) { this->_body = body; };
-*/
 
 const e_Methods &Request::getMethod() const { return (this->_method); };
 const std::string &Request::getTarget() const { return (this->_target); };

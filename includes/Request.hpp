@@ -6,7 +6,7 @@
 /*   By: dtrala <dtrala@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/19 23:49:03 by dtrala            #+#    #+#             */
-/*   Updated: 2025/03/25 17:10:04 by dtrala           ###   ########.fr       */
+/*   Updated: 2025/03/26 13:13:49 by dtrala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,13 +48,11 @@ public:
 	std::map<std::string, std::string> parseHeaders(const std::string &content);
 	std::string parseBody(const std::string &content);
 
-	/*
 	void setMethod(e_Methods method);
 	void setTarget(std::string target);
 	void setProtocol(std::string protocol);
 	void setHeaders(std::map<std::string, std::string> headers);
 	void setBody(std::string body);
-	*/
 
 	const e_Methods &getMethod() const;
 	const std::string &getTarget() const;
