@@ -15,6 +15,7 @@
 #include "Request.hpp"
 #include "Response.hpp"
 #include "usefull.hpp"
+#include "CgiHandler.hpp"
 
 Server::Server() : _step(S_STEP_INIT), _epollFD(-1) {}
 
@@ -309,7 +310,7 @@ std::string Server::extractJsonValue(const std::string& json,
 
 	std::size_t valueStart = json.find(":", keyPos);
 	if (valueStart == std::string::npos) {
-		Log::log(Log::FATAL, "Invalid JSON format");
+		Log::log(Log::ERROR, "Invalid JSON format");
 	}
 
 	valueStart += 1;  // Skip the colon
@@ -325,7 +326,7 @@ std::string Server::extractJsonValue(const std::string& json,
 	valueStart++;  // Skip the opening quote
 	std::size_t valueEnd = json.find("\"", valueStart);
 	if (valueEnd == std::string::npos) {
-		Log::log(Log::FATAL, "Invalid JSON format");
+		Log::log(Log::ERROR, "Invalid JSON format");
 	}
 
 	return json.substr(valueStart, valueEnd - valueStart);
@@ -473,7 +474,9 @@ bool Server::isCgi(Request* request, BlockLocation* location) {
 	if (!location) return false;
 	cgis = location->getCGI();
 	ext = parseFileExtension(request->parsePath());
-	if (ext.empty()) return false;
+	if (ext.empty()) return (Log::log(Log::ERROR, "Extension file empty"),false);
+
+
 	return cgis.find(ext) != cgis.end();
 }
 bool Server::hasRedirection(BlockLocation* location) {
@@ -513,7 +516,8 @@ Response Server::resolveRequest(Request* request) {
 		;  // placeholder
 	}
 	if (location && this->isCgi(request, location)) {
-		;  // placeholder
+		CgiHandler cgi;
+		return (cgi.CgiMaker(request, location, server));
 	}
 
 	if (request->getMethod() == GET)
