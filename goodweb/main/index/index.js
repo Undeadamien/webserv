@@ -35,40 +35,7 @@ document.getElementById('toggle-checkbox').addEventListener('change', function()
     }
 });
 
-
-/* partie del et tele */
-document.addEventListener('DOMContentLoaded', function () {
-    const uploadForm = document.getElementById('uploadForm');
-
-    uploadForm.addEventListener('submit', function (event) {
-        event.preventDefault();
-
-        const fileInput = document.getElementById('fileInput');
-        const file = fileInput.files[0];
-
-        if (!file) {
-            alert('Please select a file to upload');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        fetch('/upload', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('File uploaded successfully');
-            } else {
-                alert('Failed to upload file');
-            }
-        })
-        .catch(error => {
-            console.error('Error uploading file:', error);
-            alert('Failed to upload file');
-        });
-    });
+document.getElementById('go-to-list').addEventListener('click', function() {
+    print("hello");
+    window.location.href = '/cgi-bin/list.py';
 });
