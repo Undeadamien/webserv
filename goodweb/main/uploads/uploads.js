@@ -37,7 +37,7 @@ document.getElementById('simpleUploadForm').addEventListener('submit', function 
             content: content
         };
 
-        fetch('/upload', {
+        fetch('/uploads', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -79,7 +79,7 @@ document.getElementById('advancedUploadForm').addEventListener('submit', functio
         content: content
     };
 
-    fetch('/upload', {
+    fetch('/uploads', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

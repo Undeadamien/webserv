@@ -35,9 +35,15 @@ def generate_html(directory_path):
 
     for entry in entries:
         entry_path = os.path.join(directory_path, entry)
+
+        # Vérifier si le fichier n'a pas d'extension et le traiter comme un fichier .txt
         if os.path.isdir(entry_path):
             html_content += f'<li><a href="?path={entry_path}">📁 {entry}</a></li>'
         else:
+            # Si c'est un fichier sans extension, traiter comme un fichier .txt
+            if '.' not in entry:
+                entry = entry + '.txt'
+
             html_content += f'<li><a href="{entry_path}" target="_blank">📄 {entry}</a></li>'
 
     html_content += """
@@ -48,9 +54,10 @@ def generate_html(directory_path):
 
     return html_content
 
-print("Content-Type: text/html\n")
+print("Content-Type: text/html\r")
+print("\r")
 
 form = cgi.FieldStorage()
-path = form.getvalue("path", "/goodweb/list")
+path = form.getvalue("path", "goodweb/list")
 
 print(generate_html(path))

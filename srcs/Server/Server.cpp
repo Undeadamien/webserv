@@ -478,7 +478,7 @@ bool Server::isCgi(Request* request, BlockLocation* location) {
 	ext = parseFileExtension(request->parsePath());
 	std::cout << "Active location :" << location->getPath() << "Ext : " << ext << std::endl;
 	if (ext.empty())
-		return (Log::log(Log::ERROR, "Extension file empty"), false);
+		return (Log::log(Log::DEBUG, "Extension file empty"), false);
 
 	return cgis.find(ext) != cgis.end();
 }
