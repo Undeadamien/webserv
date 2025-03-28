@@ -4,8 +4,8 @@
 
 #include <algorithm>
 #include <exception>
+#include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <stdexcept>
 
 #include "BlockLocation.hpp"
@@ -192,7 +192,7 @@ void Server::handleResponse(Client* client, int epollFD) {
 	int sent = -1;
 	std::string msg;
 
-	response = this->resolveRequest(client->getRequest());
+	response = this->resolveRequest(client);
 	client->setResponse(new Response(response));
 	Log::log(Log::DEBUG, "Response to be sent: \n%s",
 			 client->getResponse()->toString().c_str());
@@ -211,36 +211,47 @@ void Server::handleResponse(Client* client, int epollFD) {
 	modifySocketEpoll(epollFD, clientFd, REQUEST_FLAGS);
 }
 
-BlockServer* Server::findServer(Request* request) {
-	typedef std::vector<BlockServer> Blocks;
+BlockServer* Server::findServer(Client* client) {
 	MapHeaders headers;
-	std::string host, port;
+	Request* request;
+	int port, request_port;
+	std::string request_host;
 	std::vector<std::string> names;
 	std::vector<std::string>::iterator find;
+	typedef std::vector<BlockServer> Blocks;
+	MapServers::iterator it;
 
+	request = client->getRequest();
 	headers = request->getHeaders();
-	host = headers["Host"];
-	port = ft_itos(extractPort(host));
+	request_host = headers["Host"];
+	request_port = extractPort(request_host);
+	port = client->getSocket()->getPort();
 
-	if (host.empty()) {
-		Log::log(Log::ERROR, "[_findServer] Host not found in headers");
+	if (request_port != -1 && request_port != port) {
+		Log::log(Log::ERROR, "[_findServer] Host port mismatch");
+		return NULL;
+	}
+	if (headers.count("Host") && request_host.empty()) {
+		Log::log(Log::ERROR, "[_findServer] Host empty");
 		return NULL;
 	}
 
-	Log::log(Log::DEBUG, "[findServer] Host: %s", host.c_str());
+	Log::log(Log::DEBUG, "[findServer] Host: %s", request_host.c_str());
 
 	MapServers& servers = this->getParser().getServers();
-	for (MapServers::iterator it = servers.begin(); it != servers.end(); it++) {
-		if (ft_itos(extractPort(it->first)) == port) return (&it->second[0]);
-		std::vector<BlockServer>& blocks = it->second;
-		for (Blocks::iterator it2 = blocks.begin(); it2 != blocks.end();
-			 it2++) {
-			names = it2->getServerNames();
-			find = std::find(names.begin(), names.end(), host);
-			if (find != names.end()) return (&(*it2));
-		}
+	for (it = servers.begin(); it != servers.end(); it++) {
+		int server_port = extractPort(it->first);
+		if (server_port != -1 && server_port == port) break;
 	}
-	return (NULL);
+	if (it == servers.end() || it->second.empty()) return (NULL);
+
+	std::vector<BlockServer>& blocks = (it->second);
+	for (Blocks::iterator it2 = blocks.begin(); it2 != blocks.end(); it2++) {
+		names = it2->getServerNames();
+		find = std::find(names.begin(), names.end(), request_host);
+		if (find != names.end()) return (&(*it2));
+	}
+	return (&(blocks[0]));
 };
 
 BlockLocation* Server::findLocation(BlockServer* server, Request* request) {
@@ -545,16 +556,18 @@ Response Server::handleRedirection(Request* request, BlockServer* server,
 	return response;
 };
 
-Response Server::resolveRequest(Request* request) {
+Response Server::resolveRequest(Client* client) {
 	BlockLocation* location;
 	BlockServer* server;
 	Response res;
+	Request* request;
 
-	server = this->findServer(request);
+	server = this->findServer(client);
 	if (!server)  // should never happen
 		return createResponseError("HTTP/1.1", "500", "Internal Server Error");
 
-	// the request body is too large for the server
+	request = client->getRequest();
+	// check it the request body is too large for the server
 	if (request->getBody().length() > server->getClientMaxBodySize())
 		return createResponseError(server, "HTTP/1.1", "400", "Bad Request");
 

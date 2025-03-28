@@ -57,14 +57,14 @@ private:
 	Response handleGetRequest(Request*, BlockServer*, BlockLocation*);
 	Response handlePostRequest(Request*, BlockServer*, BlockLocation*);
 	Response handleRedirection(Request*, BlockServer*, BlockLocation*);
-	Response resolveRequest(Request*);
+	Response resolveRequest(Client*);
 	bool hasRedirection(BlockLocation*);
 	bool isCgi(Request*, BlockLocation*);
 	std::string extractJsonValue(const std::string&, const std::string&);
 	void handleRequest(Client*);
 	void handleResponse(Client*, int epollFD);
 
-	BlockServer* findServer(Request* request);
+	BlockServer* findServer(Client* client);
 	BlockLocation* findLocation(BlockServer* server_conf, Request* request);
 
 	/* HANDLE UTILS */

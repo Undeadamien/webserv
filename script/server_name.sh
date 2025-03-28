@@ -2,7 +2,13 @@
 
 IP="localhost"
 PORT=3434
-SERVER_NAMES=("test" "spider_web" "NULL")
+SERVER_NAMES=(
+	"NULL"
+	"spider_web"
+	"spider_web:1414"
+	"spider_web:3434"
+	"test"
+)
 
 echo "Testing for port: ${PORT}\n"
 for server_name in "${SERVER_NAMES[@]}"; do
