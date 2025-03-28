@@ -471,16 +471,25 @@ Response Server::handleDeleteRequest(Request* request, BlockServer* server,
 bool Server::isCgi(Request* request, BlockLocation* location) {
 	typedef std::map<std::string, std::string> MapCgi;
 	MapCgi cgis;
+	MapCgi::iterator cgi_path;
 	std::string ext;
+	struct stat info;
 
 	if (!location) return false;
 	cgis = location->getCGI();
 	ext = parseFileExtension(request->parsePath());
-	std::cout << "Active location :" << location->getPath() << "Ext : " << ext << std::endl;
 	if (ext.empty())
 		return (Log::log(Log::DEBUG, "Extension file empty"), false);
 
-	return cgis.find(ext) != cgis.end();
+	cgi_path = cgis.find(ext);
+	if (cgi_path == cgis.end()) return (false);
+
+	if (stat((cgi_path->second).c_str(), &info) == 0 &&
+		(info.st_mode & S_IFREG) && (info.st_mode & S_IXUSR)) {
+		return true;
+	}
+	Log::log(Log::INFO, "CGI_path : '%s' not valid", cgi_path->second.c_str());
+	return (false);
 }
 bool Server::hasRedirection(BlockLocation* location) {
 	std::pair<int, std::string> rewrite;

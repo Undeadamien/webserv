@@ -71,6 +71,10 @@ Response CgiHandler::executeCgi(const Request *request, BlockServer *server) {
 			envp.push_back(const_cast<char *>(env_list[i].c_str()));
 		envp.push_back(NULL);
 
+		std::string ch_path = _target.substr(0, _target.rfind('/'));
+		_target = _target.substr(_target.rfind('/') + 1);
+		if (chdir(ch_path.c_str()) == -1) exit(1);
+
 		// Arguments pour execve
 		char *args[] = {const_cast<char *>(_cgi_path.c_str()),
 						const_cast<char *>(_target.c_str()), NULL};
