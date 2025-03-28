@@ -22,6 +22,8 @@ class Response;
 class Request;
 class Server;
 
+#define CGI_TIMEOUT 2 // Timeout en secondes
+
 class CgiHandler
 {
     friend class Response;
@@ -32,7 +34,6 @@ class CgiHandler
         std::string _cgi_path;
         std::string _cgi_extension;
         bool _isChunked;
-
 
 
     public:

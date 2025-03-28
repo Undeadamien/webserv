@@ -27,7 +27,6 @@ Response CgiHandler::CgiMaker(const Request *request,
 	return executeCgi(request, server);
 }
 
-#define CGI_TIMEOUT 5  // Timeout en secondes
 
 Response CgiHandler::executeCgi(const Request *request, BlockServer *server) {
 	int pipe_fd[2];
@@ -85,23 +84,33 @@ Response CgiHandler::executeCgi(const Request *request, BlockServer *server) {
 		Log::log(Log::DEBUG, "Execve has failed");
 	}
 	// Processus parent
+	// Processus parent
 	close(pipe_fd[1]);	// Ferme l'écriture
 
-	// Gestion du timeout
-	alarm(CGI_TIMEOUT);	 // Déclenche une alarme dans CGI_TIMEOUT secondes
 
 	int status;
-	pid_t result = waitpid(pid, &status, 0);
-	if (status != 0) Log::log(Log::ERROR, "Interval Server Error");
+	time_t start_time = time(NULL);
+	while (true) {
+		pid_t result = waitpid(pid, &status, WNOHANG);
 
-	alarm(0);  // Désactive l'alarme si le processus s'est terminé à temps
+		if (result == pid) {  // L'enfant s'est terminé normalement
+			alarm(0);		  // Désactive l'alarme
+			break;
+		}
 
-	if (result == -1) {
-		kill(pid, SIGKILL);		// Tue le processus CGI s'il est bloqué
-		waitpid(pid, NULL, 0);	// Nettoie le processus zombie
-		return createResponseError(server, "HTTP/1.1", "504",
-								   "Gateway Timeout");
+		if (result == 0) {	// L'enfant est encore en cours d'exécution
+			if (time(NULL) - start_time >= CGI_TIMEOUT) {
+				std::cout << "CGI timeout, killing process " << pid
+						  << std::endl;
+				kill(pid, SIGKILL);
+				waitpid(pid, NULL, 0);	// Nettoie le processus zombie
+				return createResponseError(server, "HTTP/1.1", "504",
+										   "Gateway Timeout");
+			}
+			usleep(100000);	 // Attend 100ms avant de revérifier
+		}
 	}
+
 	// Lire la sortie du CGI
 	std::string output;
 	char buffer[1024];
@@ -120,5 +129,5 @@ Response CgiHandler::executeCgi(const Request *request, BlockServer *server) {
 	output = "HTTP/1.1 200 OK\r\n" + output;
 	std::cout << output << std::endl;
 
-	return Response(output);  // Transformer la sortie CGI en réponse HTTP
+	return Response(output);
 }
