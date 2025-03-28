@@ -194,7 +194,6 @@ void Server::handleResponse(Client* client, int epollFD) {
 
 	response = this->resolveRequest(client->getRequest());
 	client->setResponse(new Response(response));
-
 	Log::log(Log::DEBUG, "Response to be sent: \n%s",
 			 client->getResponse()->toString().c_str());
 
@@ -509,22 +508,39 @@ Response Server::handleRedirection(Request* request, BlockServer* server,
 								   BlockLocation* location) {
 	Response response;
 	MapHeaders headers;
-	std::string content, new_target, status_code, status_text;
+	std::string new_target, status_code, status_text;
+	static std::map<std::string, std::string> MapRedirection;
 
 	(void)request;
-	(void)server;
+
+	if (MapRedirection.empty()) {
+		MapRedirection["300"] = "Multiple Choices";
+		MapRedirection["301"] = "Moved Permanently";
+		MapRedirection["302"] = "Found";
+		MapRedirection["303"] = "See Other";
+		MapRedirection["304"] = "Not Modified";
+		MapRedirection["305"] = "Use Proxy";
+		// 306 unused
+		MapRedirection["307"] = "Temporary Redirect";
+		MapRedirection["308"] = "Permanent Redirect";
+	}
 
 	new_target = location->getRewrite().second;
-	status_code = location->getRewrite().first;
-	status_text = "Moved Permanently";	// create a map
+	status_code = ft_itos(location->getRewrite().first);
+	status_text = MapRedirection[status_code];
 
+	if (status_text.empty())
+		return (createResponseError(server, "HTTP/1.1", "500",
+									"Internal Server Error"));
+
+	headers["Content-Length"] = "0";
 	headers["Location"] = new_target;
 
 	response.setProtocol("HTTP/1.1");
-	response.setStatusCode("301");
+	response.setStatusCode(status_code);
 	response.setStatusText(status_text);
 	response.setHeaders(headers);
-	response.setBody(content);
+	response.setBody("");
 
 	return response;
 };
