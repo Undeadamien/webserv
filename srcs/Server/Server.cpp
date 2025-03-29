@@ -429,7 +429,7 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 		size_t dataStart = std::string::npos, dataEnd = std::string::npos;
 		dataStart = body.find("\r\n\r\n");
 		if (dataStart != std::string::npos)
-			dataEnd = body.find(boundary, nameStart);  // need to be changed
+			dataEnd = body.find("\r\n--" + boundary, nameStart);
 		if (dataStart == std::string::npos || dataEnd == std::string::npos) {
 			message = "{\"success\":false}";
 			headers["Content-Length"] = ft_itos(message.length());
@@ -440,7 +440,6 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 			return (response);
 		}
 		dataStart += 4;
-		dataEnd -= 4;  // I dont understand the 4
 		content = body.substr(dataStart, dataEnd - dataStart);
 
 		std::ofstream file((upload_path + "/" + filename).c_str());
