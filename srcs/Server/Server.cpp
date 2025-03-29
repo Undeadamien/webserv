@@ -572,10 +572,12 @@ Response Server::resolveRequest(Client* client) {
 		return createResponseError(server, "HTTP/1.1", "400", "Bad Request");
 
 	location = this->findLocation(server, request);
+	if (!location)
+		return createResponseError(server, "HTTP/1.1", "500", "Internal Server Error");
 
-	if (location && this->hasRedirection(location))
+	if (this->hasRedirection(location))
 		return (this->handleRedirection(request, server, location));
-	if (location && this->isCgi(request, location))
+	if (this->isCgi(request, location))
 		return (this->handleCgiRequest(request, server, location));
 
 	if (request->getMethod() == GET)
