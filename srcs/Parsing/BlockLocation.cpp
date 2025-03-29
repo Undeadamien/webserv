@@ -133,6 +133,7 @@ void BlockLocation::setDefaultValues() {
 	_counterBase["allowedMethods"] = 0;
 	_counterBase["autoindex"] = 0;
 	_counterBase["upload_path"] = 0;
+	_counterBase["rewrite"] = 0;
 }
 
 // bool BlockLocation::DuplicateLineChecker()
@@ -215,6 +216,7 @@ void BlockLocation::setRewrite(std::vector<std::string> &tokens) {
 				 ConfParser::countLineFile);
 		exit(Log::FATAL);
 	}
+	_counterBase["rewrite"]++;
 	_rewrite = std::make_pair(code, tokens[2]);
 }
 
@@ -251,7 +253,6 @@ BlockLocation BlockLocation::getLocationConfig(std::ifstream &configFile,
 		exit(Log::FATAL);
 	}
 	if (!DuplicateLineChecker()) exit(Log::FATAL);
-	setDefaultValues();
 	// if (Log::getLogDebugState())
 	//	printLocation();
 	return (*this);

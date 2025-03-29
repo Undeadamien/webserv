@@ -63,6 +63,7 @@ private:
 	std::string extractJsonValue(const std::string&, const std::string&);
 	void handleRequest(Client*);
 	void handleResponse(Client*, int epollFD);
+	Response HandleAutoIndex(BlockLocation *location, BlockServer *server, Request *request);
 
 	BlockServer* findServer(Client* client);
 	BlockLocation* findLocation(BlockServer* server_conf, Request* request);

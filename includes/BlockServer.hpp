@@ -45,6 +45,7 @@ public:
 
 	// parsing
 	BlockServer getServerConfig(std::ifstream &file_config);
+	bool VerifEmptyRRI();
 
 	// Getters
 	BlockLocation *getLocationByPath(const std::string &path);

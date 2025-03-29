@@ -71,6 +71,7 @@ public:
 		return _cgiExtension.at(path);
 	}
 	e_boolMod getAutoIndex() const { return _autoindex; }
+	std::map<std::string, int> getCounterBase() const { return _counterBase ;}
 
 	// Setters
 	void setPath(const std::string &path) { _path = path; }

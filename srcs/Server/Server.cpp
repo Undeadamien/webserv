@@ -556,6 +556,14 @@ Response Server::handleRedirection(Request* request, BlockServer* server,
 	return response;
 };
 
+Response Server::HandleAutoIndex(BlockLocation *location, BlockServer *server, Request *request)
+{
+	(void)location;
+	(void)server;
+	(void)request;
+	return Response("");
+}
+
 Response Server::resolveRequest(Client* client) {
 	BlockLocation* location;
 	BlockServer* server;
@@ -574,6 +582,9 @@ Response Server::resolveRequest(Client* client) {
 	location = this->findLocation(server, request);
 	if (!location)
 		return createResponseError(server, "HTTP/1.1", "500", "Internal Server Error");
+
+	if (location->getAutoIndex())
+		return (this->HandleAutoIndex(location, server, request));
 
 	if (this->hasRedirection(location))
 		return (this->handleRedirection(request, server, location));

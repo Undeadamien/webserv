@@ -1,5 +1,7 @@
 #include "BlockServer.hpp"
 
+#include <sys/stat.h>
+
 #include <cerrno>
 #include <csignal>
 #include <cstdlib>
@@ -9,7 +11,6 @@
 #include <iostream>
 #include <map>
 #include <set>
-#include <sys/stat.h>
 
 #include "ConfParser.hpp"
 #include "Log.hpp"
@@ -144,8 +145,6 @@ bool BlockServer::ValidServerChecker(std::vector<std::string> &tokens,
 	return (true);
 }
 
-
-
 /* _____ ______ _______ _______ ______ _____   _____
   / ____|  ____|__   __|__   __|  ____|  __ \ / ____|
  | (___ | |__     | |     | |  | |__  | |__) | (___
@@ -182,7 +181,7 @@ void BlockServer::setDefaultValue() {
 		ListenIpConfParse listen("0.0.0.0:1234");
 		_listens["0.0.0.0:1234"] = listen;
 	}
-	if (_root.empty()) _root = "./www/main";
+	if (_root.empty()) _root = "./goodweb/";
 	if (_indexes.empty()) _indexes.push_back("index.html");
 }
 
@@ -380,6 +379,25 @@ BlockLocation *BlockServer::getLocationByPath(const std::string &path) {
 
 												 */
 
+bool BlockServer::VerifEmptyRRI() {
+	std::vector<BlockLocation>::iterator it;
+
+	for (it = _locations.begin(); it != _locations.end(); ++it) {
+		std::map<std::string, int> counterbase = it->getCounterBase();
+		Log::log(Log::DEBUG, "Location : %s", it->getPath().c_str());
+		Log::log(Log::DEBUG, "Root : %d", counterbase["root"]);
+		Log::log(Log::DEBUG, "Rewrite : %d", counterbase["rewirte"]);
+		Log::log(Log::DEBUG, "AutoIndex : %d", counterbase["autoindex"]);
+		if (!(counterbase["root"]) && !(counterbase["autoindex"]) &&
+			!(counterbase["rewrite"])) {
+			Log::log(Log::FATAL, "Invalid Config %s",
+					 it->getPath().c_str());
+			return false;
+		}
+	}
+	return true;
+}
+
 BlockServer BlockServer::getServerConfig(std::ifstream &configFile) {
 	std::string line;
 	std::vector<std::string> tokens;
@@ -405,7 +423,10 @@ BlockServer BlockServer::getServerConfig(std::ifstream &configFile) {
 	if (isCloseServer == false && !EmptyFileChecker())
 		Log::log(Log::FATAL, "Missing } in file %s:%d", _filename.c_str(),
 				 ConfParser::countLineFile);
-	if ((!DoubleLocationChecker()) || (!DoubleLineChecker())) setDefaultValue();
+	if ((!DoubleLocationChecker()) || (!DoubleLineChecker()) ||
+		(!VerifEmptyRRI()))
+		Log::log(Log::FATAL, "Invalid Config %s:%d", _filename.c_str(),
+				 ConfParser::countLineFile);
 	cleanPaths();
 	return (*this);
 }
