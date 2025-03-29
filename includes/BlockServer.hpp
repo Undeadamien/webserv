@@ -10,7 +10,7 @@ class BlockLocation;
 class ListenIpConfParse;
 class Usefull;
 
-#define DF_CLIENT_MAX_BODY 1048576	// 1MB
+#define DF_CLIENT_MAX_BODY 1000000000  // 1MB
 class BlockServer {
 private:
 	std::map<std::string, ListenIpConfParse> _listens;
@@ -80,7 +80,7 @@ public:
 	void setErrorPages(const std::map<int, std::string> &errorPage) {
 		_errorPages = errorPage;
 	}
-	void setUploadPath(std::string uploadpath) {_uploadPath = uploadpath;};
+	void setUploadPath(std::string uploadpath) { _uploadPath = uploadpath; };
 
 	//// Adders
 	void addErrorPages(int errorCode, std::string file);

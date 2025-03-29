@@ -4,13 +4,13 @@
 
 #include <algorithm>
 #include <exception>
-#include <filesystem>
 #include <fstream>
 #include <stdexcept>
 
 #include "BlockLocation.hpp"
 #include "BlockServer.hpp"
 #include "CgiHandler.hpp"
+#include "Client.hpp"
 #include "ConfParser.hpp"
 #include "Log.hpp"
 #include "Request.hpp"
@@ -166,7 +166,7 @@ void Server::handleRequest(Client* client) {
 				 "[processClientRequest] Read %d bytes from client %d",
 				 received, client->getFd());
 		buffer[received] = '\0';
-		client->appendRequestBuffer(buffer);
+		client->appendRequestBuffer(std::string(buffer, received));
 	}
 	if (received == 0) throw Client::DisconnectedException();
 
@@ -369,8 +369,18 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 	if (!location || !location->isMethodAllowed(POST)) {
 		message = "{\"success\":false}";
 		headers["Content-Length"] = ft_itos(message.length());
-		response.setStatusCode("405");	// Status Created
+		response.setStatusCode("405");
 		response.setStatusText("Not Allowed");
+		response.setHeaders(headers);
+		response.setBody(message);
+		return response;
+	}
+
+	if (filename.find("..") != std::string::npos) {
+		message = "{\"success\":false}";
+		headers["Content-Length"] = ft_itos(message.length());
+		response.setStatusCode("400");
+		response.setStatusText("Bad Request");
 		response.setHeaders(headers);
 		response.setBody(message);
 		return response;
@@ -381,45 +391,120 @@ Response Server::handlePostRequest(Request* request, BlockServer* server,
 	requestHeaders = request->getHeaders();
 	content_type = requestHeaders["Content-Type"];
 
-	if (content_type != "application/json") {
-		msg = "[Server::handlePostRequest] Content-Type not handled '%s'";
-		Log::log(Log::ERROR, msg.c_str(), content_type.c_str());
-		message = "{\"success\":false}";
+	if (content_type.find("multipart/form-data") != std::string::npos) {
+		// find the filename
+		std::string nameKey = "filename=\"";
+		size_t nameStart = std::string::npos, nameEnd = std::string::npos;
+		nameStart = body.find(nameKey);
+		if (nameStart != std::string::npos)
+			nameEnd = body.find("\"", nameStart + nameKey.length());
+		if (nameStart == std::string::npos || nameEnd == std::string::npos) {
+			message = "{\"success\":false}";
+			headers["Content-Length"] = ft_itos(message.length());
+			response.setStatusCode("500");
+			response.setStatusText("Internal Server Error");
+			response.setHeaders(headers);
+			response.setBody(message);
+			return (response);
+		}
+		nameStart += nameKey.size();
+		filename = body.substr(nameStart, nameEnd - nameStart);
+
+		// find the boundary
+		std::string boundary, boundaryKey = "boundary=";
+		std::string content_type = requestHeaders["Content-Type"];
+		size_t boundStart = content_type.find(boundaryKey);
+		if (boundStart == std::string::npos) {
+			message = "{\"success\":false}";
+			headers["Content-Length"] = ft_itos(message.length());
+			response.setStatusCode("500");
+			response.setStatusText("Internal Server Error");
+			response.setHeaders(headers);
+			response.setBody(message);
+			return (response);
+		}
+		boundary = content_type.substr(boundStart += boundaryKey.size());
+
+		// find the data
+		size_t dataStart = std::string::npos, dataEnd = std::string::npos;
+		dataStart = body.find("\r\n\r\n");
+		if (dataStart != std::string::npos)
+			dataEnd = body.find(boundary, nameStart);  // need to be changed
+		if (dataStart == std::string::npos || dataEnd == std::string::npos) {
+			message = "{\"success\":false}";
+			headers["Content-Length"] = ft_itos(message.length());
+			response.setStatusCode("500");
+			response.setStatusText("Internal Server Error");
+			response.setHeaders(headers);
+			response.setBody(message);
+			return (response);
+		}
+		dataStart += 4;
+		dataEnd -= 4;  // I dont understand the 4
+		content = body.substr(dataStart, dataEnd - dataStart);
+
+		std::ofstream file((upload_path + "/" + filename).c_str());
+		if (!file.is_open()) {
+			msg = "[Server::handlePostRequest] Error creating the file %s";
+			Log::log(Log::ERROR, msg.c_str(), filename.c_str());
+			message = "{\"success\":false}";
+			headers["Content-Length"] = ft_itos(message.length());
+			response.setStatusCode("500");
+			response.setStatusText("Internal Server Error");
+			response.setHeaders(headers);
+			response.setBody(message);
+			return (response);
+		}
+		file << content;
+		file.close();
+		Log::log(Log::DEBUG, "[POST] | filename : %s", filename.c_str());
+
+		message = "{\"success\":true}";
 		headers["Content-Length"] = ft_itos(message.length());
-		response.setStatusCode("501");
-		response.setStatusText("Not Implemented");
+		headers["Location"] = upload_path + "/" + filename;
+		response.setStatusCode("201");
+		response.setStatusText("Created");
 		response.setHeaders(headers);
 		response.setBody(message);
 		return (response);
 	}
 
-	parsedJson = ParseJson(body);
-	filename = parsedJson["filename"];
+	if (content_type.find("application/json") != std::string::npos) {
+		parsedJson = ParseJson(body);
+		filename = parsedJson["filename"];
+		std::ofstream file((upload_path + "/" + filename).c_str());
+		if (!file.is_open()) {
+			msg = "[Server::handlePostRequest] Error creating the file %s";
+			Log::log(Log::ERROR, msg.c_str(), filename.c_str());
+			message = "{\"success\":false}";
+			headers["Content-Length"] = ft_itos(message.length());
+			response.setStatusCode("500");
+			response.setStatusText("Internal Server Error");
+			response.setHeaders(headers);
+			response.setBody(message);
+			return (response);
+		}
+		content = unescapeJsonString(parsedJson["content"]);
+		file << content;
+		file.close();
+		Log::log(Log::DEBUG, "[POST] | filename : %s", filename.c_str());
 
-	std::ofstream file((upload_path + "/" + filename).c_str());
-	if (!file.is_open()) {
-		msg = "[Server::handlePostRequest] Error creating the file %s";
-		Log::log(Log::ERROR, msg.c_str(), filename.c_str());
-		message = "{\"success\":false}";
+		message = "{\"success\":true}";
 		headers["Content-Length"] = ft_itos(message.length());
-		response.setStatusCode("500");
-		response.setStatusText("Internal Server Error");
+		headers["Location"] = upload_path + "/" + filename;
+		response.setStatusCode("201");
+		response.setStatusText("Created");
 		response.setHeaders(headers);
 		response.setBody(message);
 		return (response);
 	}
 
-	content = unescapeJsonString(parsedJson["content"]);
-	file << content;
-	file.close();
-
-	Log::log(Log::DEBUG, "[POST] | filename : %s", filename.c_str());
-
-	message = "{\"success\":true}";
+	msg = "[Server::handlePostRequest] Content-Type not handled '%s'";
+	Log::log(Log::ERROR, msg.c_str(), content_type.c_str());
+	message = "{\"success\":false}";
 	headers["Content-Length"] = ft_itos(message.length());
-	headers["Location"] = upload_path + "/" + filename;
-	response.setStatusCode("201");
-	response.setStatusText("Created");
+	response.setStatusCode("501");
+	response.setStatusText("Not Implemented");
 	response.setHeaders(headers);
 	response.setBody(message);
 	return (response);
@@ -678,7 +763,8 @@ Response Server::resolveRequest(Client* client) {
 
 	location = this->findLocation(server, request);
 	if (!location)
-		return createResponseError(server, "HTTP/1.1", "500", "Internal Server Error");
+		return createResponseError(server, "HTTP/1.1", "500",
+								   "Internal Server Error");
 
 	//struct stat info;
 
