@@ -556,12 +556,64 @@ Response Server::handleRedirection(Request* request, BlockServer* server,
 	return response;
 };
 
+std::string PageBuilder(std::vector<std::string> files, std::string path, std::string root){
+	std::string page;
+	std::string header = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Listing Directory</title><style>@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');body{padding: 0;margin: 0;box-sizing: border-box;font-family: 'Inter', sans-serif;background-color: #f9f9f9;}.container{--max-width: 1215px;--padding: 1rem;width: min(var(--max-width), 100% - (var(--padding) * 1.2));margin-inline: auto;}a{list-style-type: none;padding: 0;color: black;}.bigLine{width: 100%;height: 1px;background-color: #e0e0e0;margin: 1rem 0;}ul li{list-style-type: '▪️';padding: .2rem 1rem;margin: 0;}a:visited{color: #9e0999;}</style></head>";
+	std::string body = "<body><div class=\"container\"><h1>Index of " + path.substr(root.size()) + "</h1><div class=\"bigLine\"></div><ul>";
+
+	// ajoute les lien au body
+	for (std::vector<std::string>::iterator it = files.begin(); it != files.end(); ++it)
+	{
+		body += "<li><a href=\"";
+		body += *it;
+		body += "\">";
+		body += *it;
+		body += "</a></li>";
+	}
+	body += "</ul><div class=\"bigLine\"></div></div></body></html>";
+
+	return header + body;
+}
+
 Response Server::HandleAutoIndex(BlockLocation *location, BlockServer *server, Request *request)
 {
-	(void)location;
-	(void)server;
 	(void)request;
-	return Response("");
+	(void)server;
+	std::string path = location->getRoot() + request->parsePath();
+
+	std::cout << path << std::endl;
+
+	std::vector<std::string> files;
+	DIR *dir = opendir(path.c_str());
+	if (dir == NULL)
+	{
+		Log::log(Log::ERROR, "Failed to open directory %s", path.c_str());
+		return createResponseError(server, "HTTP/1.1", "404", "Ressource not found");
+	}
+
+	struct dirent *ent;
+	while ((ent = readdir(dir)) != NULL)
+		files.push_back(ent->d_name);
+	closedir(dir);
+
+	Response response;
+	MapHeaders headers;
+	std::string body, contentLength;
+	std::string root = location->getRoot();
+
+	body = PageBuilder(files, path, root);
+
+	headers["Content-Type"] = "text/html";
+	headers["Content-Length"] = ft_itos(body.length());
+
+	response.setProtocol("HTTP/1.1");
+	response.setStatusCode("200");
+	response.setStatusText("OK");
+	response.setHeaders(headers);
+	response.setBody(body);
+
+
+	return response;
 }
 
 Response Server::resolveRequest(Client* client) {
@@ -583,7 +635,11 @@ Response Server::resolveRequest(Client* client) {
 	if (!location)
 		return createResponseError(server, "HTTP/1.1", "500", "Internal Server Error");
 
-	if (location->getAutoIndex())
+	struct stat info;
+
+	std::string good_path = location->getRoot() + request->parsePath();
+
+	if (location->getAutoIndex() && (stat(good_path.c_str(), &info) == 0 && (info.st_mode & S_IFDIR)))
 		return (this->HandleAutoIndex(location, server, request));
 
 	if (this->hasRedirection(location))

@@ -3,6 +3,7 @@
 
 #include <arpa/inet.h>
 #include <sys/epoll.h>
+#include <dirent.h>
 
 #include <map>
 
@@ -94,6 +95,8 @@ public:
 	Socket* getSocket(int fd) { return _sockets[fd]; }
 	std::map<int, Client*> getClients(void) const { return _clients; }
 	Client* getClient(int fd) { return _clients[fd]; }
+
+	std::string buildPage(std::vector<std::string> files, std::string path, std::string root);
 };
 
 #endif
