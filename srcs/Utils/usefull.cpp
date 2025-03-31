@@ -132,19 +132,45 @@ void handle_signal(int signal) {
 Response createResponseError(std::string protocol, std::string status_code,
 							 std::string status_text) {
 	Response response;
-	std::map<int, std::string> error_pages;
 	std::map<std::string, std::string> headers;
-	std::string content, path;
+	std::ostringstream contentStream;
 
-	content += "<html>";
-	content += "<body>";
-	content += "<p>SpiderServ</p>";
-	content += "<p>Error " + status_code + "</p>";
-	content += "</body>";
-	content += "</html>";
+	// Construire le contenu HTML avec le style intégré
+	contentStream << "<html lang=\"fr\">";
+	contentStream << "<head>";
+	contentStream << "<meta charset=\"UTF-8\">";
+	contentStream << "<meta name=\"viewport\" content=\"width=device-width, "
+					 "initial-scale=1.0\">";
+	contentStream << "<title>Erreur " << status_code << "</title>";
+	contentStream << "<style>";
+	contentStream
+		<< "body, html { margin: 0; padding: 0; height: 100%; display: flex; "
+		   "justify-content: center; align-items: center; background-color: "
+		   "#f0f0f0; font-family: Arial, sans-serif; }";
+	contentStream << ".error-container { text-align: center; }";
+	contentStream << ".error-code { font-size: 10rem; color: #ff6b6b; "
+					 "animation: fadeInOut 2s infinite; }";
+	contentStream << ".error-message { font-size: 2rem; color: #333; }";
+	contentStream << ".error-details { font-size: 1.2rem; color: #777; }";
+	contentStream << "@keyframes fadeInOut { 0%, 100% { opacity: 0.2; } 50% { "
+					 "opacity: 1; } }";
+	contentStream << "</style>";
+	contentStream << "</head>";
+	contentStream << "<body>";
+	contentStream << "<div class=\"error-container\">";
+	contentStream << "<h1 class=\"error-code\">" << status_code << "</h1>";
+	contentStream
+			<< "<p class=\"error-message\">" << status_text << "</p>";
+	contentStream << "</div>";
+	contentStream << "</body>";
+	contentStream << "</html>";
+
+	std::string content = contentStream.str();
 
 	headers["Content-Type"] = "text/html";
-	headers["Content-Length"] = ft_itos(content.length());
+	std::ostringstream lengthStream;
+	lengthStream << content.length();
+	headers["Content-Length"] = lengthStream.str();
 
 	response.setProtocol(protocol);
 	response.setStatusCode(status_code);
@@ -152,7 +178,7 @@ Response createResponseError(std::string protocol, std::string status_code,
 	response.setHeaders(headers);
 	response.setBody(content);
 
-	return (response);
+	return response;
 };
 
 Response createResponseError(BlockServer* server, std::string protocol,
@@ -161,32 +187,79 @@ Response createResponseError(BlockServer* server, std::string protocol,
 	int code;
 	std::map<int, std::string> error_pages;
 	std::map<std::string, std::string> headers;
-	std::string content, path;
+	std::ostringstream contentStream;
 
 	error_pages = server->getErrorPages();
 	std::stringstream(status_code) >> code;
 
 	if (!error_pages[code].empty()) {
 		try {
-			std::cout << code << std::endl;
-			content = getFileContent(error_pages[code]);
+			contentStream << getFileContent(error_pages[code]);
 		} catch (std::exception& e) {
-			std::cout << "Error openning file" << std::endl;
-			content += "<html>";
-			content += "<body>";
-			content += "<p>SpiderServ</p>";
-			content += "<p>Error " + status_code + "</p>";
-			content += "</body>";
-			content += "</html>";
+			std::cout << "Error opening file" << std::endl;
+			contentStream << "<html lang=\"fr\">";
+			contentStream << "<head>";
+			contentStream << "<meta charset=\"UTF-8\">";
+			contentStream
+				<< "<meta name=\"viewport\" content=\"width=device-width, "
+				   "initial-scale=1.0\">";
+			contentStream << "<title>Erreur " << status_code << "</title>";
+			contentStream << "<style>";
+			contentStream << "body, html { margin: 0; padding: 0; height: "
+							 "100%; display: flex; justify-content: center; "
+							 "align-items: center; background-color: #f0f0f0; "
+							 "font-family: Arial, sans-serif; }";
+			contentStream << ".error-container { text-align: center; }";
+			contentStream << ".error-code { font-size: 10rem; color: #ff6b6b; "
+							 "animation: fadeInOut 2s infinite; }";
+			contentStream << ".error-message { font-size: 2rem; color: #333; }";
+			contentStream
+				<< ".error-details { font-size: 1.2rem; color: #777; }";
+			contentStream << "@keyframes fadeInOut { 0%, 100% { opacity: 0.2; "
+							 "} 50% { opacity: 1; } }";
+			contentStream << "</style>";
+			contentStream << "</head>";
+			contentStream << "<body>";
+			contentStream << "<div class=\"error-container\">";
+			contentStream << "<h1 class=\"error-code\">" << status_code
+						  << "</h1>";
+			contentStream << "<p class=\"error-message\">" << status_text
+						  << "</p>";
+			contentStream << "</div>";
+			contentStream << "</body>";
+			contentStream << "</html>";
 		}
 	} else {
-		content += "<html>";
-		content += "<body>";
-		content += "<p>SpiderServ</p>";
-		content += "<p>Error " + status_code + "</p>";
-		content += "</body>";
-		content += "</html>";
+		contentStream << "<html lang=\"fr\">";
+		contentStream << "<head>";
+		contentStream << "<meta charset=\"UTF-8\">";
+		contentStream << "<meta name=\"viewport\" "
+						 "content=\"width=device-width, initial-scale=1.0\">";
+		contentStream << "<title>Erreur " << status_code << "</title>";
+		contentStream << "<style>";
+		contentStream
+			<< "body, html { margin: 0; padding: 0; height: 100%; display: "
+			   "flex; justify-content: center; align-items: center; "
+			   "background-color: #f0f0f0; font-family: Arial, sans-serif; }";
+		contentStream << ".error-container { text-align: center; }";
+		contentStream << ".error-code { font-size: 10rem; color: #ff6b6b; "
+						 "animation: fadeInOut 2s infinite; }";
+		contentStream << ".error-message { font-size: 2rem; color: #333; }";
+		contentStream << ".error-details { font-size: 1.2rem; color: #777; }";
+		contentStream << "@keyframes fadeInOut { 0%, 100% { opacity: 0.2; } "
+						 "50% { opacity: 1; } }";
+		contentStream << "</style>";
+		contentStream << "</head>";
+		contentStream << "<body>";
+		contentStream << "<div class=\"error-container\">";
+		contentStream << "<h1 class=\"error-code\">" << status_code << "</h1>";
+		contentStream << "<p class=\"error-message\">" << status_text << "</p>";
+		contentStream << "</div>";
+		contentStream << "</body>";
+		contentStream << "</html>";
 	}
+
+	std::string content = contentStream.str();
 
 	headers["Content-Type"] = "text/html";
 	headers["Content-Length"] = ft_itos(content.length());
@@ -197,7 +270,7 @@ Response createResponseError(BlockServer* server, std::string protocol,
 	response.setHeaders(headers);
 	response.setBody(content);
 
-	return (response);
+	return response;
 };
 
 std::string getFileContent(std::string path) {
