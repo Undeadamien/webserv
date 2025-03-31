@@ -640,110 +640,197 @@ Response Server::handleRedirection(Request* request, BlockServer* server,
 	return response;
 };
 
-
-#include <iostream>
-#include <vector>
-#include <string>
 #include <dirent.h>
 #include <sys/stat.h>
+
 #include <fstream>
+#include <iostream>
 #include <map>
+#include <string>
+#include <vector>
 
 std::string getContentType(const std::string& path) {
-    size_t dot = path.find_last_of(".");
-    if (dot == std::string::npos) return "application/octet-stream";
+	size_t dot = path.find_last_of(".");
+	if (dot == std::string::npos) return "application/octet-stream";
 	if (dot == 0) return "text/plain";
 
-    std::string ext = path.substr(dot + 1);
+	std::string ext = path.substr(dot + 1);
 	std::cout << ext << std::endl;
-    if (ext == "html" || ext == "htm") return "text/html";
-    if (ext == "css") return "text/css";
-    if (ext == "js") return "application/javascript";
-    if (ext == "png") return "image/png";
-    if (ext == "jpg" || ext == "jpeg") return "image/jpeg";
-    if (ext == "gif") return "image/gif";
-    if (ext == "txt") return "text/plain";
-    return "application/octet-stream";
+	if (ext == "html" || ext == "htm") return "text/html";
+	if (ext == "css") return "text/css";
+	if (ext == "js") return "application/javascript";
+	if (ext == "png") return "image/png";
+	if (ext == "jpg" || ext == "jpeg") return "image/jpeg";
+	if (ext == "gif") return "image/gif";
+	if (ext == "txt") return "text/plain";
+	return "application/octet-stream";
 }
 
-std::string PageBuilder(std::vector<std::string> files, std::string path, std::string root) {
-    std::string page;
-    std::string header = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Listing Directory</title><style>@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');body{padding: 0;margin: 0;box-sizing: border-box;font-family: 'Inter', sans-serif;background-color: #f9f9f9;}.container{--max-width: 1215px;--padding: 1rem;width: min(var(--max-width), 100% - (var(--padding) * 1.2));margin-inline: auto;}a{list-style-type: none;padding: 0;color: black;}.bigLine{width: 100%;height: 1px;background-color: #e0e0e0;margin: 1rem 0;}ul li{list-style-type: '\u25AA';padding: .2rem 1rem;margin: 0;}a:visited{color: #9e0999;}</style></head>";
-    std::string body = "<body><div class=\"container\"><h1>Index of " + path.substr(root.size()) + "</h1><div class=\"bigLine\"></div><ul>";
+#include <sys/stat.h>
 
-    for (std::vector<std::string>::iterator it = files.begin(); it != files.end(); ++it) {
-        std::string fullPath = path.substr(root.size());
-        if (!fullPath.empty() && fullPath[fullPath.length() - 1] != '/') fullPath += "/";
-        body += "<li><a href=\"" + fullPath + *it + "\">" + *it + "</a></li>";
-    }
-    body += "</ul><div class=\"bigLine\"></div></div></body></html>";
+#include <string>
+#include <vector>
 
-    return header + body;
+bool isDirectory(const std::string& path) {
+	struct stat pathStat;
+	if (stat(path.c_str(), &pathStat) != 0) return false;
+	return S_ISDIR(pathStat.st_mode);
 }
 
-Response Server::HandleAutoIndex(BlockLocation *location, BlockServer *server, Request *request) {
-    std::string path = location->getRoot() + request->parsePath();
+std::string PageBuilder(std::vector<std::string> files, std::string path,
+						std::string root) {
+	std::string page;
+	std::string header =
+		"<!DOCTYPE html><html lang=\"en\"><head>"
+		"<meta charset=\"UTF-8\">"
+		"<meta name=\"viewport\" content=\"width=device-width, "
+		"initial-scale=1.0\">"
+		"<title>Listing Directory</title>"
+		"<style>"
+		"body { font-family: Arial, sans-serif; background-color: #f4f4f4; "
+		"padding: 20px; }"
+		".container { max-width: 800px; margin: auto; background: white; "
+		"padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px "
+		"rgba(0,0,0,0.1); }"
+		"h1 { text-align: center; font-weight: bold; }"
+		"ul { list-style: none; padding: 0; }"
+		"li { display: flex; align-items: center; justify-content: "
+		"space-between; padding: 10px; border-bottom: 1px solid #ddd; }"
+		"li:last-child { border-bottom: none; }"
+		"a { text-decoration: none; font-weight: bold; }"
+		"a.dir { color: green; }"
+		"a.file { color: #007BFF; }"
+		"a:hover { text-decoration: underline; }"
+		".delete-btn { background: #ff4d4d; color: white; border: none; "
+		"padding: 5px 10px; cursor: pointer; border-radius: 5px; }"
+		".delete-btn:hover { background: #cc0000; }"
+		".back-btn { background: #007BFF; color: white; border: none; padding: "
+		"10px 15px; cursor: pointer; border-radius: 5px; position: absolute; "
+		"top: 20px; left: 20px; }"
+		".back-btn:hover { background: #0056b3; }"
+		"</style>"
+		"</head>";
 
-    struct stat path_stat;
-    if (stat(path.c_str(), &path_stat) != 0) {
-        Log::log(Log::ERROR, "Failed to stat path %s", path.c_str());
-        return createResponseError(server, "HTTP/1.1", "404", "Ressource not found");
-    }
+	std::string body =
+		"<body><button class=\"back-btn\" onclick=\"goBack()\">Back</button>"
+		"<div class=\"container\">"
+		"<h1>Index of " +
+		path.substr(root.size()) +
+		"</h1>"
+		"<ul>";
 
-    if (S_ISREG(path_stat.st_mode)) {
-        std::ifstream file(path.c_str(), std::ios::binary);
-        if (!file) {
-            Log::log(Log::ERROR, "Failed to open file %s", path.c_str());
-            return createResponseError(server, "HTTP/1.1", "404", "Ressource not found");
-        }
+	for (std::vector<std::string>::iterator it = files.begin();
+		 it != files.end(); ++it) {
+		if (*it == "." || *it == "..") continue;
+		std::string fullPath = path.substr(root.size());
+		if (!fullPath.empty() && fullPath[fullPath.length() - 1] != '/')
+			fullPath += "/";
 
-        std::string body((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-        file.close();
+		std::string filePath = path + "/" + *it;
+		bool isDir = isDirectory(filePath);
 
-        Response response;
-        MapHeaders headers;
-        headers["Content-Type"] = getContentType(path);
-        headers["Content-Length"] = ft_itos(body.length());
-        headers["Content-Disposition"] = "inline";
+		body +=
+			"<li>"
+			"<a href=\"" +
+			fullPath + *it + "\" class=\"" + (isDir ? "dir" : "file") + "\">" +
+			*it + "</a>";
 
-        response.setProtocol("HTTP/1.1");
-        response.setStatusCode("200");
-        response.setStatusText("OK");
-        response.setHeaders(headers);
-        response.setBody(body);
+		if (!isDir) {
+			body += "<button class=\"delete-btn\" onclick=\"deleteFile('" +
+					fullPath + *it + "')\">Delete</button>";
+		}
 
-        return response;
-    }
+		body += "</li>";
+	}
 
-    std::vector<std::string> files;
-    DIR *dir = opendir(path.c_str());
-    if (dir == NULL) {
-        Log::log(Log::ERROR, "Failed to open directory %s", path.c_str());
-        return createResponseError(server, "HTTP/1.1", "404", "Ressource not found");
-    }
+	body +=
+		"</ul>"
+		"</div>"
+		"<script>"
+		"function deleteFile(filePath) {"
+		"if (confirm('Are you sure you want to delete ' + filePath + '?')) {"
+		"var xhr = new XMLHttpRequest();"
+		"xhr.open('DELETE', filePath, true);"
+		"xhr.onreadystatechange = function () {"
+		"if (xhr.readyState == 4 && xhr.status == 200) { location.reload(); }"
+		"else if (xhr.readyState == 4) { alert('Failed to delete ' + "
+		"filePath); }"
+		"};"
+		"xhr.send();"
+		"}"
+		"}"
+		"function goBack() { window.history.back(); }"
+		"</script>"
+		"</body></html>";
 
-    struct dirent *ent;
-    while ((ent = readdir(dir)) != NULL)
-        files.push_back(ent->d_name);
-    closedir(dir);
-
-    Response response;
-    MapHeaders headers;
-    std::string body = PageBuilder(files, path, location->getRoot());
-
-    headers["Content-Type"] = "text/html";
-    headers["Content-Length"] = ft_itos(body.length());
-
-    response.setProtocol("HTTP/1.1");
-    response.setStatusCode("200");
-    response.setStatusText("OK");
-    response.setHeaders(headers);
-    response.setBody(body);
-
-    return response;
+	return header + body;
 }
 
+Response Server::HandleAutoIndex(BlockLocation* location, BlockServer* server,
+								 Request* request) {
+	std::string path = location->getRoot() + request->parsePath();
 
+	struct stat path_stat;
+	if (stat(path.c_str(), &path_stat) != 0) {
+		Log::log(Log::ERROR, "Failed to stat path %s", path.c_str());
+		return createResponseError(server, "HTTP/1.1", "404",
+								   "Ressource not found");
+	}
+
+	if (S_ISREG(path_stat.st_mode)) {
+		std::ifstream file(path.c_str(), std::ios::binary);
+		if (!file) {
+			Log::log(Log::ERROR, "Failed to open file %s", path.c_str());
+			return createResponseError(server, "HTTP/1.1", "404",
+									   "Ressource not found");
+		}
+
+		std::string body((std::istreambuf_iterator<char>(file)),
+						 std::istreambuf_iterator<char>());
+		file.close();
+
+		Response response;
+		MapHeaders headers;
+		headers["Content-Type"] = getContentType(path);
+		headers["Content-Length"] = ft_itos(body.length());
+		headers["Content-Disposition"] = "inline";
+
+		response.setProtocol("HTTP/1.1");
+		response.setStatusCode("200");
+		response.setStatusText("OK");
+		response.setHeaders(headers);
+		response.setBody(body);
+
+		return response;
+	}
+
+	std::vector<std::string> files;
+	DIR* dir = opendir(path.c_str());
+	if (dir == NULL) {
+		Log::log(Log::ERROR, "Failed to open directory %s", path.c_str());
+		return createResponseError(server, "HTTP/1.1", "404",
+								   "Ressource not found");
+	}
+
+	struct dirent* ent;
+	while ((ent = readdir(dir)) != NULL) files.push_back(ent->d_name);
+	closedir(dir);
+
+	Response response;
+	MapHeaders headers;
+	std::string body = PageBuilder(files, path, location->getRoot());
+
+	headers["Content-Type"] = "text/html";
+	headers["Content-Length"] = ft_itos(body.length());
+
+	response.setProtocol("HTTP/1.1");
+	response.setStatusCode("200");
+	response.setStatusText("OK");
+	response.setHeaders(headers);
+	response.setBody(body);
+
+	return response;
+}
 
 Response Server::resolveRequest(Client* client) {
 	BlockLocation* location;
@@ -765,7 +852,7 @@ Response Server::resolveRequest(Client* client) {
 		return createResponseError(server, "HTTP/1.1", "500",
 								   "Internal Server Error");
 
-	//struct stat info;
+	// struct stat info;
 
 	std::string good_path = location->getRoot() + request->parsePath();
 
