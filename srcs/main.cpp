@@ -4,7 +4,6 @@
 #include "ConfParser.hpp"
 #include "Log.hpp"
 #include "Server.hpp"
-#include "test.hpp"
 #include "usefull.hpp"
 
 Server* g_server;

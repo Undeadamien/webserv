@@ -655,7 +655,6 @@ std::string getContentType(const std::string& path) {
 	if (dot == 0) return "text/plain";
 
 	std::string ext = path.substr(dot + 1);
-	std::cout << ext << std::endl;
 	if (ext == "html" || ext == "htm") return "text/html";
 	if (ext == "css") return "text/css";
 	if (ext == "js") return "application/javascript";
