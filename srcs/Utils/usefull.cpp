@@ -371,3 +371,28 @@ std::string unescapeJsonString(const std::string& escaped) {
 
 	return unescaped;
 }
+
+std::string urlDecode(const std::string& value) {
+	char ch;
+	char* endptr;
+	std::string decoded;
+	std::string hex;
+
+	for (size_t i = 0; i < value.length(); i++) {
+		if (value[i] == '%' && i + 2 < value.length()) {
+			hex = value.substr(i + 1, 2);
+			ch = (char)strtol(hex.c_str(), &endptr, 16);  // Convert hex to char
+			if (*endptr == '\0') {
+				decoded += ch;
+				i += 2;
+			} else {
+				decoded += '%';
+			}
+		} else if (value[i] == '+') {
+			decoded += ' ';
+		} else {
+			decoded += value[i];
+		}
+	}
+	return decoded;
+}
