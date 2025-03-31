@@ -1,11 +1,14 @@
 #include "Server.hpp"
 
 #include <sys/epoll.h>
+#include <sys/stat.h>
 
 #include <algorithm>
 #include <exception>
 #include <fstream>
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 #include "BlockLocation.hpp"
 #include "BlockServer.hpp"
@@ -281,27 +284,26 @@ Response Server::handleGetRequest(Request* request, BlockServer* server,
 								  BlockLocation* location) {
 	Response response;
 	MapHeaders headers;
-	std::string content, contentLength, target, root;
+	std::string content, contentLength, filePath, root;
 
-	target = request->parsePath();
-
+	filePath = request->parsePath();
 	if (location) {
 		root = location->getRoot();
-		if (target[target.size() - 1] == '/')
-			target += location->getIndexes()[0];
+		if (filePath[filePath.size() - 1] == '/')
+			filePath += location->getIndexes()[0];
 	} else {
 		root = server->getRoot();
-		if (target == "/") target += server->getIndexes()[0];
+		if (filePath == "/") filePath += server->getIndexes()[0];
 	}
 
 	try {
-		content = getFileContent(root + target);  // can throw
+		content = getFileContent(root + filePath);	// can throw
 	} catch (std::exception& e) {
 		return (createResponseError(server, "HTTP/1.1", "404", "Not Found"));
 	}
 	contentLength = ft_itos(content.length());
 
-	headers["Content-Type"] = getMimeType(root + target);
+	headers["Content-Type"] = getMimeType(root + filePath);
 	headers["Content-Length"] = contentLength;
 
 	response.setProtocol("HTTP/1.1");
@@ -531,7 +533,7 @@ Response Server::handleDeleteRequest(Request* request, BlockServer* server,
 		return response;
 	}
 
-	filePath = request->parsePath();  // might be modified
+	filePath = location->getRoot() + request->parsePath();
 
 	if (stat(filePath.c_str(), &fileStat) != 0) {
 		message = "File Not Found";
@@ -640,22 +642,12 @@ Response Server::handleRedirection(Request* request, BlockServer* server,
 	return response;
 };
 
-#include <dirent.h>
-#include <sys/stat.h>
-
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <string>
-#include <vector>
-
 std::string getContentType(const std::string& path) {
 	size_t dot = path.find_last_of(".");
 	if (dot == std::string::npos) return "application/octet-stream";
 	if (dot == 0) return "text/plain";
 
 	std::string ext = path.substr(dot + 1);
-	std::cout << ext << std::endl;
 	if (ext == "html" || ext == "htm") return "text/html";
 	if (ext == "css") return "text/css";
 	if (ext == "js") return "application/javascript";
@@ -665,11 +657,6 @@ std::string getContentType(const std::string& path) {
 	if (ext == "txt") return "text/plain";
 	return "application/octet-stream";
 }
-
-#include <sys/stat.h>
-
-#include <string>
-#include <vector>
 
 bool isDirectory(const std::string& path) {
 	struct stat pathStat;
@@ -766,8 +753,8 @@ std::string PageBuilder(std::vector<std::string> files, std::string path,
 	return header + body;
 }
 
-Response Server::HandleAutoIndex(BlockLocation* location, BlockServer* server,
-								 Request* request) {
+Response Server::handleAutoIndex(Request* request, BlockServer* server,
+								 BlockLocation* location) {
 	std::string path = location->getRoot() + request->parsePath();
 
 	struct stat path_stat;
@@ -852,14 +839,8 @@ Response Server::resolveRequest(Client* client) {
 		return createResponseError(server, "HTTP/1.1", "500",
 								   "Internal Server Error");
 
-	// struct stat info;
-
-	std::string good_path = location->getRoot() + request->parsePath();
-
-	//&& (stat(good_path.c_str(), &info) == 0 && (info.st_mode & S_IFDIR))
-
-	if (location->getAutoIndex())
-		return (this->HandleAutoIndex(location, server, request));
+	if (request->getMethod() == GET && location->getAutoIndex())
+		return (this->handleAutoIndex(request, server, location));
 
 	if (this->hasRedirection(location))
 		return (this->handleRedirection(request, server, location));

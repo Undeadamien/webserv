@@ -2,8 +2,8 @@
 #define SERVER_HPP
 
 #include <arpa/inet.h>
-#include <sys/epoll.h>
 #include <dirent.h>
+#include <sys/epoll.h>
 
 #include <map>
 
@@ -53,6 +53,7 @@ private:
 	void _handleClientDisconnect(int fd);
 
 	MapJson ParseJson(const std::string& content);
+	Response handleAutoIndex(Request*, BlockServer*, BlockLocation*);
 	Response handleCgiRequest(Request*, BlockServer*, BlockLocation*);
 	Response handleDeleteRequest(Request*, BlockServer*, BlockLocation*);
 	Response handleGetRequest(Request*, BlockServer*, BlockLocation*);
@@ -64,7 +65,6 @@ private:
 	std::string extractJsonValue(const std::string&, const std::string&);
 	void handleRequest(Client*);
 	void handleResponse(Client*, int epollFD);
-	Response HandleAutoIndex(BlockLocation *location, BlockServer *server, Request *request);
 
 	BlockServer* findServer(Client* client);
 	BlockLocation* findLocation(BlockServer* server_conf, Request* request);
@@ -96,7 +96,8 @@ public:
 	std::map<int, Client*> getClients(void) const { return _clients; }
 	Client* getClient(int fd) { return _clients[fd]; }
 
-	std::string buildPage(std::vector<std::string> files, std::string path, std::string root);
+	std::string buildPage(std::vector<std::string> files, std::string path,
+						  std::string root);
 };
 
 #endif

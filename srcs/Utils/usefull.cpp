@@ -159,8 +159,7 @@ Response createResponseError(std::string protocol, std::string status_code,
 	contentStream << "<body>";
 	contentStream << "<div class=\"error-container\">";
 	contentStream << "<h1 class=\"error-code\">" << status_code << "</h1>";
-	contentStream
-			<< "<p class=\"error-message\">" << status_text << "</p>";
+	contentStream << "<p class=\"error-message\">" << status_text << "</p>";
 	contentStream << "</div>";
 	contentStream << "</body>";
 	contentStream << "</html>";
@@ -300,8 +299,9 @@ std::string getMimeType(std::string target) {
 		//...
 	}
 
-	std::string::size_type start = target.find_last_of(".") + 1;
+	std::string::size_type start = target.find_last_of(".");
 	if (start == std::string::npos) return "application/octet-stream";
+	start++;
 
 	std::string extension = target.substr(start);
 	std::map<std::string, std::string>::iterator it = mapMime.find(extension);

@@ -2,9 +2,10 @@
 *.o
 .vscode
 Session.vim
-goodweb/main/cgi-files/uploads-files/*
+goodweb/list/
+goodweb/main/cgi-files/uploads-files/
 logs
 obj
+test-random.sh
 webserv
 www
-test-random.sh
