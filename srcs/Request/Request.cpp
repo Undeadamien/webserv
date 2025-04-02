@@ -147,7 +147,7 @@ std::string Request::parsePath() const {
 std::string Request::parseQuery() const {
 	std::string::size_type sep = this->_target.find("?");
 	if (sep == std::string::npos) return "";
-	return urlDecode(this->_target.substr(sep + 1));
+	return (this->_target.substr(sep + 1));
 };
 std::map<std::string, std::string> Request::parseQueryToMap() {
 	std::map<std::string, std::string> map;

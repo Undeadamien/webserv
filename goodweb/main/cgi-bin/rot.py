@@ -4,22 +4,24 @@ import cgi
 import html
 
 
-def rot3(text):
+def rot3(text, number : int):
     result = []
     for char in text:
         if 'A' <= char <= 'Z':
-            result.append(chr((ord(char) - ord('A') + 3) % 26 + ord('A')))
+            result.append(chr((ord(char) - ord('A') + number) % 26 + ord('A')))
         elif 'a' <= char <= 'z':
-            result.append(chr((ord(char) - ord('a') + 3) % 26 + ord('a')))
+            result.append(chr((ord(char) - ord('a') + number) % 26 + ord('a')))
         else:
             result.append(char)
     return ''.join(result)
 
 form = cgi.FieldStorage()
-texte_original = form.getvalue("texte")
+texte_original = form.getvalue("texte", "")
+number_rot = form.getvalue("number", "")
+number_rot = int(number_rot)
 
 
-texte_encode = rot3(texte_original)
+texte_encode = rot3(texte_original, number_rot)
 
 print("Content-Type: text/html\r")
 print("\r")
@@ -29,7 +31,7 @@ print(f"""
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Résultat ROT-3</title>
+    <title>Résultat ROT-{number_rot}</title>
     <style>
         body {{
             width: 100%;
@@ -64,27 +66,26 @@ print(f"""
             display: inline-block;
             background-color: #f8f8f8;
         }}
-        #back-btn {{
-            margin-top: 20px;
+              #back-btn {{
+            position: absolute;
+            top: 20px;
+            left: 20px;
             padding: 10px 20px;
-            font-size: 16px;
-            background-color: #ff0000;
+            background-color: #007BFF;
             color: white;
             border: none;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }}
         #back-btn:hover {{
-            background-color: #cc0000;
+            background-color: #0056b3;
         }}
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <a href="/">Accueil</a>
-        <a href="/options">Options</a>
-        <a href="/help">Aide</a>
-    </div>
+    <button id="back-btn" onclick="window.history.back();">Back</button>
 
     <div class="container">
         <h1>Texte encodé en ROT-3</h1>

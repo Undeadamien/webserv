@@ -47,11 +47,12 @@
     </style>
 </head>
 <body>
-
+    <button id="back-btn" onclick="window.history.back();">Back</button>
     <div class="container">
         <h1>Encodeur ROT-3</h1>
         <form action="../cgi-bin/rot.py" method="post">
-            <textarea name="texte" placeholder="Écrivez ici..."></textarea><br>
+            <textarea name="texte" placeholder="Écrivez ici..."></textarea>
+            <input type="number", name="number" placeholder="Nombre de rot"></input>
             <button type="submit">Encoder</button>
         </form>
     </div>

@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include <sstream>
 #include <map>
 #include <string>
 
@@ -46,6 +47,8 @@ class CgiHandler
         /*Getters*/
 
         Response CgiMaker(const Request *request, const BlockLocation *location, BlockServer *server);
+
+        std::vector<std::string> createCgiEnv(const Request *request);
 
         Response executeCgi(const Request *request, BlockServer *server);
 
