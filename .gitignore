@@ -3,7 +3,7 @@
 .vscode
 Session.vim
 goodweb/list/
-goodweb/main/cgi-files/uploads-files/
+goodweb/main/cgi-bin/uploads-files/
 logs
 obj
 test-random.sh

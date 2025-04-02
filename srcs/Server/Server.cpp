@@ -159,19 +159,29 @@ void Server::handleRequest(Client* client) {
 	int received, buffer_size = CLIENT_BUFFER_SIZE;
 
 	Log::log(Log::DEBUG,
-			 "[processClientRequest] Processing request from client %d",
+			 "[handleRequest] Processing request from client %d",
 			 client->getFd());
 
 	// we cannot check for errno after recv
 	// recv return -1 when non-blocking
-	while ((received = recv(client->getFd(), buffer, buffer_size, 0)) > 0) {
-		Log::log(Log::DEBUG,
-				 "[processClientRequest] Read %d bytes from client %d",
-				 received, client->getFd());
-		buffer[received] = '\0';
-		client->appendRequestBuffer(std::string(buffer, received));
+	//while ((received = recv(client->getFd(), buffer, buffer_size, 0)) > 0) {
+	//	Log::log(Log::DEBUG,
+	//			 "[handleRequest] Read %d bytes from client %d",
+	//			 received, client->getFd());
+	//	buffer[received] = '\0';
+	//	client->appendRequestBuffer(std::string(buffer, received));
+	//}
+	received = recv(client->getFd(), buffer, buffer_size, 0);
+	if (received <= 0) {
+	Log::log(Log::ERROR,
+		"[handleRequest] Recv failed");
+		throw Client::DisconnectedException();
 	}
-	if (received == 0) throw Client::DisconnectedException();
+	Log::log(Log::DEBUG,
+		"[handleRequest] Read %d bytes from client %d",
+		received, client->getFd());
+	buffer[received] = '\0';
+	client->appendRequestBuffer(std::string(buffer, received));
 
 	if (!Request::isComplete(client->getRequestBuffer())) return;
 	raw = client->getRequestBuffer();
@@ -284,7 +294,12 @@ Response Server::handleGetRequest(Request* request, BlockServer* server,
 								  BlockLocation* location) {
 	Response response;
 	MapHeaders headers;
-	std::string content, contentLength, filePath, root;
+	std::string content, contentLength, filePath, root, message;
+
+
+	if (!location || !location->isMethodAllowed(GET)) {
+		return createResponseError(server, "HTTP/1.1", "405", "Not Allowed");
+	}
 
 	filePath = request->parsePath();
 	if (location) {
@@ -873,7 +888,7 @@ void Server::handleEvent(epoll_event* events, int i) {
 				modifySocketEpoll(g_server->getEpollFD(), fd, RESPONSE_FLAGS);
 			}
 		}
-		if (event & EPOLLOUT) {
+		else if (event & EPOLLOUT) {
 			this->_clients[fd]->updateActivity();
 			if (this->_clients[fd]->getRequest() != NULL) {
 				this->handleResponse(this->_clients[fd], this->_epollFD);

@@ -22,7 +22,7 @@ class Response;
 class Request;
 class Server;
 
-#define CGI_TIMEOUT 2 // Timeout en secondes
+#define CGI_TIMEOUT 10 // Timeout en secondes
 
 class CgiHandler
 {

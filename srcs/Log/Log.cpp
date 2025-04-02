@@ -89,8 +89,10 @@ void Log::_InLogFile(Log::LogStep step, const char *msg, std::string time) {
 	int file = open(("logs/" + Log::getLogFileName()).c_str(),
 					O_CREAT | O_WRONLY | O_APPEND, 0666);
 	std::string log = Log::_logFormater(step, msg, time, false);
-	write(file, log.c_str(), log.size());
-	write(file, "\n", 1);
+	if (write(file, log.c_str(), log.size()) == -1)
+		Log::log(Log::ERROR, "writing failed");
+	if (write(file, "\n", 1) == -1)
+		Log::log(Log::ERROR, "writing failed");
 	close(file);
 }
 

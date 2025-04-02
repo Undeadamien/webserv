@@ -120,6 +120,8 @@ Response CgiHandler::executeCgi(const Request *request, BlockServer *server) {
 		output += buffer;
 	}
 	close(pipe_fd[0]);
+	if (bytes_read < 0)
+		throw Client::DisconnectedException();
 
 	// Vérifier le statut de sortie du CGI
 	if (WIFEXITED(status) && WEXITSTATUS(status) != 0) {

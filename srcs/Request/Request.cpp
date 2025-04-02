@@ -199,7 +199,11 @@ std::string Request::unchunkBody(std::string chunked) {
 
 		char *buffer = new char[chunkSize];
 		ss.read(buffer, chunkSize);
+		if (ss.fail())
+			throw std::runtime_error("Error: [read] unchunking failed.");
 		result.write(buffer, chunkSize);
+		if (result.fail())
+			throw std::runtime_error("Error: [write] unchunking failed.");
 		delete[] buffer;
 
 		ss.ignore(2);
