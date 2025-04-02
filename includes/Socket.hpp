@@ -9,8 +9,7 @@
 
 #define BACKLOGS 100
 
-class Socket
-{
+class Socket {
 private:
 	int _fd;
 	std::string _ip;

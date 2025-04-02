@@ -10,7 +10,7 @@ class BlockLocation;
 class ListenIpConfParse;
 class Usefull;
 
-#define DF_CLIENT_MAX_BODY 10485760  // 10MO
+#define DF_CLIENT_MAX_BODY 10485760	 // 10MO
 class BlockServer {
 private:
 	std::map<std::string, ListenIpConfParse> _listens;

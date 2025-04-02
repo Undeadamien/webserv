@@ -9,12 +9,10 @@
 #include <map>
 #include <string>
 
-class Log
-{
+class Log {
 public:
 	// Levels of log
-	enum LogStep
-	{
+	enum LogStep {
 		DEBUG = 0,
 		INFO,
 		ERROR,

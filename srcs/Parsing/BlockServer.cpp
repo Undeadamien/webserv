@@ -390,8 +390,7 @@ bool BlockServer::VerifEmptyRRI() {
 		Log::log(Log::DEBUG, "AutoIndex : %d", counterbase["autoindex"]);
 		if (!(counterbase["root"]) && !(counterbase["autoindex"]) &&
 			!(counterbase["rewrite"])) {
-			Log::log(Log::FATAL, "Invalid Config %s",
-					 it->getPath().c_str());
+			Log::log(Log::FATAL, "Invalid Config %s", it->getPath().c_str());
 			return false;
 		}
 	}

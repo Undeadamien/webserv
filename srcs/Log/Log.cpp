@@ -91,8 +91,7 @@ void Log::_InLogFile(Log::LogStep step, const char *msg, std::string time) {
 	std::string log = Log::_logFormater(step, msg, time, false);
 	if (write(file, log.c_str(), log.size()) == -1)
 		Log::log(Log::ERROR, "writing failed");
-	if (write(file, "\n", 1) == -1)
-		Log::log(Log::ERROR, "writing failed");
+	if (write(file, "\n", 1) == -1) Log::log(Log::ERROR, "writing failed");
 	close(file);
 }
 
@@ -137,8 +136,7 @@ void Log::log(Log::LogStep level, const char *msg, ...) {
 		Log::_InLogFile(level, buffer.data(), timeBuffer);
 
 	// Throw a fatal exception if the log level is FATAL
-	if (level == Log::FATAL)
-		throw std::runtime_error(buffer.data());
+	if (level == Log::FATAL) throw std::runtime_error(buffer.data());
 }
 
 /* _____ ______ _______ _______ ______ _____   _____

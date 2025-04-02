@@ -10,8 +10,7 @@ class BlockServer;
 
 typedef std::map<std::string, std::vector<BlockServer> > MapServers;
 
-class ConfParser
-{
+class ConfParser {
 public:
 	static int countLineFile;
 

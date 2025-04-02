@@ -4,54 +4,52 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <ctime>
+
 #include <cstdlib>
+#include <ctime>
 #include <iostream>
-#include <vector>
-#include <sstream>
 #include <map>
+#include <sstream>
 #include <string>
+#include <vector>
 
-#include "Request.hpp"
-#include "usefull.hpp"
 #include "Log.hpp"
+#include "Request.hpp"
 #include "Server.hpp"
-
+#include "usefull.hpp"
 
 class Log;
 class Response;
 class Request;
 class Server;
 
-#define CGI_TIMEOUT 10 // Timeout en secondes
+#define CGI_TIMEOUT 10	// Timeout en secondes
 
-class CgiHandler
-{
-    friend class Response;
+class CgiHandler {
+	friend class Response;
 
-    private:
-        std::string _output;
-        std::string _target;
-        std::string _cgi_path;
-        std::string _cgi_extension;
-        bool _isChunked;
+private:
+	std::string _output;
+	std::string _target;
+	std::string _cgi_path;
+	std::string _cgi_extension;
+	bool _isChunked;
 
+public:
+	CgiHandler();
+	CgiHandler(const CgiHandler &src);
+	~CgiHandler(void);
 
-    public:
-        CgiHandler();
-        CgiHandler(const CgiHandler &src);
-        ~CgiHandler(void);
+	CgiHandler &operator=(const CgiHandler &src);
 
-        CgiHandler &operator=(const CgiHandler &src);
+	/*Getters*/
 
-        /*Getters*/
+	Response CgiMaker(const Request *request, const BlockLocation *location,
+					  BlockServer *server);
 
-        Response CgiMaker(const Request *request, const BlockLocation *location, BlockServer *server);
+	std::vector<std::string> createCgiEnv(const Request *request);
 
-        std::vector<std::string> createCgiEnv(const Request *request);
-
-        Response executeCgi(const Request *request, BlockServer *server);
-
+	Response executeCgi(const Request *request, BlockServer *server);
 };
 
 #endif

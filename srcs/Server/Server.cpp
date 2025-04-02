@@ -598,10 +598,11 @@ int Server::isCgi(Request* request, BlockLocation* location) {
 		return -1;
 	}
 
-	if (!(stat((location->getRoot() + request->parsePath()).c_str(), &info) == 0 &&
+	if (!(stat((location->getRoot() + request->parsePath()).c_str(), &info) ==
+			  0 &&
 		  (info.st_mode & S_IFREG))) {
 		Log::log(Log::ERROR, "Target : '%s' not valid",
-			(location->getRoot() + request->parsePath()).c_str());
+				 (location->getRoot() + request->parsePath()).c_str());
 		return -2;
 	}
 
@@ -869,7 +870,8 @@ Response Server::resolveRequest(Client* client) {
 	if ((iscgi = this->isCgi(request, location)) == 1)
 		return (this->handleCgiRequest(request, server, location));
 	if (iscgi == -1)
-		return (createResponseError(server, "HTTP/1.1", "500", "Internal Server Error"));
+		return (createResponseError(server, "HTTP/1.1", "500",
+									"Internal Server Error"));
 	if (iscgi == -2)
 		return (createResponseError(server, "HTTP/1.1", "404", "Not Found"));
 

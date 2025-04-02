@@ -3,8 +3,7 @@
 
 #include <string>
 
-class ListenIpConfParse
-{
+class ListenIpConfParse {
 private:
 	std::string _ip;
 	unsigned int _port;
