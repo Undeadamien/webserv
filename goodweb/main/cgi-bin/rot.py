@@ -3,7 +3,6 @@
 import cgi
 import html
 
-
 def rot3(text, number : int):
     result = []
     for char in text:

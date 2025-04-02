@@ -61,7 +61,7 @@ private:
 	Response handleRedirection(Request*, BlockServer*, BlockLocation*);
 	Response resolveRequest(Client*);
 	bool hasRedirection(BlockLocation*);
-	bool isCgi(Request*, BlockLocation*);
+	int isCgi(Request*, BlockLocation*);
 	std::string extractJsonValue(const std::string&, const std::string&);
 	void handleRequest(Client*);
 	void handleResponse(Client*, int epollFD);

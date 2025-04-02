@@ -158,13 +158,12 @@ void Server::handleRequest(Client* client) {
 	char buffer[CLIENT_BUFFER_SIZE + 1] = {0};
 	int received, buffer_size = CLIENT_BUFFER_SIZE;
 
-	Log::log(Log::DEBUG,
-			 "[handleRequest] Processing request from client %d",
+	Log::log(Log::DEBUG, "[handleRequest] Processing request from client %d",
 			 client->getFd());
 
 	// we cannot check for errno after recv
 	// recv return -1 when non-blocking
-	//while ((received = recv(client->getFd(), buffer, buffer_size, 0)) > 0) {
+	// while ((received = recv(client->getFd(), buffer, buffer_size, 0)) > 0) {
 	//	Log::log(Log::DEBUG,
 	//			 "[handleRequest] Read %d bytes from client %d",
 	//			 received, client->getFd());
@@ -173,13 +172,11 @@ void Server::handleRequest(Client* client) {
 	//}
 	received = recv(client->getFd(), buffer, buffer_size, 0);
 	if (received <= 0) {
-	Log::log(Log::ERROR,
-		"[handleRequest] Recv failed");
+		Log::log(Log::ERROR, "[handleRequest] Recv failed");
 		throw Client::DisconnectedException();
 	}
-	Log::log(Log::DEBUG,
-		"[handleRequest] Read %d bytes from client %d",
-		received, client->getFd());
+	Log::log(Log::DEBUG, "[handleRequest] Read %d bytes from client %d",
+			 received, client->getFd());
 	buffer[received] = '\0';
 	client->appendRequestBuffer(std::string(buffer, received));
 
@@ -295,7 +292,6 @@ Response Server::handleGetRequest(Request* request, BlockServer* server,
 	Response response;
 	MapHeaders headers;
 	std::string content, contentLength, filePath, root, message;
-
 
 	if (!location || !location->isMethodAllowed(GET)) {
 		return createResponseError(server, "HTTP/1.1", "405", "Not Allowed");
@@ -579,7 +575,7 @@ Response Server::handleDeleteRequest(Request* request, BlockServer* server,
 	return response;
 };
 
-bool Server::isCgi(Request* request, BlockLocation* location) {
+int Server::isCgi(Request* request, BlockLocation* location) {
 	typedef std::map<std::string, std::string> MapCgi;
 	MapCgi cgis;
 	MapCgi::iterator cgi_path;
@@ -595,12 +591,21 @@ bool Server::isCgi(Request* request, BlockLocation* location) {
 	cgi_path = cgis.find(ext);
 	if (cgi_path == cgis.end()) return (false);
 
-	if (stat((cgi_path->second).c_str(), &info) == 0 &&
-		(info.st_mode & S_IFREG) && (info.st_mode & S_IXUSR)) {
-		return true;
+	if (!(stat((cgi_path->second).c_str(), &info) == 0 &&
+		  (info.st_mode & S_IFREG) && (info.st_mode & S_IXUSR))) {
+		Log::log(Log::ERROR, "CGI_path : '%s' not valid",
+				 cgi_path->second.c_str());
+		return -1;
 	}
-	Log::log(Log::INFO, "CGI_path : '%s' not valid", cgi_path->second.c_str());
-	return (false);
+
+	if (!(stat((location->getRoot() + request->parsePath()).c_str(), &info) == 0 &&
+		  (info.st_mode & S_IFREG))) {
+		Log::log(Log::ERROR, "Target : '%s' not valid",
+			(location->getRoot() + request->parsePath()).c_str());
+		return -2;
+	}
+
+	return true;
 }
 bool Server::hasRedirection(BlockLocation* location) {
 	std::pair<int, std::string> rewrite;
@@ -859,8 +864,14 @@ Response Server::resolveRequest(Client* client) {
 
 	if (this->hasRedirection(location))
 		return (this->handleRedirection(request, server, location));
-	if (this->isCgi(request, location))
+
+	int iscgi = 0;
+	if ((iscgi = this->isCgi(request, location)) == 1)
 		return (this->handleCgiRequest(request, server, location));
+	if (iscgi == -1)
+		return (createResponseError(server, "HTTP/1.1", "500", "Internal Server Error"));
+	if (iscgi == -2)
+		return (createResponseError(server, "HTTP/1.1", "404", "Not Found"));
 
 	if (request->getMethod() == GET)
 		return (this->handleGetRequest(request, server, location));
@@ -887,8 +898,7 @@ void Server::handleEvent(epoll_event* events, int i) {
 				this->handleRequest(this->_clients[fd]);
 				modifySocketEpoll(g_server->getEpollFD(), fd, RESPONSE_FLAGS);
 			}
-		}
-		else if (event & EPOLLOUT) {
+		} else if (event & EPOLLOUT) {
 			this->_clients[fd]->updateActivity();
 			if (this->_clients[fd]->getRequest() != NULL) {
 				this->handleResponse(this->_clients[fd], this->_epollFD);
