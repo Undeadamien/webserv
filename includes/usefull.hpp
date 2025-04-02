@@ -47,5 +47,6 @@ std::string getFileContent(std::string path);
 std::string getMimeType(std::string target);
 std::string parseFileExtension(const std::string&);
 std::string unescapeJsonString(const std::string& escaped);
+std::string urlDecode(const std::string& value);
 
 #endif

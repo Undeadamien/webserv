@@ -141,13 +141,13 @@ const std::string &Request::getBody() const { return (this->_body); };
 
 std::string Request::parsePath() const {
 	std::string::size_type sep = this->_target.find("?");
-	if (sep == std::string::npos) return this->_target;
-	return this->_target.substr(sep);
+	if (sep == std::string::npos) return urlDecode(this->_target);
+	return urlDecode(this->_target.substr(sep));
 };
 std::string Request::parseQuery() const {
 	std::string::size_type sep = this->_target.find("?");
 	if (sep == std::string::npos) return "";
-	return this->_target.substr(sep + 1);
+	return urlDecode(this->_target.substr(sep + 1));
 };
 std::map<std::string, std::string> Request::parseQueryToMap() {
 	std::map<std::string, std::string> map;
@@ -159,8 +159,8 @@ std::map<std::string, std::string> Request::parseQueryToMap() {
 	while (std::getline(ss, line, '&')) {
 		pos = line.find('=');
 		if (pos == std::string::npos) continue;	 // might want to throw an error
-		key = line.substr(0, pos);
-		value = line.substr(pos + 1);
+		key = urlDecode(line.substr(0, pos));
+		value = urlDecode(line.substr(pos + 1));
 		map[key] = value;
 	}
 	return map;
