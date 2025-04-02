@@ -59,7 +59,7 @@ fclean: clean
 re: fclean all
 
 start: all
-	valgrind -q ./$(NAME) config/good/goodweb.conf --debug
+	valgrind -q ./$(NAME) config/goodweb.conf --debug
 
 .PHONY: all clean fclean re test
 
