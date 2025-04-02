@@ -58,23 +58,8 @@ fclean: clean
 # Recompiler entièrement
 re: fclean all
 
-test: all
+start: all
 	valgrind -q ./$(NAME) config/good/goodweb.conf --debug
-
-run-bad-configs:
-	@echo "$(BOLD)$(RED)Running all .conf files in config/bad/$(RESET)"
-	@for file in config/bad/*.conf; do \
-		echo "$(BOLD)$(YELLOW)Running $$file$(RESET)"; \
-		./$(NAME) $$file; \
-	done
-
-# Cible pour exécuter tous les fichiers .conf dans config/good/
-run-good-configs:
-	@echo "$(BOLD)$(GREEN)Running all .conf files in config/good/$(RESET)"
-	@for file in config/good/*.conf; do \
-		echo "$(BOLD)$(YELLOW)Running $$file$(RESET)"; \
-		./$(NAME) $$file; \
-	done
 
 .PHONY: all clean fclean re test
 
